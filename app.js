@@ -3311,6 +3311,17 @@ window.handleGlobalAnswersAiPaste = async function(event) {
 };
 
 function initDB() {
+  // Nếu localStorage trống VÀ có dữ liệu mặc định từ default_db.js thì nạp vào
+  if (window.__DEFAULT_DB__ && !localStorage.getItem('maternopro_reading')) {
+    const ddb = window.__DEFAULT_DB__;
+    if (ddb.listening) localStorage.setItem('maternopro_listening', JSON.stringify(ddb.listening));
+    if (ddb.reading) localStorage.setItem('maternopro_reading', JSON.stringify(ddb.reading));
+    if (ddb.writing) localStorage.setItem('maternopro_writing', JSON.stringify(ddb.writing));
+    if (ddb.speaking) localStorage.setItem('maternopro_speaking', JSON.stringify(ddb.speaking));
+    if (ddb.grammar) localStorage.setItem('maternopro_grammar', JSON.stringify(ddb.grammar));
+    if (ddb.vocab) localStorage.setItem('maternopro_vocab', JSON.stringify(ddb.vocab));
+  }
+
   let defaultListeningList = [];
   for (let i = 1; i <= 24; i++) {
     defaultListeningList.push({ id: i, name: `Test ${i}`, free: i === 1, minutes: 30 });
