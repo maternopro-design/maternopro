@@ -1,0 +1,1 @@
+const text = . Holstein Rinder\n\nA. sind in der Milchproduktion beliebter als andere Rinderrassen\nB. spielen in der Milchproduktion kaum eine Rolle\nC. stammen aus Norddeutschland; const parts = text.split(/(?:^|\\s|\\n)[A-Ca-c][\\.\\):]\\s+/).filter(p => p.trim()); console.log(parts.length, parts);

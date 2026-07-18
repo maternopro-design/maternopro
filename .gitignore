@@ -1,0 +1,12 @@
+config.js
+node_modules/
+backups/
+temp_backup/
+*.log
+maternopro_db_backup.json
+maternopro_db_backup_SAFE_COPY.json
+pdf_raw.txt
+pdf_lines.txt
+pdf_line.txt
+match.txt
+backup_extracted.txt
