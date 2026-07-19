@@ -1621,6 +1621,18 @@ span.text-fill-blank.drop-target {
     flex-wrap: wrap !important;
     gap: 0.5rem !important;
   }
+
+  /* Sửa lỗi tràn khung Donate trên mobile */
+  .donation-alert-wrapper {
+    padding: 0 1rem !important;
+  }
+  .donation-alert {
+    padding: 1.5rem 1.2rem !important;
+  }
+  .donation-alert-text {
+    min-width: 0 !important;
+    flex-basis: 100% !important;
+  }
 }
 
 
