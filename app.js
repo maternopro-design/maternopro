@@ -1,9 +1,14 @@
 // Bắt lỗi Javascript toàn cục và hiển thị alert để gỡ lỗi nhanh
 window.onerror = function (message, source, lineno, colno, error) {
   if (lineno === 0 && message === 'Script error.') return false;
+  // Bỏ qua các lỗi do trình duyệt in-app của Zalo (ví dụ: zaloJSV2)
+  if (message && (message.indexOf('zaloJSV2') !== -1 || message.indexOf('zaloJSV') !== -1)) {
+    return false;
+  }
   alert("LỖI HỆ THỐNG (Javascript Error):\n" + message + "\nTại dòng: " + lineno + "\nFile: " + source);
   return false;
 };
+
 
 // --- VIP Tự Động Lấy API Key (từ file config riêng) ---
 // Key được load từ config.js (file này không đẩy lên GitHub)
