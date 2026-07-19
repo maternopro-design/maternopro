@@ -1361,6 +1361,20 @@ body.light-theme .admin-table th, body.light-theme .admin-table td {
   cursor: pointer;
 }
 
+/* Kiểu dáng Pill Button cho ô điền từ trong đoạn văn (Teil 4, Teil 5) */
+span.text-fill-blank.drop-target {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 60px !important;
+  padding: 6px 16px !important; /* Padding nhỏ hơn để không phá vỡ dòng chữ */
+  border-radius: 20px !important; /* Bo tròn dạng viên thuốc */
+  margin: 0 4px !important;
+  vertical-align: middle !important;
+  box-shadow: 0 4px 10px rgba(255, 0, 122, 0.15), inset 0 0 8px rgba(255, 0, 122, 0.1) !important;
+  border-style: solid !important;
+}
+
 .drop-target:hover, .drag-zone:hover {
   background: rgba(255, 0, 122, 0.15) !important;
   box-shadow: 0 0 20px rgba(255, 0, 122, 0.4), inset 0 0 15px rgba(255, 0, 122, 0.2) !important;
@@ -1444,3 +1458,169 @@ body.light-theme .admin-table th, body.light-theme .admin-table td {
 .premium-select-option:last-child { border-bottom: none; }
 .premium-select-option:hover { background: rgba(0,242,254,0.1); color: #00f2fe; padding-left: 1.5rem; }
 .premium-select-option.selected { background: rgba(0,242,254,0.15); color: #00f2fe; font-weight: bold; border-left: 3px solid #00f2fe; }
+
+/* ==========================================================================
+   GIAO DIỆN TỐI ƯU CHO THIẾT BỊ DI ĐỘNG (MOBILE DRAFT)
+   ========================================================================== */
+
+/* Tối ưu hóa khoảng cách và cỡ chữ trên mobile */
+@media (max-width: 768px) {
+  .test-left-pane, .test-right-pane {
+    padding: 0.9rem !important;
+    border-radius: 12px !important;
+  }
+  
+  .drag-text-box {
+    padding: 1rem !important;
+  }
+
+  .drag-text-box p, 
+  .drag-text-box div,
+  .test-left-pane p,
+  .exercise-text,
+  .text-pane p,
+  .writing-prompt-text,
+  .speaking-prompt-text {
+    font-size: 1rem !important;
+    line-height: 1.6 !important;
+  }
+
+  .radio-label, .drag-option-item {
+    font-size: 0.95rem !important;
+    padding: 0.8rem 1rem !important;
+  }
+  
+  .test-bottom-bar {
+    padding: 1rem !important;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .test-bottom-bar div {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Cập nhật Ultimate Mobile UX: Chia đôi màn hình 50/50 */
+  .test-split-container {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 85vh !important; /* Chiếm 85% chiều cao màn hình */
+    max-height: 85vh !important;
+    overflow: hidden !important;
+    gap: 0 !important;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 242, 254, 0.3);
+  }
+
+  /* Nửa trên: Đề bài / Văn bản */
+  .test-left-pane {
+    display: block !important;
+    flex: 45 !important; /* Chiếm 45% không gian */
+    overflow-y: auto !important;
+    padding: 1rem !important;
+    border-right: none !important;
+    border-bottom: 2px solid var(--accent-cyan) !important;
+    background: rgba(10, 12, 30, 0.95) !important;
+  }
+
+  /* Nửa dưới: Câu hỏi / Đáp án */
+  .test-right-pane {
+    display: block !important;
+    flex: 55 !important; /* Chiếm 55% không gian */
+    overflow-y: auto !important;
+    padding: 1rem !important;
+    background: rgba(10, 12, 30, 0.95) !important;
+  }
+  
+  /* Thanh Bottom Bar dính đáy trên mobile */
+  .test-bottom-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 999;
+    background: rgba(10, 12, 30, 0.98);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 -4px 15px rgba(0,0,0,0.5);
+    border-top: 1px solid rgba(0, 242, 254, 0.3);
+    padding: 1rem !important;
+    border-radius: 12px 12px 0 0;
+    margin-top: 1rem;
+  }
+
+  .test-split-container.show-only-left .test-right-pane {
+    display: none !important;
+  }
+}
+
+/* ==========================================================================
+   TỐI ƯU HÓA MENUS CUỘN NGANG & LAYOUT TRÊN MOBILE DRAFT
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* Menu chính cuộn ngang thay vì xếp chồng nhiều dòng */
+  .nav-links {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    width: 100% !important;
+    justify-content: flex-start !important;
+    gap: 0.5rem !important;
+    padding: 0.5rem 0 !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .nav-btn {
+    flex: 0 0 auto !important;
+    padding: 0.5rem 0.8rem !important;
+    font-size: 0.85rem !important;
+  }
+
+  /* Menu các phần Teil 1, 2, 3 cuộn ngang */
+  .test-subnavigation {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    gap: 0.5rem !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px !important;
+    margin-bottom: 1.2rem !important;
+  }
+  .test-subnav-btn {
+    flex: 0 0 auto !important;
+    padding: 0.5rem 0.8rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  /* Ngăn nút Zurück và tiêu đề bị đè lên nhau */
+  #reading-content > div:first-child, 
+  #listening-content > div:first-child,
+  main > div:has(> .btn-secondary) {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.8rem !important;
+  }
+  #reading-content > div:first-child > div,
+  #listening-content > div:first-child > div {
+    font-size: 1rem !important;
+    text-align: left !important;
+  }
+
+  /* Tối ưu hóa Mode Card trên Home Screen */
+  .mode-selection-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.2rem !important;
+  }
+  .mode-card {
+    padding: 1.5rem !important;
+  }
+  .mode-title {
+    font-size: 1.4rem !important;
+  }
+  .mode-badge-row {
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+  }
+}
+
+

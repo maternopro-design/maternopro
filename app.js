@@ -2614,6 +2614,14 @@ function attachInteractionEvents() {
 
   document.querySelectorAll('.drop-target').forEach(el => {
     el.addEventListener('click', (e) => {
+      // Nếu là màn hình nhỏ (mobile), mở popup chọn đáp án trực tiếp dưới chân màn hình
+      if (window.innerWidth <= 900) {
+        e.preventDefault();
+        e.stopPropagation();
+        openMobileOptionPicker(el);
+        return;
+      }
+
       if (activeSelection.type && activeSelection.value) {
         const teil = el.getAttribute('data-teil');
         const id = parseInt(el.getAttribute('data-id'));
@@ -2630,6 +2638,194 @@ function attachInteractionEvents() {
       }
     });
   });
+}
+
+// ==========================================================================
+// POPUP CHỌN ĐÁP ÁN NHANH DỰ THẢO TRÊN MOBILE (BOTTOM SHEET SELECTOR)
+// ==========================================================================
+function openMobileOptionPicker(el) {
+  const teil = el.getAttribute('data-teil');
+  const id = parseInt(el.getAttribute('data-id'));
+  
+  let picker = document.getElementById('mobile-option-picker');
+  if (!picker) {
+    picker = document.createElement('div');
+    picker.id = 'mobile-option-picker';
+    picker.style.cssText = `
+      position: fixed;
+      bottom: 0; left: 0; right: 0; top: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(5px);
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    `;
+    picker.addEventListener('click', closeMobileOptionPicker);
+    document.body.appendChild(picker);
+  }
+  
+  const sheet = document.createElement('div');
+  sheet.style.cssText = `
+    background: #0f1228;
+    border-top: 3px solid var(--accent-cyan);
+    border-radius: 24px 24px 0 0;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transform: translateY(100%);
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+  `;
+  sheet.addEventListener('click', (e) => e.stopPropagation());
+
+  let optionsHTML = '';
+  const test = db.reading.find(t => t.name === selectedReadingTest);
+  
+  if (teil === 'teil1') {
+    const headings = test?.teil1?.headings || [];
+    const used = Object.entries(userAnswers.teil1)
+      .filter(([k, v]) => parseInt(k) !== id && v !== '')
+      .map(([k, v]) => v);
+      
+    optionsHTML = `
+      <div style="font-weight: 800; color: #fff; text-align: center; margin-bottom: 0.5rem; font-size: 1.1rem;">Chọn tiêu đề cho Đoạn văn ${id}</div>
+      <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1rem;">
+        ${headings.map(h => {
+          const isUsed = used.includes(h.key);
+          const isCurrent = userAnswers.teil1[id] === h.key;
+          return `
+            <button class="btn" style="text-align: left; padding: 1rem; background: ${isCurrent ? 'rgba(0, 242, 254, 0.2)' : 'rgba(255,255,255,0.03)'}; border: 1px solid ${isCurrent ? 'var(--accent-cyan)' : 'rgba(255,255,255,0.1)'}; color: #fff; border-radius: 12px; font-size: 1rem; opacity: ${isUsed ? 0.3 : 1};" 
+              onclick="selectMobileOption('${teil}', ${id}, '${h.key}')" ${isUsed ? 'disabled' : ''}>
+              <b>${h.key}:</b> ${h.text} ${isCurrent ? ' ⟨Đã chọn⟩' : ''}
+            </button>
+          `;
+        }).join('')}
+      </div>
+    `;
+  } else if (teil === 'teil3') {
+    const options = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'x'];
+    const used = Object.entries(userAnswers.teil3)
+      .filter(([k, v]) => parseInt(k) !== id && v !== '')
+      .map(([k, v]) => v);
+      
+    optionsHTML = `
+      <div style="font-weight: 800; color: #fff; text-align: center; margin-bottom: 0.5rem; font-size: 1.1rem;">Chọn bài viết phù hợp cho tình huống ${id}</div>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8rem; margin-bottom: 1rem;">
+        ${options.map(opt => {
+          const isUsed = used.includes(opt) && opt !== 'x';
+          const isCurrent = userAnswers.teil3[id] === opt;
+          return `
+            <button class="btn" style="padding: 1rem; background: ${isCurrent ? 'rgba(255, 0, 122, 0.2)' : 'rgba(255,255,255,0.03)'}; border: 1px solid ${isCurrent ? '#ff007a' : 'rgba(255,255,255,0.1)'}; color: #fff; border-radius: 12px; font-size: 1.2rem; font-weight: bold; opacity: ${isUsed ? 0.3 : 1};" 
+              onclick="selectMobileOption('${teil}', ${id}, '${opt}')" ${isUsed ? 'disabled' : ''}>
+              ${opt}
+            </button>
+          `;
+        }).join('')}
+      </div>
+    `;
+  } else if (teil === 'teil4') {
+    let defaultOpts = {
+      21: ["A. mir", "B. uns", "C. euch"],
+      22: ["A. trotz", "B. wegen", "C. dank"],
+      23: ["A. so dass", "B. weil", "C. obwohl"],
+      24: ["A. damit", "B. um", "C. für"],
+      25: ["A. obwohl", "B. trotzdem", "C. denn"],
+      26: ["A. belohnt", "B. entschädigt", "C. geholfen"],
+      27: ["A. geschmeckt", "B. gefallen", "C. gepasst"],
+      28: ["A. da", "B. obwohl", "C. weil"],
+      29: ["A. lassen", "B. haben", "C. angehen"],
+      30: ["A. von", "B. über", "C. bei"]
+    };
+    const currentOpts = (test?.teil4?.options && test.teil4.options[id]) ? test.teil4.options[id] : defaultOpts[id] || [];
+    optionsHTML = `
+      <div style="font-weight: 800; color: #fff; text-align: center; margin-bottom: 0.5rem; font-size: 1.1rem;">Chọn đáp án cho ô trống (${id})</div>
+      <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1rem;">
+        ${currentOpts.map((opt, idx) => {
+          const letter = ['A', 'B', 'C'][idx];
+          const word = opt.includes('. ') ? opt.split('. ')[1] : opt.replace(/^[A-C][\.\s]+/, '');
+          const isCurrent = userAnswers.teil4[id] === letter || userAnswers.teil4[id] === word;
+          return `
+            <button class="btn" style="text-align: left; padding: 1rem; background: ${isCurrent ? 'rgba(0, 242, 254, 0.2)' : 'rgba(255,255,255,0.03)'}; border: 1px solid ${isCurrent ? 'var(--accent-cyan)' : 'rgba(255,255,255,0.1)'}; color: #fff; border-radius: 12px; font-size: 1rem;" 
+              onclick="selectMobileOption('${teil}', ${id}, '${letter}')">
+              <b>${letter}:</b> ${word}
+            </button>
+          `;
+        }).join('')}
+      </div>
+    `;
+  } else if (teil === 'teil5') {
+    const words = test?.teil5?.words || [];
+    const used = Object.entries(userAnswers.teil5)
+      .filter(([k, v]) => parseInt(k) !== id && v !== '')
+      .map(([k, v]) => v);
+
+    optionsHTML = `
+      <div style="font-weight: 800; color: #fff; text-align: center; margin-bottom: 0.5rem; font-size: 1.1rem;">Chọn từ điền vào ô trống (${id})</div>
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; margin-bottom: 1rem; max-height: 40vh; overflow-y: auto;">
+        ${words.map(w => {
+          const isUsed = used.includes(w);
+          const isCurrent = userAnswers.teil5[id] === w;
+          return `
+            <button class="btn" style="padding: 0.8rem; background: ${isCurrent ? 'rgba(0, 242, 254, 0.2)' : 'rgba(255,255,255,0.03)'}; border: 1px solid ${isCurrent ? 'var(--accent-cyan)' : 'rgba(255,255,255,0.1)'}; color: #fff; border-radius: 12px; font-size: 0.95rem; opacity: ${isUsed ? 0.3 : 1};" 
+              onclick="selectMobileOption('${teil}', ${id}, '${w}')" ${isUsed ? 'disabled' : ''}>
+              ${w}
+            </button>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  sheet.innerHTML = `
+    ${optionsHTML}
+    <button class="btn btn-secondary" style="width: 100%; padding: 0.8rem; font-weight: bold; border-radius: 12px; background: rgba(255,255,255,0.05); color: #fff;" onclick="closeMobileOptionPicker()">
+      Đóng
+    </button>
+  `;
+  
+  picker.innerHTML = '';
+  picker.appendChild(sheet);
+  picker.style.display = 'flex';
+  
+  setTimeout(() => {
+    picker.style.opacity = '1';
+    sheet.style.transform = 'translateY(0)';
+  }, 10);
+}
+
+function closeMobileOptionPicker() {
+  const picker = document.getElementById('mobile-option-picker');
+  if (!picker) return;
+  
+  const sheet = picker.firstElementChild;
+  if (sheet) {
+    sheet.style.transform = 'translateY(100%)';
+  }
+  picker.style.opacity = '0';
+  
+  setTimeout(() => {
+    picker.style.display = 'none';
+  }, 250);
+}
+
+function selectMobileOption(teil, id, value) {
+  if (teil === 'teil1') {
+    userAnswers.teil1[id] = value;
+  } else if (teil === 'teil3') {
+    userAnswers.teil3[id] = value;
+  } else if (teil === 'teil4') {
+    userAnswers.teil4[id] = value;
+  } else if (teil === 'teil5') {
+    userAnswers.teil5[id] = value;
+  }
+  
+  closeMobileOptionPicker();
+  renderReading();
 }
 
 function resetAnswers() {
