@@ -1020,6 +1020,11 @@ body.light-theme .test-subnav-btn {
   padding: 2rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   transition: all 0.3s ease;
+  position: sticky;
+  top: 90px;
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
+  align-self: start;
 }
 
 .test-left-pane:hover {
