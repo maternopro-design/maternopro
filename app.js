@@ -1231,6 +1231,8 @@ function setReadingState(state) {
 
 function setReadingSubTab(tabNum) {
   currentReadingSubTab = tabNum;
+  lastRightPaneScroll = 0;
+  lastLeftPaneScroll = 0;
   renderReading();
 }
 
@@ -1257,6 +1259,8 @@ function setListeningSubTab(tabNum) {
 let selectedReadingTest = '';
 let selectedReadingMode = '';
 let currentReadingSubTab = 1; // 1 to 5
+let lastRightPaneScroll = 0;
+let lastLeftPaneScroll = 0;
 
 const readingTestList = [
   { 
@@ -1736,13 +1740,9 @@ function renderReading() {
   const container = document.getElementById('reading-content');
   if (!container) return;
 
-  // Lưu vị trí cuộn trước khi re-render để tránh bị nhảy màn hình khó chịu
-  let rightPaneScroll = 0;
-  let leftPaneScroll = 0;
-  const oldRightPane = container.querySelector('.test-right-pane');
-  const oldLeftPane = container.querySelector('.test-left-pane');
-  if (oldRightPane) rightPaneScroll = oldRightPane.scrollTop;
-  if (oldLeftPane) leftPaneScroll = oldLeftPane.scrollTop;
+  // Đọc vị trí cuộn từ các biến toàn cục đã lưu qua sự kiện scroll
+  let rightPaneScroll = lastRightPaneScroll || 0;
+  let leftPaneScroll = lastLeftPaneScroll || 0;
   const pageScroll = window.scrollY;
 
   let backBtnHTML = '';
@@ -2622,6 +2622,20 @@ function clearTeil5Answer(qId) {
 }
 
 function attachInteractionEvents() {
+  // Ghi nhận vị trí cuộn khi người dùng cuộn chuột
+  const rightPane = document.querySelector('.test-right-pane');
+  if (rightPane) {
+    rightPane.addEventListener('scroll', () => {
+      lastRightPaneScroll = rightPane.scrollTop;
+    });
+  }
+  const leftPane = document.querySelector('.test-left-pane');
+  if (leftPane) {
+    leftPane.addEventListener('scroll', () => {
+      lastLeftPaneScroll = leftPane.scrollTop;
+    });
+  }
+
   // Click-to-select logic
   document.querySelectorAll('.select-clickable').forEach(el => {
     el.addEventListener('click', (e) => {
