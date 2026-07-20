@@ -1736,6 +1736,15 @@ function renderReading() {
   const container = document.getElementById('reading-content');
   if (!container) return;
 
+  // Lưu vị trí cuộn trước khi re-render để tránh bị nhảy màn hình khó chịu
+  let rightPaneScroll = 0;
+  let leftPaneScroll = 0;
+  const oldRightPane = container.querySelector('.test-right-pane');
+  const oldLeftPane = container.querySelector('.test-left-pane');
+  if (oldRightPane) rightPaneScroll = oldRightPane.scrollTop;
+  if (oldLeftPane) leftPaneScroll = oldLeftPane.scrollTop;
+  const pageScroll = window.scrollY;
+
   let backBtnHTML = '';
   if (readingFlowState !== 'grid') {
     let prevStates = { 'mode': 'grid', 'overview': 'mode', 'test': 'overview' };
@@ -1906,6 +1915,13 @@ function renderReading() {
   } else if (readingFlowState === 'results') {
     renderReadingResults();
   }
+
+  // Khôi phục lại vị trí cuộn đã lưu của left pane, right pane và toàn trang
+  const newRightPane = container.querySelector('.test-right-pane');
+  const newLeftPane = container.querySelector('.test-left-pane');
+  if (newRightPane) newRightPane.scrollTop = rightPaneScroll;
+  if (newLeftPane) newLeftPane.scrollTop = leftPaneScroll;
+  window.scrollTo(0, pageScroll);
 }
 
 function renderReadingResults() {
