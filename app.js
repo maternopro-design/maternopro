@@ -1916,14 +1916,16 @@ function renderReading() {
     renderReadingResults();
   }
 
-  // Khôi phục lại vị trí cuộn đã lưu của left pane, right pane và toàn trang sau khi trình duyệt render xong
-  setTimeout(() => {
-    const newRightPane = container.querySelector('.test-right-pane');
-    const newLeftPane = container.querySelector('.test-left-pane');
-    if (newRightPane) newRightPane.scrollTop = rightPaneScroll;
-    if (newLeftPane) newLeftPane.scrollTop = leftPaneScroll;
-    window.scrollTo(0, pageScroll);
-  }, 0);
+  // Khôi phục lại vị trí cuộn đã lưu của left pane, right pane và toàn trang bằng nhiều đợt để tránh độ trễ layout của trình duyệt
+  for (let delay of [0, 10, 30, 80, 150]) {
+    setTimeout(() => {
+      const newRightPane = container.querySelector('.test-right-pane');
+      const newLeftPane = container.querySelector('.test-left-pane');
+      if (newRightPane) newRightPane.scrollTop = rightPaneScroll;
+      if (newLeftPane) newLeftPane.scrollTop = leftPaneScroll;
+      window.scrollTo(0, pageScroll);
+    }, delay);
+  }
 }
 
 function renderReadingResults() {
