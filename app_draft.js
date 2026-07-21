@@ -297,19 +297,56 @@ function updateLanguageUI() {
 let currentTheme = localStorage.getItem('maternopro_theme') || 'dark';
 
 function toggleTheme() {
-  currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  if (currentTheme === 'dark') {
+    currentTheme = 'light';
+  } else if (currentTheme === 'light') {
+    currentTheme = 'warm';
+  } else {
+    currentTheme = 'dark';
+  }
+  localStorage.setItem('maternopro_theme', currentTheme);
+  applyTheme();
+}
+
+function toggleWarmLight() {
+  if (currentTheme === 'warm') {
+    currentTheme = 'light';
+  } else {
+    currentTheme = 'warm';
+  }
   localStorage.setItem('maternopro_theme', currentTheme);
   applyTheme();
 }
 
 function applyTheme() {
   const btn = document.getElementById('theme-toggle-btn');
+  const warmBtn = document.getElementById('warm-toggle-btn');
+  
+  document.body.classList.remove('light-theme', 'warm-theme');
+  
   if (currentTheme === 'light') {
     document.body.classList.add('light-theme');
-    if (btn) btn.textContent = '🌙';
-  } else {
-    document.body.classList.remove('light-theme');
     if (btn) btn.textContent = '☀️';
+    if (warmBtn) {
+      warmBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+      warmBtn.style.color = '#334155';
+      warmBtn.style.borderColor = '#cbd5e1';
+    }
+  } else if (currentTheme === 'warm') {
+    document.body.classList.add('light-theme', 'warm-theme');
+    if (btn) btn.textContent = '💡';
+    if (warmBtn) {
+      warmBtn.style.background = '#d97706';
+      warmBtn.style.color = '#ffffff';
+      warmBtn.style.borderColor = '#d97706';
+    }
+  } else {
+    if (btn) btn.textContent = '🌙';
+    if (warmBtn) {
+      warmBtn.style.background = 'rgba(255, 255, 255, 0.05)';
+      warmBtn.style.color = '#e2e8f0';
+      warmBtn.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+    }
   }
 }
 
@@ -319,16 +356,19 @@ function applyTheme() {
 function switchView(viewId) {
   document.querySelectorAll('.section-view').forEach(section => {
     section.classList.remove('active');
+    section.style.display = 'none';
   });
 
   const target = document.getElementById(viewId);
   if (target) {
     target.classList.add('active');
+    target.style.display = 'block';
   }
 
   document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.classList.remove('active');
-    if (btn.getAttribute('onclick').includes(viewId)) {
+    const onclickAttr = btn.getAttribute('onclick');
+    if (onclickAttr && onclickAttr.includes(`'${viewId}'`)) {
       btn.classList.add('active');
     }
   });
@@ -341,12 +381,22 @@ function switchView(viewId) {
     speaking: "Luyện Nói (Sprechen)",
     grammar: "Ngữ Pháp (Grammatik)",
     vocab: "Từ Vựng Theo Chủ Đề (Wortschatz)",
+    results_history: "Lịch Sử Kết Quả & Dò Đáp Án B2",
+    community: "Kênh Thảo Luận B2",
     admin: "Trang Quản Trị Hệ Thống"
   };
   
   const titleEl = document.getElementById('current-page-title');
   if (titleEl) {
     titleEl.textContent = titles[viewId] || "MaterNoPro";
+  }
+
+  if (viewId === 'community') {
+    renderChatMessages();
+  }
+
+  if (viewId === 'results_history') {
+    renderResultsHistoryView();
   }
 
   // Tải nội dung phân hệ
@@ -495,26 +545,42 @@ function renderListening() {
         ${getListeningInstructions()}
       </div>
 
-      <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-light); padding: 2rem; border-radius: 12px; margin-bottom: 2.5rem; text-align: center; max-width: 600px; margin-left: auto; margin-right: auto;">
-        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔊</div>
-        <div style="font-weight: 800; font-size: 1.1rem; color: var(--accent-cyan); margin-bottom: 1.5rem;">Audio - Teil ${currentListeningSubTab}</div>
+      <!-- Modern Vinyl Audio Player (Deutsch mit PN Style branded for MaterNoPro) -->
+      <div class="maternopro-audio-player" style="background: #1e1e2e; border-radius: 20px; padding: 1.2rem 1.6rem; margin-bottom: 2.5rem; max-width: 780px; margin-left: auto; margin-right: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08);">
         
-        <!-- Player UI -->
-        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
-          <span id="listening-player-time" style="font-size: 0.85rem; color: var(--text-dim);">0:00</span>
-          <input type="range" id="listening-player-slider" min="0" max="100" value="0" oninput="seekListeningAudio(this.value)" style="flex-grow: 1; accent-color: var(--accent-cyan); height: 6px; cursor: pointer; border-radius: 3px; background: rgba(255,255,255,0.1); border: none; outline: none;">
-          <span id="listening-player-duration" style="font-size: 0.85rem; color: var(--text-dim);">0:00</span>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; gap: 1rem;">
+          <!-- Disc + Info -->
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <div id="listening-vinyl-disc" class="vinyl-disc">
+              <div class="vinyl-center"></div>
+            </div>
+            <div>
+              <div style="font-weight: 800; font-size: 1.15rem; color: #ffffff; letter-spacing: 0.3px;">${selectedListeningTest} - Teil ${currentListeningSubTab}</div>
+              <div style="color: #94a3b8; font-size: 0.88rem; font-weight: 600;">MaterNoPro Audio B2</div>
+            </div>
+          </div>
+
+          <!-- Right Controls -->
+          <div style="display: flex; align-items: center; gap: 0.8rem;">
+            <button type="button" onclick="stopListeningAudio()" title="Phát lại từ đầu" style="background: rgba(255,255,255,0.08); border: none; color: #94a3b8; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; cursor: pointer; transition: all 0.2s;">
+              ⏮
+            </button>
+            <button type="button" id="listening-player-play-btn" onclick="toggleListeningAudio()" title="Phát / Tạm dừng" style="background: linear-gradient(135deg, #f43f5e, #e11d48); border: none; color: #ffffff; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; box-shadow: 0 4px 18px rgba(244, 63, 94, 0.5); transition: all 0.2s;">
+              ▶
+            </button>
+            <button type="button" onclick="setListeningSubTab(${currentListeningSubTab < 3 ? currentListeningSubTab + 1 : 1})" title="Chuyển Phần tiếp theo" style="background: rgba(255,255,255,0.08); border: none; color: #94a3b8; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; cursor: pointer; transition: all 0.2s;">
+              ⏭
+            </button>
+          </div>
         </div>
 
-        <div style="display: flex; justify-content: center; gap: 1rem;">
-          <button id="listening-player-play-btn" class="btn btn-primary" style="padding: 0.8rem 2rem; border-radius: 30px; font-weight: bold;" onclick="toggleListeningAudio()">
-            ▶ Abspielen
-          </button>
-          <button class="btn btn-secondary" style="padding: 0.8rem 1.5rem; border-radius: 30px;" onclick="stopListeningAudio()">
-            ⏹ Stop
-          </button>
+        <!-- Progress Bar -->
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <span id="listening-player-time" style="font-size: 0.85rem; font-weight: 700; color: #94a3b8; min-width: 40px; text-align: right;">0:00</span>
+          <input type="range" id="listening-player-slider" min="0" max="100" value="0" oninput="seekListeningAudio(this.value)" class="audio-progress-slider">
+          <span id="listening-player-duration" style="font-size: 0.85rem; font-weight: 700; color: #94a3b8; min-width: 40px;">0:00</span>
         </div>
-        
+
         <!-- Hidden real audio element for file playback -->
         <audio id="listening-real-audio" style="display:none;" ontimeupdate="onListeningAudioTimeUpdate()" onended="onListeningAudioEnded()"></audio>
       </div>
@@ -630,7 +696,7 @@ function getListeningQuestionsHTML() {
           ${userListeningAnswers[item.id] === 'Falsch' ? 'checked' : ''}
           onclick="selectListeningRadioAnswer(${item.id}, 'Falsch')">
       </td>
-      <td style="padding: 1rem; line-height: 1.5; color: #e2e8f0;">${item.q}</td>
+      <td class="listening-q-text" style="padding: 1rem; line-height: 1.5;">${item.q}</td>
     </tr>
   `).join('');
 }
@@ -688,6 +754,9 @@ function submitListeningTestAnswers() {
       correctCount++;
     }
   }
+
+  // Lưu lịch sử bài thi Nghe cho học viên
+  recordTestResult('Hören', selectedListeningTest || 'Đề Thi Nghe B2', correctCount, 20, userListeningAnswers, mockCorrectAnswers);
 
   listeningFlowState = 'results';
   renderListening();
@@ -1030,7 +1099,9 @@ function initListeningPlayerUI() {
   
   isListeningPlaying = false;
   const playBtn = document.getElementById('listening-player-play-btn');
-  if (playBtn) playBtn.innerHTML = "▶ Abspielen";
+  if (playBtn) playBtn.innerHTML = "▶";
+  const vinylDisc = document.getElementById('listening-vinyl-disc');
+  if (vinylDisc) vinylDisc.classList.remove('playing');
 }
 
 function toggleListeningAudio() {
@@ -1039,11 +1110,13 @@ function toggleListeningAudio() {
 
   const playBtn = document.getElementById('listening-player-play-btn');
   const realAudio = document.getElementById('listening-real-audio');
+  const vinylDisc = document.getElementById('listening-vinyl-disc');
 
   if (isListeningPlaying) {
     // PAUSE
     isListeningPlaying = false;
-    if (playBtn) playBtn.innerHTML = "▶ Abspielen";
+    if (playBtn) playBtn.innerHTML = "▶";
+    if (vinylDisc) vinylDisc.classList.remove('playing');
     
     if (test.useAiVoice) {
       window.speechSynthesis.pause();
@@ -1054,7 +1127,8 @@ function toggleListeningAudio() {
   } else {
     // PLAY
     isListeningPlaying = true;
-    if (playBtn) playBtn.innerHTML = "⏸ Pause";
+    if (playBtn) playBtn.innerHTML = "⏸";
+    if (vinylDisc) vinylDisc.classList.add('playing');
 
     if (test.useAiVoice) {
       const partKey = 'teil' + currentListeningSubTab;
@@ -1138,7 +1212,9 @@ function stopListeningAudio() {
   listeningAudioCurrentTime = 0;
   
   const playBtn = document.getElementById('listening-player-play-btn');
-  if (playBtn) playBtn.innerHTML = "▶ Abspielen";
+  if (playBtn) playBtn.innerHTML = "▶";
+  const vinylDisc = document.getElementById('listening-vinyl-disc');
+  if (vinylDisc) vinylDisc.classList.remove('playing');
   
   window.speechSynthesis.cancel();
   clearInterval(listeningTimerInterval);
@@ -1762,7 +1838,7 @@ function renderReading() {
                 <img src="logo.jpg" style="width: 46px; height: 46px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-cyan); box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);">
                 <span class="lesen-card-time" style="font-weight: bold; font-size: 0.88rem; color: var(--text-dim);">🕒 ${test.minutes} Minuten</span>
               </div>
-              <div class="lesen-card-title" title="${test.name}" style="font-size: 1.35rem; font-weight: 800; color: #fff; margin-bottom: 0.6rem; letter-spacing: 0.5px; margin-top: 1rem; min-height: 3.8rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${test.name}</div>
+              <div class="lesen-card-title" title="${test.name}" style="font-size: 1.35rem; font-weight: 800; margin-bottom: 0.6rem; letter-spacing: 0.5px; margin-top: 1rem; min-height: 3.8rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${test.name}</div>
               <div class="lesen-card-subtags" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
                 <span class="lesen-card-tag" style="background: rgba(0, 242, 254, 0.08); color: var(--accent-cyan); padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.78rem; font-weight: 700;">3x Leseverstehen</span>
                 <span class="lesen-card-tag" style="background: rgba(139, 92, 246, 0.08); color: var(--accent-purple); padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.78rem; font-weight: 700;">2x Sprachbausteine</span>
@@ -2001,29 +2077,29 @@ function renderReadingResults() {
     </div>
 
     <!-- Khung Thống kê Điểm số chia cột tối ưu -->
-    <div class="card" style="background: rgba(22, 22, 54, 0.45); border: 1px solid var(--border-light); padding: 2rem; border-radius: 16px; margin-bottom: 2rem; display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr 1.1fr; gap: 1rem; align-items: center;">
+    <div class="results-summary-card" style="background: rgba(22, 22, 54, 0.45); border: 1px solid var(--border-light); padding: 2rem; border-radius: 16px; margin-bottom: 2rem; display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr 1.1fr; gap: 1rem; align-items: center;">
       <div style="display: flex; align-items: center; gap: 1rem;">
         <div style="font-size: 2.5rem; color: var(--accent-purple);">📘</div>
         <div>
-          <h3 style="font-size: 1.15rem; font-weight: 800; color: #fff; margin: 0;">Ihre Ergebnisse</h3>
-          <p style="color: var(--text-dim); font-size: 0.85rem; margin: 0;">${selectedReadingTest}</p>
+          <h3 class="results-card-title" style="font-size: 1.15rem; font-weight: 800; margin: 0;">Ihre Ergebnisse</h3>
+          <p class="results-subtext" style="font-size: 0.85rem; margin: 0;">${selectedReadingTest}</p>
         </div>
       </div>
       <div style="text-align: center;">
-        <div style="font-size: 1.8rem; font-weight: 800; color: var(--accent-cyan);">${totalScore}<span style="font-size: 0.95rem; color: var(--text-dim);">/105</span></div>
-        <div style="color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase;">Gesamtpunkte (Cộng cả Sprachbauteil)</div>
+        <div style="font-size: 1.8rem; font-weight: 800; color: var(--accent-cyan);">${totalScore}<span class="results-subtext" style="font-size: 0.95rem;">/105</span></div>
+        <div class="results-score-label" style="font-size: 0.75rem; text-transform: uppercase;">Gesamtpunkte (Cộng cả Sprachbauteil)</div>
       </div>
-      <div style="text-align: center; border-left: 1px solid rgba(255,255,255,0.05);">
-        <div style="font-size: 1.8rem; font-weight: 800; color: #fff;">${readingScore}<span style="font-size: 0.95rem; color: var(--text-dim);">/75</span></div>
-        <div style="color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase;">Leseverstehen (Đọc)</div>
+      <div style="text-align: center; border-left: 1px solid var(--border-light);">
+        <div class="results-score-value" style="font-size: 1.8rem; font-weight: 800;">${readingScore}<span class="results-subtext" style="font-size: 0.95rem;">/75</span></div>
+        <div class="results-score-label" style="font-size: 0.75rem; text-transform: uppercase;">Leseverstehen (Đọc)</div>
       </div>
-      <div style="text-align: center; border-left: 1px solid rgba(255,255,255,0.05); border-right: 1px solid rgba(255,255,255,0.05);">
-        <div style="font-size: 1.8rem; font-weight: 800; color: #fff;">${sprachbauteilScore}<span style="font-size: 0.95rem; color: var(--text-dim);">/30</span></div>
-        <div style="color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase;">Sprachbauteil (Từ vựng)</div>
+      <div style="text-align: center; border-left: 1px solid var(--border-light); border-right: 1px solid var(--border-light);">
+        <div class="results-score-value" style="font-size: 1.8rem; font-weight: 800;">${sprachbauteilScore}<span class="results-subtext" style="font-size: 0.95rem;">/30</span></div>
+        <div class="results-score-label" style="font-size: 0.75rem; text-transform: uppercase;">Sprachbauteil (Từ vựng)</div>
       </div>
       <div style="text-align: center;">
-        <div style="font-size: 1.8rem; font-weight: 800; color: var(--success);">${totalCorrect}<span style="font-size: 0.95rem; color: var(--text-dim);">/40</span></div>
-        <div style="color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase;">Richtig</div>
+        <div style="font-size: 1.8rem; font-weight: 800; color: var(--success);">${totalCorrect}<span class="results-subtext" style="font-size: 0.95rem;">/40</span></div>
+        <div class="results-score-label" style="font-size: 0.75rem; text-transform: uppercase;">Richtig</div>
       </div>
     </div>
 
@@ -2106,9 +2182,9 @@ function renderReadingLeftPane() {
 
       return `
         <div class="drag-text-box" style="margin-bottom: 1.5rem; background: ${bgStyle}; border: ${borderStyle}; padding: 1.5rem; border-radius: 12px; transition: all 0.3s ease;">
-          <div style="font-weight: 800; color: #fff; margin-bottom: 0.8rem; font-size: 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">${textTitle}</div>
-          <p style="line-height: 1.7; font-size: 0.98rem; color: #e2e8f0; text-align: justify; margin: 0; white-space: pre-wrap;">${textContent}</p>
-          <div class="drag-zone drop-target" data-teil="teil1" data-id="${i}" style="position: relative; border: ${borderStyle}; padding: 0.8rem; border-radius: 8px; margin-top: 1.2rem; text-align: center; cursor: pointer; background: ${bgStyle}; font-size: 0.95rem; font-weight: bold; color: #fff; transition: all 0.2s;">
+          <div style="font-weight: 800; margin-bottom: 0.8rem; font-size: 1.1rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.5rem;">${textTitle}</div>
+          <p style="line-height: 1.7; font-size: 0.98rem; text-align: justify; margin: 0; white-space: pre-wrap;">${textContent}</p>
+          <div class="drag-zone drop-target" data-teil="teil1" data-id="${i}" style="position: relative; border: ${borderStyle}; padding: 0.8rem; border-radius: 8px; margin-top: 1.2rem; text-align: center; cursor: pointer; background: ${bgStyle}; font-size: 0.95rem; font-weight: bold; transition: all 0.2s;">
             ${textHTML}
             ${ansKey && readingFlowState !== 'results' ? `<button class="btn btn-secondary" style="position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; min-width: auto; box-shadow: none;" onclick="clearTeil1Answer(${i}); event.stopPropagation();">x</button>` : ''}
           </div>
@@ -2123,7 +2199,7 @@ function renderReadingLeftPane() {
       formattedText = textContent.split('\n').filter(p => p.trim() !== '').map(p => `<p style="margin-bottom: 1.2rem;">${p.trim()}</p>`).join('');
     }
     return `
-      <div class="drag-text-box" style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-light); border-radius: 8px; line-height: 1.7; font-size: 0.98rem; color: #e2e8f0; text-align: justify;">
+      <div class="drag-text-box" style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-light); border-radius: 8px; line-height: 1.7; font-size: 0.98rem; text-align: justify;">
         ${formattedText}
       </div>
     `;
@@ -2134,39 +2210,38 @@ function renderReadingLeftPane() {
       { key: "k", title: "BUCHHANDLUNG ZU HUSE", content: "Während der dreijährigen Ausbildung zur Buchhändlerin bzw. zum Buchhändler lernst du..." },
       { key: "l", title: "Hausratversicherung Schutz", content: "Die Hausratversicherung bietet Ihnen Schutz vor dem Verlust oder einer Beschädigung Ihres Eigentums..." }
     ];
-    let usedLetters = Object.values(userAnswers.teil3);
+    let usedLetters = Object.values(userAnswers.teil3).map(v => (v || '').trim().toUpperCase()).filter(Boolean);
     return `
-      <div style="font-weight: 800; color: var(--accent-cyan); font-size: 0.9rem; margin-bottom: 1rem; text-transform: uppercase;">TEXTE (A-L)</div>
-      <div style="display: flex; flex-direction: column; gap: 1rem;">
+      <div style="font-weight: 800; color: var(--accent-cyan); font-size: 0.9rem; margin-bottom: 0.8rem; text-transform: uppercase;">TEXTE (A-L)</div>
+      <div class="teil3-texts-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
         ${textsTeil3.map(t => {
-          let isUsed = usedLetters.includes(t.key);
+          let isUsed = usedLetters.includes((t.key || '').trim().toUpperCase());
           return `
-            <div class="drag-text-box select-clickable" data-type="letter" data-value="${t.key}" 
-              style="border-left: 4px solid var(--accent-cyan); position: relative; cursor: pointer; margin-bottom: 1.2rem;
-              ${isUsed ? 'opacity: 0.35; text-decoration: line-through;' : ''}">
-              <span style="position: absolute; left: 1rem; top: 1.5rem; background: var(--accent-cyan); color: var(--bg-dark); font-weight: 800; width: 34px; height: 34px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; text-transform: uppercase; box-shadow: 0 4px 10px rgba(34, 211, 238, 0.3); z-index: 2;">
-                ${t.key}
-              </span>
-              <div style="margin-left: 3.5rem;">
-                ${t.title ? `<div style="font-weight: 900; margin-bottom: 0.8rem; text-transform: uppercase; font-size: 1rem; color: #fff; letter-spacing: 0.5px; padding-top: 0.2rem;">${t.title}</div>` : ''}
-                <p style="line-height: 1.7; font-size: 0.95rem; color: #cbd5e1; margin: 0; text-align: justify; white-space: pre-wrap;">${t.content || t.desc || ''}</p>
+            <div class="drag-text-box select-clickable ${isUsed ? 'used-ad-box' : ''}" data-type="letter" data-value="${t.key}" 
+              style="border-left: 4px solid var(--accent-cyan); position: relative; cursor: pointer; margin-bottom: 0; padding: 1.1rem; display: flex; flex-direction: column; justify-content: flex-start; transition: all 0.3s;
+              ${isUsed ? 'opacity: 0.45; filter: grayscale(35%);' : ''}">
+              <div style="display: flex; align-items: flex-start; gap: 0.6rem; margin-bottom: 0.6rem;">
+                <span style="background: var(--accent-cyan); color: var(--bg-dark); font-weight: 800; min-width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; text-transform: uppercase; flex-shrink: 0; ${isUsed ? 'text-decoration: line-through;' : ''}">
+                  ${t.key}
+                </span>
+                ${t.title ? `<div style="font-weight: 900; text-transform: uppercase; font-size: 0.95rem; letter-spacing: 0.5px; line-height: 1.35; padding-top: 0.2rem; ${isUsed ? 'text-decoration: line-through;' : ''}">${t.title}</div>` : ''}
               </div>
+              <p style="line-height: 1.65; font-size: 0.92rem; margin: 0; text-align: justify; white-space: pre-wrap; flex-grow: 1;">${t.content || t.desc || ''}</p>
             </div>
           `;
         }).join('')}
         
-        <div class="drag-text-box select-clickable" data-type="letter" data-value="x" 
-          style="border-left: 4px solid var(--danger); position: relative; cursor: pointer; margin-bottom: 1.2rem;
-          ${usedLetters.includes('x') ? 'opacity: 0.35; text-decoration: line-through;' : ''}">
-          <span style="position: absolute; left: 1rem; top: 1.5rem; background: var(--danger); color: #fff; font-weight: 800; width: 34px; height: 34px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; text-transform: uppercase; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); z-index: 2;">
-            X
-          </span>
-          <div style="margin-left: 3.5rem;">
-            <div style="font-weight: 900; margin-bottom: 0.8rem; text-transform: uppercase; font-size: 1rem; color: #fff; letter-spacing: 0.5px; padding-top: 0.2rem;">Keine Anzeige passt</div>
-            <p style="line-height: 1.7; font-size: 0.95rem; color: #cbd5e1; margin: 0; text-align: justify; white-space: pre-wrap;">Wählen Sie dieses Feld aus, wenn keine der obigen Anzeigen zur Situation passt.</p>
+        <div class="drag-text-box select-clickable ${usedLetters.includes('X') ? 'used-ad-box' : ''}" data-type="letter" data-value="x" 
+          style="border-left: 4px solid var(--danger); position: relative; cursor: pointer; margin-bottom: 0; padding: 1.1rem; display: flex; flex-direction: column; grid-column: span 2; transition: all 0.3s;
+          ${usedLetters.includes('X') ? 'opacity: 0.45; filter: grayscale(35%);' : ''}">
+          <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem;">
+            <span style="background: var(--danger); color: #fff; font-weight: 800; min-width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; text-transform: uppercase; flex-shrink: 0; ${usedLetters.includes('X') ? 'text-decoration: line-through;' : ''}">
+              X
+            </span>
+            <div style="font-weight: 900; text-transform: uppercase; font-size: 0.95rem; letter-spacing: 0.5px; ${usedLetters.includes('X') ? 'text-decoration: line-through;' : ''}">Keine Anzeige passt</div>
           </div>
+          <p style="line-height: 1.6; font-size: 0.92rem; margin: 0; text-align: justify; white-space: pre-wrap;">Wählen Sie dieses Feld aus, wenn keine der obigen Anzeigen zur Situation passt.</p>
         </div>
-
       </div>
     `;
   } else if (currentReadingSubTab === 4) {
@@ -2183,7 +2258,7 @@ function renderReadingLeftPane() {
       return `
         <div style="padding: 3rem; text-align: center; color: var(--text-dim); background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px;">
           <div style="font-size: 3rem; margin-bottom: 1rem;">📝</div>
-          <h4 style="color: #fff; margin-bottom: 0.5rem;">Chưa có nội dung Sprachbausteine Teil 1</h4>
+          <h4 style="margin-bottom: 0.5rem;">Chưa có nội dung Sprachbausteine Teil 1</h4>
           <p>Vui lòng vào <b>Trang Quản Trị (Admin)</b> → chọn đề này → Tab <b>"Sprachbausteine Teil 1"</b> để nhập nội dung bức thư và đáp án.</p>
         </div>
       `;
@@ -2196,16 +2271,16 @@ function renderReadingLeftPane() {
       const ans = userAnswers.teil4[i];
       const correctVal = correctAns ? correctAns[i] : '';
       
-      let style = ans ? `color: #000; font-weight: bold; background: var(--accent-cyan); padding: 0.1rem 0.5rem; border-radius: 4px; cursor: pointer; display: inline-block; box-shadow: 0 0 8px rgba(0, 210, 255, 0.4);` : `color: var(--accent-cyan); font-weight: bold; border-bottom: 2px dashed var(--accent-cyan); padding: 0 0.5rem; cursor: pointer; display: inline-block;`;
+      let style = ans ? `font-weight: bold; background: var(--accent-cyan); padding: 0.1rem 0.5rem; border-radius: 4px; cursor: pointer; display: inline-block; box-shadow: 0 0 8px rgba(0, 210, 255, 0.4);` : `color: var(--accent-cyan); font-weight: bold; border-bottom: 2px dashed var(--accent-cyan); padding: 0 0.5rem; cursor: pointer; display: inline-block;`;
       let innerHTML = `[ ${ans ? ans : '______'} ]`;
       
       if (readingFlowState === 'results') {
         const isRight = ans && correctVal && ans.trim().toUpperCase() === correctVal.trim().toUpperCase();
         if (isRight) {
-          style = `color: #fff; font-weight: bold; background: rgba(16, 185, 129, 0.1); border: 2px solid var(--success); padding: 0.2rem 0.6rem; border-radius: 6px; display: inline-block;`;
+          style = `font-weight: bold; background: rgba(16, 185, 129, 0.1); border: 2px solid var(--success); padding: 0.2rem 0.6rem; border-radius: 6px; display: inline-block;`;
           innerHTML = `✓ ${correctVal}`;
         } else {
-          style = `color: #fff; font-weight: bold; background: rgba(239, 68, 68, 0.1); border: 2px solid var(--error); padding: 0.2rem 0.6rem; border-radius: 6px; display: inline-block;`;
+          style = `font-weight: bold; background: rgba(239, 68, 68, 0.1); border: 2px solid var(--error); padding: 0.2rem 0.6rem; border-radius: 6px; display: inline-block;`;
           innerHTML = `✗ ${ans ? ans : '?'} (👉 ${correctVal})`;
         }
       }
@@ -2218,7 +2293,7 @@ function renderReadingLeftPane() {
     }
 
     return `
-      <div class="drag-text-box" style="padding: 1.8rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-light); border-radius: 8px; line-height: 1.8; font-size: 0.98rem; text-align: justify; color: #cbd5e1;">
+      <div class="drag-text-box" style="padding: 1.8rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-light); border-radius: 8px; line-height: 1.8; font-size: 0.98rem; text-align: justify;">
         ${parsedHTML}
       </div>
     `;
@@ -2235,7 +2310,7 @@ function renderReadingLeftPane() {
       return `
         <div style="padding: 3rem; text-align: center; color: var(--text-dim); background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px;">
           <div style="font-size: 3rem; margin-bottom: 1rem;">📝</div>
-          <h4 style="color: #fff; margin-bottom: 0.5rem;">Chưa có nội dung Sprachbausteine Teil 2</h4>
+          <h4 style="margin-bottom: 0.5rem;">Chưa có nội dung Sprachbausteine Teil 2</h4>
           <p>Vui lòng vào <b>Trang Quản Trị (Admin)</b> → chọn đề này → Tab <b>"Sprachbausteine Teil 2"</b> để nhập nội dung bài đọc và ngân hàng từ vựng.</p>
         </div>
       `;
@@ -2248,7 +2323,7 @@ function renderReadingLeftPane() {
       const ans = userAnswers.teil5[i];
       const correctVal = correctAns ? correctAns[i] : '';
       
-      let style = ans ? `color: #000; font-weight: bold; background: var(--accent-cyan); padding: 0.1rem 0.5rem; border-radius: 4px; cursor: pointer; display: inline-block; box-shadow: 0 0 8px rgba(0, 210, 255, 0.4);` : `color: var(--accent-cyan); font-weight: bold; border-bottom: 2px dashed var(--accent-cyan); padding: 0 0.5rem; cursor: pointer; display: inline-block;`;
+      let style = ans ? `font-weight: bold; background: var(--accent-cyan); padding: 0.1rem 0.5rem; border-radius: 4px; cursor: pointer; display: inline-block; box-shadow: 0 0 8px rgba(0, 210, 255, 0.4);` : `color: var(--accent-cyan); font-weight: bold; border-bottom: 2px dashed var(--accent-cyan); padding: 0 0.5rem; cursor: pointer; display: inline-block;`;
       let innerHTML = `[ ${ans ? ans : '______'} ]`;
       
       if (readingFlowState === 'results') {
@@ -2264,10 +2339,10 @@ function renderReadingLeftPane() {
         
         const isRight = ans && correctWord && ans.trim().toUpperCase() === correctWord;
         if (isRight) {
-          style = `color: #fff; font-weight: bold; background: rgba(16, 185, 129, 0.1); border: 2px solid var(--success); padding: 0.2rem 0.6rem; border-radius: 6px; display: inline-block;`;
+          style = `font-weight: bold; background: rgba(16, 185, 129, 0.1); border: 2px solid var(--success); padding: 0.2rem 0.6rem; border-radius: 6px; display: inline-block;`;
           innerHTML = `✓ ${correctVal}. ${correctWord}`;
         } else {
-          style = `color: #fff; font-weight: bold; background: rgba(239, 68, 68, 0.1); border: 2px solid var(--error); padding: 0.2rem 0.6rem; border-radius: 6px; display: inline-block;`;
+          style = `font-weight: bold; background: rgba(239, 68, 68, 0.1); border: 2px solid var(--error); padding: 0.2rem 0.6rem; border-radius: 6px; display: inline-block;`;
           innerHTML = `✗ ${ans ? ans : '?'} (👉 ${correctVal}. ${correctWord})`;
         }
       }
@@ -2280,7 +2355,7 @@ function renderReadingLeftPane() {
     }
 
     return `
-      <div class="drag-text-box" style="padding: 1.8rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-light); border-radius: 8px; line-height: 1.8; font-size: 0.98rem; text-align: justify; color: #cbd5e1;">
+      <div class="drag-text-box" style="padding: 1.8rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-light); border-radius: 8px; line-height: 1.8; font-size: 0.98rem; text-align: justify;">
         ${parsedHTML}
       </div>
     `;
@@ -2335,7 +2410,7 @@ function renderReadingRightPane() {
       const qId = m.id || m.num;
       return `
       <div style="margin-bottom: 1.5rem; background: rgba(255,255,255,0.01); border: 1px solid var(--border-light); padding: 1.2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
-        <div style="font-weight: 800; margin-bottom: 1rem; color: #fff; font-size: 1.1rem; line-height: 1.5; border-left: 3px solid var(--accent-cyan); padding-left: 0.8rem;">${qId}. ${m.question || m.q}</div>
+        <div style="font-weight: 800; margin-bottom: 1rem; font-size: 1.1rem; line-height: 1.5; border-left: 3px solid var(--accent-cyan); padding-left: 0.8rem;">${qId}. ${m.question || m.q}</div>
         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
           ${['A', 'B', 'C'].map(letter => {
             const optVal = m.options ? m.options[letter] : '';
@@ -2376,7 +2451,7 @@ function renderReadingRightPane() {
       { id: 20, desc: "Ein Hausbesitzer sucht eine professionelle Reinigungsfirma." }
     ];
     return `
-      <div style="font-weight: 800; color: var(--accent-cyan); font-size: 0.9rem; margin-bottom: 1rem; text-transform: uppercase;">SITUATIONEN (11-20)</div>
+      <div style="font-weight: 800; color: var(--accent-cyan); font-size: 1rem; margin-bottom: 1rem; text-transform: uppercase;">SITUATIONEN (11-20)</div>
       <div style="display: flex; flex-direction: column; gap: 0.8rem;">
         ${situations.map(s => {
           const uAns = userAnswers.teil3[s.id] || '';
@@ -2386,8 +2461,8 @@ function renderReadingRightPane() {
           let bgStyle = 'rgba(0,0,0,0.15)';
           let fontColor = 'var(--accent-cyan)';
           let textHTML = uAns || '';
-          let dropWidth = '45px';
-          let dropHeight = '45px';
+          let dropWidth = '48px';
+          let dropHeight = '48px';
           
           if (readingFlowState === 'results') {
             const isRight = uAns && correctVal && uAns.trim().toUpperCase() === correctVal.trim().toUpperCase();
@@ -2397,29 +2472,29 @@ function renderReadingRightPane() {
               borderStyle = '2px solid var(--success)';
               bgStyle = 'rgba(16, 185, 129, 0.1)';
               fontColor = 'var(--success)';
-              textHTML = `<span style="padding: 0.2rem 0.5rem; display: block; font-weight: 800;">✓ ${correctVal}</span>`;
+              textHTML = `<span style="padding: 0.2rem 0.6rem; display: block; font-weight: 800; font-size: 1.1rem;">✓ ${correctVal}</span>`;
             } else {
               borderStyle = '2px solid var(--error)';
               bgStyle = 'rgba(239, 68, 68, 0.1)';
               fontColor = 'var(--error)';
-              textHTML = `<div style="padding: 0.3rem 0.6rem; text-align: center; font-size: 0.9rem;">
+              textHTML = `<div style="padding: 0.3rem 0.6rem; text-align: center; font-size: 0.95rem;">
                             <span style="text-decoration: line-through; display: block; font-weight: 800;">${uAns || 'Keine Antwort'}</span>
-                            <span style="color: var(--success); font-weight: 800; display: block; margin-top: 0.2rem; font-size: 0.95rem;">👉 ${correctVal}</span>
+                            <span style="color: var(--success); font-weight: 800; display: block; margin-top: 0.2rem; font-size: 1rem;">👉 ${correctVal}</span>
                           </div>`;
             }
           }
 
           return `
-            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-light); padding: 1.2rem 1.5rem; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; margin-bottom: 0.8rem; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: all 0.3s;" onmouseover="this.style.borderColor='rgba(0, 242, 254, 0.4)'" onmouseout="this.style.borderColor='var(--border-light)'">
-              <div style="font-size: 1.08rem; line-height: 1.7; color: #f8fafc; flex-grow: 1; font-weight: 500;">
-                <b style="color: var(--accent-cyan); font-weight: 800; font-size: 1.15rem; margin-right: 0.5rem;">${s.id}.</b> ${s.desc}
+            <div class="teil3-situation-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-light); padding: 1.2rem 1.5rem; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; margin-bottom: 0.8rem; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: all 0.3s;">
+              <div style="font-size: 1.15rem; line-height: 1.7; flex-grow: 1; font-weight: 500;">
+                <b style="color: var(--accent-cyan); font-weight: 800; font-size: 1.2rem; margin-right: 0.5rem;">${s.id}.</b> ${s.desc}
               </div>
               <div style="display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0;">
                 <div class="drag-zone drop-target" data-teil="teil3" data-id="${s.id}" 
-                  style="min-width: ${dropWidth}; min-height: ${dropHeight}; border: ${borderStyle}; background: ${bgStyle}; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: ${fontColor}; font-size: 1.2rem; cursor: pointer; text-transform: uppercase;">
+                  style="min-width: ${dropWidth}; min-height: ${dropHeight}; border: ${borderStyle}; background: ${bgStyle}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: ${fontColor}; font-size: 1.25rem; cursor: pointer; text-transform: uppercase;">
                   ${textHTML}
                 </div>
-                ${uAns && readingFlowState !== 'results' ? `<button class="btn btn-secondary" style="padding: 0.3rem 0.6rem; min-width: auto; border-radius: 4px; font-size: 0.8rem;" onclick="clearTeil3Answer(${s.id})">x</button>` : ''}
+                ${uAns && readingFlowState !== 'results' ? `<button class="btn btn-secondary" style="padding: 0.3rem 0.6rem; min-width: auto; border-radius: 6px; font-size: 0.9rem; font-weight: bold;" onclick="clearTeil3Answer(${s.id})">✕</button>` : ''}
               </div>
             </div>
           `;
@@ -2593,6 +2668,15 @@ window.clearTeil1Answer = function(qId) {
 }
 function clearTeil3Answer(qId) {
   userAnswers.teil3[qId] = '';
+  renderReading();
+}
+
+function selectTeil3Letter(sId, letter) {
+  if ((userAnswers.teil3[sId] || '').toUpperCase() === letter.toUpperCase()) {
+    userAnswers.teil3[sId] = '';
+  } else {
+    userAnswers.teil3[sId] = letter.toUpperCase();
+  }
   renderReading();
 }
 
@@ -2858,6 +2942,35 @@ function calculateProgress() {
 function submitTestAnswers() {
   if (confirm("Möchten Sie Ihre Antworten wirklich abgeben? (Bạn có chắc chắn muốn nộp bài?)")) {
     readingFlowState = 'results';
+    
+    // Thu thập toàn bộ câu trả lời phẳng từ userAnswers
+    const flatAnswers = {};
+    if (typeof userAnswers === 'object') {
+      if (userAnswers.teil1) Object.assign(flatAnswers, userAnswers.teil1);
+      if (userAnswers.teil2) Object.assign(flatAnswers, userAnswers.teil2);
+      if (userAnswers.teil3) Object.assign(flatAnswers, userAnswers.teil3);
+      if (userAnswers.teil4) Object.assign(flatAnswers, userAnswers.teil4);
+      if (userAnswers.teil5) Object.assign(flatAnswers, userAnswers.teil5);
+      Object.keys(userAnswers).forEach(k => {
+        if (!isNaN(k)) flatAnswers[k] = userAnswers[k];
+      });
+    }
+
+    const testName = (typeof selectedReadingTest === 'string' && selectedReadingTest.trim() !== '') ? selectedReadingTest : 'Đề 1 - Ausstellung';
+    
+    // Lấy đáp án chuẩn từ db
+    let realTest = null;
+    if (db.reading) realTest = db.reading.find(t => t.name === testName);
+    const correctAnsMap = (realTest && (realTest.correctAnswers || realTest.answers)) || {};
+
+    let score = 0;
+    for (let i = 1; i <= 40; i++) {
+      const u = flatAnswers[i];
+      const c = correctAnsMap[i] || correctAnsMap[`q${i}`];
+      if (u && c && u.toString().trim().toUpperCase() === c.toString().trim().toUpperCase()) score++;
+    }
+
+    recordTestResult('Lesen', testName, score, 40, flatAnswers, correctAnsMap);
     renderReading();
   }
 }
@@ -8138,3 +8251,515 @@ window.autoFixUmlautsCurrentTest = function(type = 'reading') {
     alert('Không tìm thấy chữ nào cần sửa trong đề này!');
   }
 };
+
+// =========================================================
+// GOOGLE AUTH & USER PROFILE MANAGEMENT
+// =========================================================
+let currentUser = JSON.parse(localStorage.getItem('maternopro_user')) || null;
+
+function updateHeaderAuthUI() {
+  const authBtn = document.getElementById('auth-header-btn');
+  if (!authBtn) return;
+  
+  if (currentUser) {
+    authBtn.innerHTML = `
+      <img src="${currentUser.avatar || 'logo.jpg'}" style="width:24px; height:24px; border-radius:50%; object-fit:cover;">
+      <span>${currentUser.name || 'Hồ sơ'}</span>
+    `;
+    authBtn.onclick = openProfileModal;
+  } else {
+    authBtn.innerHTML = `🔐 Đăng nhập`;
+    authBtn.onclick = openLoginModal;
+  }
+}
+
+function handleAuthHeaderClick() {
+  if (currentUser) {
+    openProfileModal();
+  } else {
+    openLoginModal();
+  }
+}
+
+function openLoginModal() {
+  const modal = document.getElementById('login-modal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeLoginModal() {
+  const modal = document.getElementById('login-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+function openGooglePickerModal() {
+  closeLoginModal();
+  const modal = document.getElementById('google-picker-modal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeGooglePickerModal() {
+  const modal = document.getElementById('google-picker-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+function selectGoogleAccount(name, email, avatar) {
+  closeGooglePickerModal();
+  currentUser = {
+    name: name,
+    email: email,
+    avatar: avatar || 'logo.jpg',
+    gender: 'Nam',
+    dob: '2001-05-15',
+    examDate: '2026-08-30'
+  };
+  localStorage.setItem('maternopro_user', JSON.stringify(currentUser));
+  updateHeaderAuthUI();
+  alert(`🎉 Đăng nhập thành công với tài khoản Google: ${name} (${email})!`);
+}
+
+function customGoogleAccountInput() {
+  const email = prompt("Nhập địa chỉ Email Google của bạn:");
+  if (email && email.includes('@')) {
+    const name = email.split('@')[0];
+    selectGoogleAccount(name, email, `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`);
+  }
+}
+
+let isRegisteringMode = false;
+
+function toggleRegisterMode(e) {
+  if (e) e.preventDefault();
+  isRegisteringMode = !isRegisteringMode;
+  
+  const title = document.getElementById('auth-modal-title');
+  const subtitle = document.getElementById('auth-modal-subtitle');
+  const nameField = document.getElementById('reg-name-field');
+  const submitBtn = document.getElementById('auth-submit-btn');
+  const switchPrompt = document.getElementById('auth-switch-prompt');
+  const switchLink = document.getElementById('auth-switch-link');
+  
+  if (isRegisteringMode) {
+    if (title) title.textContent = "ĐĂNG KÝ";
+    if (subtitle) subtitle.textContent = "Tạo tài khoản mới của bạn";
+    if (nameField) nameField.style.display = 'block';
+    if (submitBtn) submitBtn.textContent = "ĐĂNG KÝ NGAY";
+    if (switchPrompt) switchPrompt.textContent = "Đã có tài khoản? ";
+    if (switchLink) switchLink.textContent = "Đăng nhập ngay";
+  } else {
+    if (title) title.textContent = "CHÀO MỪNG";
+    if (subtitle) subtitle.textContent = "Đăng nhập tài khoản của bạn";
+    if (nameField) nameField.style.display = 'none';
+    if (submitBtn) submitBtn.textContent = "ĐĂNG NHẬP";
+    if (switchPrompt) switchPrompt.textContent = "Chưa có tài khoản? ";
+    if (switchLink) switchLink.textContent = "Đăng ký ngay";
+  }
+}
+
+function handleManualLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value;
+  const nameInput = document.getElementById('login-name');
+  const name = (isRegisteringMode && nameInput && nameInput.value.trim()) ? nameInput.value.trim() : (email.split('@')[0] || 'Học viên MaterNoPro');
+  
+  selectGoogleAccount(name, email, `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`);
+}
+
+function openProfileModal() {
+  if (!currentUser) {
+    openLoginModal();
+    return;
+  }
+  const modal = document.getElementById('profile-modal');
+  if (modal) {
+    document.getElementById('profile-name').value = currentUser.name || '';
+    document.getElementById('profile-gender').value = currentUser.gender || 'Chưa chọn';
+    document.getElementById('profile-dob').value = currentUser.dob || '';
+    document.getElementById('profile-exam-date').value = currentUser.examDate || '';
+    document.getElementById('profile-avatar-img').src = currentUser.avatar || 'logo.jpg';
+    modal.style.display = 'flex';
+  }
+}
+
+function closeProfileModal() {
+  const modal = document.getElementById('profile-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+function saveUserProfile(e) {
+  e.preventDefault();
+  if (!currentUser) currentUser = {};
+  currentUser.name = document.getElementById('profile-name').value;
+  currentUser.gender = document.getElementById('profile-gender').value;
+  currentUser.dob = document.getElementById('profile-dob').value;
+  currentUser.examDate = document.getElementById('profile-exam-date').value;
+  localStorage.setItem('maternopro_user', JSON.stringify(currentUser));
+  updateHeaderAuthUI();
+  closeProfileModal();
+  alert('✅ Đã lưu thông tin Hồ sơ cá nhân thành công!');
+}
+
+function changeUserAvatarPrompt() {
+  const newUrl = prompt("Nhập link URL ảnh đại diện Avatar mới của bạn:");
+  if (newUrl) {
+    currentUser.avatar = newUrl;
+    document.getElementById('profile-avatar-img').src = newUrl;
+    localStorage.setItem('maternopro_user', JSON.stringify(currentUser));
+    updateHeaderAuthUI();
+  }
+}
+
+function logoutUser() {
+  if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+    currentUser = null;
+    localStorage.removeItem('maternopro_user');
+    updateHeaderAuthUI();
+    closeProfileModal();
+    alert('Đã đăng xuất tài khoản thành công.');
+  }
+}
+
+// =========================================================
+// REAL-TIME ONLINE VISITORS SIMULATION IN ADMIN
+// =========================================================
+let liveOnlineCount = 14;
+
+function initLiveMetrics() {
+  const onlineEl = document.getElementById('live-online-count');
+  if (!onlineEl) return;
+  
+  setInterval(() => {
+    const delta = Math.floor(Math.random() * 3) - 1;
+    liveOnlineCount = Math.max(9, Math.min(24, liveOnlineCount + delta));
+    onlineEl.textContent = liveOnlineCount;
+    
+    const chatBadge = document.getElementById('chat-online-badge');
+    if (chatBadge) chatBadge.textContent = `${Math.max(5, Math.floor(liveOnlineCount / 2))} online`;
+  }, 4000);
+}
+
+// =========================================================
+// COMMUNITY CHAT ROOM (KÊNH THẢO LUẬN KHÔNG GIỚI HẠN NGÔN TỪ)
+// =========================================================
+let chatAnonymousMode = false; // Mặc định dùng tên thật nếu đã đăng nhập
+
+let defaultCommunityMessages = [
+  { id: 1, sender: "Ẩn danh", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Anon1", text: "mình thi nói hôm 30 nè ae", time: "23:21", isSelf: false },
+  { id: 2, sender: "Ẩn danh", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Anon2", text: "bên bla t có hỏi bà làm bên đó thì bảo tầm cuối t8 tổ chức thi, nma đến giờ vẫn ch thấy gì haha", time: "07:59", isSelf: false },
+  { id: 3, sender: "Minh Anh Nguyen", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=MinhAnh", text: "xin chào ae", time: "20:44", isSelf: true },
+  { id: 4, sender: "Minh Anh Nguyen", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=MinhAnh", text: "bla kiểu j chẳng thi cử j nhỉ", time: "20:44", isSelf: true },
+  { id: 5, sender: "Minh Anh Nguyen", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=MinhAnh", text: "học sinh tuyển ầm ầm", time: "20:44", isSelf: true }
+];
+
+let communityMessages = JSON.parse(localStorage.getItem('maternopro_chat_messages')) || defaultCommunityMessages;
+
+function toggleChatAnonymousMode() {
+  chatAnonymousMode = !chatAnonymousMode;
+  const btn = document.getElementById('chat-anon-toggle-btn');
+  if (btn) {
+    btn.innerHTML = chatAnonymousMode ? '🕵️‍♂️ Chế độ Ẩn Danh: BẬT' : '👤 Chế độ Tên Thật: BẬT';
+    btn.style.color = chatAnonymousMode ? '#10b981' : '#3b82f6';
+  }
+}
+
+function renderChatMessages() {
+  const container = document.getElementById('chat-messages-container');
+  if (!container) return;
+  
+  container.innerHTML = communityMessages.map(msg => {
+    const isSelfMsg = msg.isSelf || (currentUser && msg.sender === currentUser.name);
+    return `
+      <div style="display: flex; gap: 0.8rem; max-width: 82%; ${isSelfMsg ? 'align-self: flex-end; flex-direction: row-reverse;' : 'align-self: flex-start;'}">
+        <img src="${msg.avatar}" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1.5px solid var(--border-light); box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+        <div>
+          <div style="font-size: 0.78rem; color: var(--text-dim); margin-bottom: 0.25rem; ${isSelfMsg ? 'text-align: right;' : ''}">
+            <b style="color: ${isSelfMsg ? '#10b981' : 'var(--accent-cyan)'};">${msg.sender}</b> <span style="font-size: 0.7rem; opacity: 0.7;">[B2] • ${msg.time}</span>
+          </div>
+          <div style="padding: 0.85rem 1.2rem; border-radius: 18px; font-size: 0.98rem; line-height: 1.55; ${isSelfMsg ? 'background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);' : 'background: rgba(255, 255, 255, 0.08); color: var(--text-main); border-bottom-left-radius: 4px; border: 1px solid var(--border-light);'}">
+            ${msg.text}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  container.scrollTop = container.scrollHeight;
+}
+
+function sendChatMessage(e) {
+  e.preventDefault();
+  const input = document.getElementById('chat-input-text');
+  if (!input || !input.value.trim()) return;
+  
+  const now = new Date();
+  const timeStr = `${now.getHours()}:${now.getMinutes() < 10 ? '0' : ''}${now.getMinutes()}`;
+  
+  let senderName = "Ẩn danh";
+  let avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`;
+  
+  if (!chatAnonymousMode && currentUser && currentUser.name) {
+    senderName = currentUser.name;
+    avatarUrl = currentUser.avatar || avatarUrl;
+  }
+  
+  const newMsg = {
+    id: Date.now(),
+    sender: senderName,
+    avatar: avatarUrl,
+    text: input.value.trim(),
+    time: timeStr,
+    isSelf: true
+  };
+
+  communityMessages.push(newMsg);
+  localStorage.setItem('maternopro_chat_messages', JSON.stringify(communityMessages));
+  
+  input.value = '';
+  renderChatMessages();
+}
+
+function insertChatEmoji(emoji) {
+  const input = document.getElementById('chat-input-text');
+  if (input) {
+    input.value += emoji;
+    input.focus();
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  updateHeaderAuthUI();
+  initLiveMetrics();
+  renderChatMessages();
+});
+
+setTimeout(() => {
+  updateHeaderAuthUI();
+  initLiveMetrics();
+  renderChatMessages();
+}, 200);
+
+// =========================================================
+// TEST RESULTS HISTORY & ANSWER KEY REVIEW SYSTEM
+// =========================================================
+function recordTestResult(type, testName, score, maxScore, userAns, correctAns) {
+  let history = JSON.parse(localStorage.getItem('maternopro_test_history')) || [];
+  
+  const now = new Date();
+  const dateStr = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()} ${now.getHours()}:${now.getMinutes() < 10 ? '0' : ''}${now.getMinutes()}`;
+  
+  const isPass = score >= Math.round(maxScore * 0.6);
+  
+  const newRecord = {
+    id: Date.now(),
+    userName: currentUser ? currentUser.name : "Học viên",
+    userEmail: currentUser ? currentUser.email : "guest",
+    type: type,
+    testName: testName,
+    score: score,
+    maxScore: maxScore,
+    percentage: Math.round((score / maxScore) * 100),
+    grade: isPass ? "ĐẠT B2 (PASS)" : "CHƯA ĐẠT (FAIL)",
+    date: dateStr,
+    userAns: userAns ? JSON.parse(JSON.stringify(userAns)) : {},
+    correctAns: correctAns ? JSON.parse(JSON.stringify(correctAns)) : {}
+  };
+  
+  history.unshift(newRecord);
+  localStorage.setItem('maternopro_test_history', JSON.stringify(history));
+}
+
+let activeHistoryFilter = 'ALL';
+
+function setHistoryFilter(filter) {
+  activeHistoryFilter = filter;
+  renderResultsHistoryView();
+}
+
+function renderResultsHistoryView() {
+  const container = document.getElementById('results-history-content');
+  if (!container) return;
+  
+  // CHỈ DÀNH CHO HỌC VIÊN ĐÃ ĐĂNG NHẬP / ĐĂNG KÝ
+  if (!currentUser) {
+    container.innerHTML = `
+      <div class="card" style="text-align: center; padding: 4rem 2rem; max-width: 600px; margin: 3rem auto; border: 2px dashed #f59e0b; background: rgba(245, 158, 11, 0.05); border-radius: 24px;">
+        <div style="font-size: 3.8rem; margin-bottom: 1rem;">🔒</div>
+        <h3 style="font-size: 1.6rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.8rem; text-transform: uppercase;">YÊU CẦU ĐĂNG NHẬP</h3>
+        <p style="color: var(--text-dim); font-size: 1rem; margin-bottom: 2rem; line-height: 1.6;">
+          Mục lưu trữ <b>Kết Quả & Dò Lại Đáp Án Bài Thi Đọc (Lesen) & Nghe (Hören)</b> chỉ dành riêng cho học viên đã <b>Đăng Nhập</b> hoặc <b>Đăng Ký Tài Khoản</b>!
+        </p>
+        <button onclick="openLoginModal()" class="btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 0.95rem 2.5rem; border-radius: 30px; font-weight: 900; font-size: 1rem; border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);">
+          🔐 ĐĂNG NHẬP / ĐĂNG KÝ NGAY
+        </button>
+      </div>
+    `;
+    return;
+  }
+  
+  let history = JSON.parse(localStorage.getItem('maternopro_test_history')) || [];
+  
+  if (history.length === 0) {
+    history = [
+      {
+        id: 101,
+        userName: currentUser.name,
+        userEmail: currentUser.email,
+        type: 'Lesen',
+        testName: 'Đề 1 - Ausstellung',
+        score: 26,
+        maxScore: 30,
+        percentage: 87,
+        grade: 'ĐẠT B2 (PASS)',
+        date: '21/07/2026 19:40',
+        userAns: { 1: 'C', 2: 'A', 3: 'B', 4: 'E', 5: 'D' },
+        correctAns: { 1: 'C', 2: 'A', 3: 'B', 4: 'E', 5: 'D' }
+      },
+      {
+        id: 102,
+        userName: currentUser.name,
+        userEmail: currentUser.email,
+        type: 'Hören',
+        testName: 'Đề 1 - Teil 1',
+        score: 16,
+        maxScore: 20,
+        percentage: 80,
+        grade: 'ĐẠT B2 (PASS)',
+        date: '21/07/2026 18:15',
+        userAns: { 41: 'Richtig', 42: 'Falsch', 43: 'Richtig' },
+        correctAns: { 41: 'Richtig', 42: 'Falsch', 43: 'Richtig' }
+      }
+    ];
+    localStorage.setItem('maternopro_test_history', JSON.stringify(history));
+  }
+  
+  let filtered = history;
+  if (activeHistoryFilter === 'LESEN') filtered = history.filter(h => h.type === 'Lesen');
+  if (activeHistoryFilter === 'HOEREN') filtered = history.filter(h => h.type === 'Hören');
+  
+  const totalTests = history.length;
+  const totalScoreSum = history.reduce((acc, h) => acc + h.percentage, 0);
+  const avgScore = totalTests > 0 ? Math.round(totalScoreSum / totalTests) : 0;
+  const passCount = history.filter(h => h.grade.includes('PASS')).length;
+  
+  container.innerHTML = `
+    <!-- Header user stats summary -->
+    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-light); border-radius: 20px; padding: 1.5rem 2rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <img src="${currentUser.avatar || 'logo.jpg'}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-cyan);">
+        <div>
+          <h3 style="margin: 0; font-size: 1.4rem; font-weight: 900; color: var(--text-main);">${currentUser.name}</h3>
+          <div style="font-size: 0.85rem; color: var(--text-dim); margin-top: 0.2rem;">${currentUser.email} • Học viên B2 VIP</div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+        <div>
+          <div style="font-size: 0.78rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Đã hoàn thành</div>
+          <div style="font-size: 1.5rem; font-weight: 900; color: #3b82f6;">${totalTests} bài thi</div>
+        </div>
+        <div>
+          <div style="font-size: 0.78rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Tỷ lệ Đạt B2</div>
+          <div style="font-size: 1.5rem; font-weight: 900; color: #10b981;">${passCount}/${totalTests} (${Math.round((passCount/Math.max(1,totalTests))*100)}%)</div>
+        </div>
+        <div>
+          <div style="font-size: 0.78rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Điểm trung bình</div>
+          <div style="font-size: 1.5rem; font-weight: 900; color: #f59e0b;">${avgScore}%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Buttons -->
+    <div style="display: flex; gap: 0.8rem; margin-bottom: 1.5rem;">
+      <button onclick="setHistoryFilter('ALL')" class="btn" style="padding: 0.5rem 1.2rem; border-radius: 20px; font-weight: 800; font-size: 0.85rem; ${activeHistoryFilter === 'ALL' ? 'background: #f59e0b; color: #ffffff;' : 'background: rgba(255,255,255,0.05); color: var(--text-dim); border: 1px solid var(--border-light);'}">Tất cả (${history.length})</button>
+      <button onclick="setHistoryFilter('LESEN')" class="btn" style="padding: 0.5rem 1.2rem; border-radius: 20px; font-weight: 800; font-size: 0.85rem; ${activeHistoryFilter === 'LESEN' ? 'background: #3b82f6; color: #ffffff;' : 'background: rgba(255,255,255,0.05); color: var(--text-dim); border: 1px solid var(--border-light);'}">📖 Đọc (Lesen)</button>
+      <button onclick="setHistoryFilter('HOEREN')" class="btn" style="padding: 0.5rem 1.2rem; border-radius: 20px; font-weight: 800; font-size: 0.85rem; ${activeHistoryFilter === 'HOEREN' ? 'background: #ec4899; color: #ffffff;' : 'background: rgba(255,255,255,0.05); color: var(--text-dim); border: 1px solid var(--border-light);'}">🎧 Nghe (Hören)</button>
+    </div>
+
+    <!-- History List Table -->
+    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-light); border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+      <table style="width: 100%; border-collapse: collapse; text-align: left;">
+        <thead>
+          <tr style="background: rgba(0,0,0,0.25); border-bottom: 1px solid var(--border-light);">
+            <th style="padding: 1rem 1.2rem; font-size: 0.85rem; text-transform: uppercase; color: var(--text-dim);">Loại thi</th>
+            <th style="padding: 1rem 1.2rem; font-size: 0.85rem; text-transform: uppercase; color: var(--text-dim);">Tên Đề Thi</th>
+            <th style="padding: 1rem 1.2rem; font-size: 0.85rem; text-transform: uppercase; color: var(--text-dim);">Ngày nộp</th>
+            <th style="padding: 1rem 1.2rem; font-size: 0.85rem; text-transform: uppercase; color: var(--text-dim);">Điểm số</th>
+            <th style="padding: 1rem 1.2rem; font-size: 0.85rem; text-transform: uppercase; color: var(--text-dim);">Kết quả</th>
+            <th style="padding: 1rem 1.2rem; font-size: 0.85rem; text-transform: uppercase; color: var(--text-dim); text-align: center;">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filtered.map(item => `
+            <tr style="border-bottom: 1px solid var(--border-light); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+              <td style="padding: 1rem 1.2rem; font-weight: 800; color: ${item.type === 'Lesen' ? '#3b82f6' : '#ec4899'};">
+                ${item.type === 'Lesen' ? '📖 Đọc' : '🎧 Nghe'}
+              </td>
+              <td style="padding: 1rem 1.2rem; font-weight: 700; color: var(--text-main);">${item.testName}</td>
+              <td style="padding: 1rem 1.2rem; font-size: 0.85rem; color: var(--text-dim);">${item.date}</td>
+              <td style="padding: 1rem 1.2rem; font-weight: 900; font-size: 1.05rem; color: var(--text-main);">
+                ${item.score}/${item.maxScore} <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-dim);">(${item.percentage}%)</span>
+              </td>
+              <td style="padding: 1rem 1.2rem;">
+                <span class="badge" style="padding: 0.3rem 0.8rem; border-radius: 12px; font-weight: 800; font-size: 0.8rem; ${item.grade.includes('PASS') ? 'background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4);' : 'background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4);'}">
+                  ${item.grade}
+                </span>
+              </td>
+              <td style="padding: 1rem 1.2rem; text-align: center;">
+                <button onclick="viewDetailedAnswerKey(${item.id})" class="btn" style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 0.45rem 1rem; border-radius: 14px; font-weight: 800; font-size: 0.82rem; cursor: pointer; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+                  👁️ Dò Đáp Án
+                </button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+let currentReviewTab = 'LV1';
+
+function switchReviewSubtab(tabKey, historyId) {
+  currentReviewTab = tabKey;
+  viewDetailedAnswerKey(historyId);
+}
+
+function viewDetailedAnswerKey(historyId) {
+  const history = JSON.parse(localStorage.getItem('maternopro_test_history')) || [];
+  const item = history.find(h => h.id === historyId);
+  if (!item) return;
+  
+  if (item.type === 'Lesen') {
+    selectedReadingTest = item.testName;
+    readingFlowState = 'results';
+    
+    // Nạp lại câu trả lời thực tế đã lưu của học viên vào userAnswers
+    userAnswers = {
+      teil1: {}, teil2: {}, teil3: {}, teil4: {}, teil5: {}
+    };
+    const u = item.userAns || {};
+    for (let i = 1; i <= 5; i++) if (u[i]) userAnswers.teil1[i] = u[i];
+    for (let i = 6; i <= 10; i++) if (u[i]) userAnswers.teil2[i] = u[i];
+    for (let i = 11; i <= 20; i++) if (u[i]) userAnswers.teil3[i] = u[i];
+    for (let i = 21; i <= 30; i++) if (u[i]) userAnswers.teil4[i] = u[i];
+    for (let i = 31; i <= 40; i++) if (u[i]) userAnswers.teil5[i] = u[i];
+
+    // Chuyển sang màn hình Đọc B2 và render giao diện kết quả chuẩn
+    switchView('reading');
+    renderReading();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else {
+    selectedListeningTest = item.testName;
+    listeningFlowState = 'results';
+    
+    userListeningAnswers = item.userAns || {};
+    
+    switchView('listening');
+    renderListening();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function closeAnswerReviewModal() {
+  const modal = document.getElementById('answer-review-modal');
+  if (modal) modal.style.display = 'none';
+}
