@@ -8339,7 +8339,80 @@ function closeGooglePickerModal() {
 function selectGoogleAccount(name, email, avatar) {
   closeGooglePickerModal();
   
-  // Try to load existing profile details from the accounts system first!
+  let accounts = JSON.parse(localStorage.getItem('maternopro_accounts')) || {};
+  
+  // Ensure default accounts always exist
+  let seeded = false;
+  if (!accounts['maternopro@gmail.com']) {
+    accounts['maternopro@gmail.com'] = {
+      password: 'Minhanh@09092006',
+      name: 'Mater Nopro',
+      createdAt: '2026-01-01T00:00:00Z',
+      isAdmin: true
+    };
+    seeded = true;
+  }
+  if (!accounts['minhanhf45@gmail.com']) {
+    accounts['minhanhf45@gmail.com'] = {
+      password: 'Minhanh@09092006',
+      name: 'Minh Anh Nguyen',
+      createdAt: '2026-01-01T00:00:00Z'
+    };
+    seeded = true;
+  }
+  if (!accounts['anhthyf45@gmail.com']) {
+    accounts['anhthyf45@gmail.com'] = {
+      password: 'Minhanh@09092006',
+      name: 'Anh thy Nguyễn',
+      createdAt: '2026-01-01T00:00:00Z'
+    };
+    seeded = true;
+  }
+  if (seeded) {
+    localStorage.setItem('maternopro_accounts', JSON.stringify(accounts));
+  }
+  
+  const storedAccount = accounts[email.toLowerCase()];
+  
+  openLoginModal();
+  
+  const emailEl = document.getElementById('login-email');
+  const nameEl = document.getElementById('login-name');
+  
+  if (emailEl) {
+    emailEl.value = email;
+  }
+  
+  if (storedAccount) {
+    // Account exists -> force Login mode
+    if (isRegisteringMode) {
+      toggleRegisterMode();
+    }
+    setTimeout(() => {
+      const passEl = document.getElementById('login-password');
+      if (passEl) passEl.focus();
+    }, 100);
+    alert(`🔑 Tài khoản ${email} đã được đăng ký. Vui lòng nhập mật khẩu để đăng nhập!`);
+  } else {
+    // Account does not exist -> force Register mode
+    if (!isRegisteringMode) {
+      toggleRegisterMode();
+    }
+    if (nameEl) {
+      nameEl.value = name;
+    }
+    setTimeout(() => {
+      const passEl = document.getElementById('login-password');
+      if (passEl) passEl.focus();
+    }, 100);
+    alert(`📝 Tài khoản ${email} chưa được đăng ký. Vui lòng đặt mật khẩu mới để tạo tài khoản!`);
+  }
+}
+
+function completeUserLogin(name, email, avatar) {
+  closeGooglePickerModal();
+  closeLoginModal();
+  
   let accounts = JSON.parse(localStorage.getItem('maternopro_accounts')) || {};
   const storedAccount = accounts[email.toLowerCase()];
   
@@ -8363,7 +8436,6 @@ function selectGoogleAccount(name, email, avatar) {
       localStorage.setItem('maternopro_accounts', JSON.stringify(accounts));
     }
   } else {
-    // New account (e.g. login from Google picker for the first time)
     currentUser = {
       name: name,
       email: email,
@@ -8372,18 +8444,6 @@ function selectGoogleAccount(name, email, avatar) {
       dob: '2001-05-15',
       examDate: '2026-08-30'
     };
-    
-    // Save to accounts system so it has profile details saved
-    accounts[email.toLowerCase()] = {
-      password: '', // passwordless Google sign-in account
-      name: name,
-      avatar: avatar || 'logo.jpg',
-      gender: 'Nam',
-      dob: '2001-05-15',
-      examDate: '2026-08-30',
-      createdAt: new Date().toISOString()
-    };
-    localStorage.setItem('maternopro_accounts', JSON.stringify(accounts));
   }
   
   localStorage.setItem('maternopro_user', JSON.stringify(currentUser));
@@ -8512,7 +8572,7 @@ function handleManualLogin(e) {
     localStorage.setItem('maternopro_accounts', JSON.stringify(accounts));
     
     alert('✅ Đăng ký thành công! Đang đăng nhập...');
-    selectGoogleAccount(name, email, `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`);
+    completeUserLogin(name, email, `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`);
     
   } else {
     // === ĐĂNG NHẬP ===
@@ -8530,7 +8590,7 @@ function handleManualLogin(e) {
     
     // Password correct - login
     const name = storedAccount.name || email.split('@')[0];
-    selectGoogleAccount(name, email, `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`);
+    completeUserLogin(name, email, `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`);
   }
 }
 
