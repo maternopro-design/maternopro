@@ -4447,7 +4447,7 @@ function switchAdminTab(tabId) {
   }
 }
 
-console.log("MaterNoPro App Loaded - Version 2.4 with Complete 50+ Writing Tasks Grid Flow");
+let currentUser = JSON.parse(localStorage.getItem('maternopro_user')) || null;
 
 const ADMIN_EMAIL = 'maternopro@gmail.com';
 const ADMIN_PASS = 'Minhanh@09092006';
@@ -8275,8 +8275,6 @@ window.autoFixUmlautsCurrentTest = function(type = 'reading') {
 // =========================================================
 // GOOGLE AUTH & USER PROFILE MANAGEMENT
 // =========================================================
-let currentUser = JSON.parse(localStorage.getItem('maternopro_user')) || null;
-
 function updateHeaderAuthUI() {
   const authBtn = document.getElementById('auth-header-btn');
   if (!authBtn) return;
@@ -8882,3 +8880,83 @@ function closeAnswerReviewModal() {
   const modal = document.getElementById('answer-review-modal');
   if (modal) modal.style.display = 'none';
 }
+
+function exportSystemBackup() {
+  try {
+    const backupData = {
+      db: JSON.parse(localStorage.getItem('maternopro_db')) || db,
+      history: JSON.parse(localStorage.getItem('maternopro_test_history')) || [],
+      user: JSON.parse(localStorage.getItem('maternopro_user')) || currentUser,
+      chat: JSON.parse(localStorage.getItem('maternopro_chat_messages')) || communityMessages
+    };
+    
+    const jsonStr = JSON.stringify(backupData, null, 2);
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `maternopro_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    alert("📥 Đã xuất tệp sao lưu (backup) thành công!");
+  } catch (err) {
+    alert("❌ Lỗi khi xuất dữ liệu: " + err.message);
+  }
+}
+
+function importSystemBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  if (!confirm("⚠️ CẢNH BÁO: Khi khôi phục, toàn bộ dữ liệu hiện tại trên trình duyệt này sẽ bị ghi đè bằng dữ liệu từ tệp sao lưu. Cô có chắc chắn muốn tiếp tục?")) {
+    event.target.value = '';
+    return;
+  }
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      
+      // Simple structure check
+      if (!data || (!data.db && !data.history)) {
+        throw new Error("Tệp sao lưu không đúng cấu trúc định dạng của MaterNoPro!");
+      }
+      
+      // Restore DB
+      if (data.db) {
+        localStorage.setItem('maternopro_db', JSON.stringify(data.db));
+      }
+      
+      // Restore history
+      if (data.history) {
+        localStorage.setItem('maternopro_test_history', JSON.stringify(data.history));
+      }
+      
+      // Restore user if present
+      if (data.user) {
+        localStorage.setItem('maternopro_user', JSON.stringify(data.user));
+      }
+      
+      // Restore chat if present
+      if (data.chat) {
+        localStorage.setItem('maternopro_chat_messages', JSON.stringify(data.chat));
+      }
+      
+      alert("✅ KHÔI PHỤC DỮ LIỆU THÀNH CÔNG! Hệ thống sẽ tự động tải lại trang sau 1 giây.");
+      setTimeout(() => {
+        location.reload();
+      }, 1000);
+      
+    } catch (err) {
+      alert("❌ Lỗi khi import tệp sao lưu: " + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+

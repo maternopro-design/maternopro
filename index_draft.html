@@ -606,6 +606,7 @@
           <button class="admin-tab" onclick="switchAdminTab('admin-speaking')" data-translate="admin-tab-speaking">Nói (Sprechen)</button>
           <button class="admin-tab" onclick="switchAdminTab('admin-grammar')" data-translate="admin-tab-grammar">Ngữ Pháp</button>
           <button class="admin-tab" onclick="switchAdminTab('admin-ai-assist')" style="background: rgba(0, 242, 254, 0.12); border: 1px solid rgba(0, 242, 254, 0.35); color: #00f2fe; font-weight: 800;">🤖 Trợ Lý AI</button>
+          <button class="admin-tab" onclick="switchAdminTab('admin-backup')" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); color: #10b981; font-weight: 800;">💾 Sao Lưu / Import</button>
         </div>
 
         <!-- Admin Contents -->
@@ -925,6 +926,49 @@
                   <button type="button" class="btn btn-primary" id="ai-apply-btn" disabled style="width:100%; border-radius: 10px; font-weight: 800; opacity: 0.5; height: 46px;" onclick="applyAISpread()">
                     Đồng Ý & Tự Động Lưu Vào Đề Thi
                   </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Backup & Restore Content Pane -->
+        <div id="admin-backup" class="admin-tab-content" style="display: none;">
+          <div class="card" style="border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(22, 22, 54, 0.5); padding: 2.2rem; border-radius: 24px;">
+            <h4 style="color: #10b981; font-weight: 900; font-size: 1.35rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 0.6rem;">
+              💾 SAO LƯU & PHỤC HỒI DỮ LIỆU (BACKUP & RESTORE)
+            </h4>
+            <p style="color: #cbd5e1; font-size: 0.95rem; margin-bottom: 1.8rem; line-height: 1.6;">
+              Hệ thống cho phép cô xuất toàn bộ cơ sở dữ liệu hiện tại (bao gồm các đề Đọc/Nghe tự thêm, từ vựng, ngữ pháp, lịch sử làm bài của học viên) thành file JSON để lưu trữ hoặc nhập sang máy tính khác siêu nhanh chóng.
+            </p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+              <!-- Export -->
+              <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 1.5rem; border-radius: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                  <h5 style="margin: 0 0 0.8rem 0; font-size: 1.1rem; color: #fff; font-weight: 800;">📥 Xuất Dữ Liệu (Backup)</h5>
+                  <p style="color: #94a3b8; font-size: 0.88rem; line-height: 1.5; margin: 0 0 1.5rem 0;">
+                    Tải file cấu hình JSON chứa toàn bộ dữ liệu từ trước tới nay về máy tính của cô.
+                  </p>
+                </div>
+                <button onclick="exportSystemBackup()" class="btn" style="width: 100%; padding: 0.85rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 12px; font-weight: 800; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);">
+                  📥 Tải Về File Backup (.json)
+                </button>
+              </div>
+
+              <!-- Import -->
+              <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 1.5rem; border-radius: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                  <h5 style="margin: 0 0 0.8rem 0; font-size: 1.1rem; color: #fff; font-weight: 800;">📤 Nhập Dữ Liệu (Import / Restore)</h5>
+                  <p style="color: #94a3b8; font-size: 0.88rem; line-height: 1.5; margin: 0 0 1.5rem 0;">
+                    Chọn file JSON backup từ máy tính để khôi phục hoặc thay thế toàn bộ dữ liệu hiện có.
+                  </p>
+                </div>
+                <div style="position: relative;">
+                  <button onclick="document.getElementById('backup-file-input').click()" class="btn" style="width: 100%; padding: 0.85rem; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; border-radius: 12px; font-weight: 800; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);">
+                    📤 Chọn File & Khôi Phục Dữ Liệu
+                  </button>
+                  <input type="file" id="backup-file-input" accept=".json" style="display: none;" onchange="importSystemBackup(event)">
                 </div>
               </div>
             </div>
