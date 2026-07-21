@@ -8302,6 +8302,22 @@ function handleAuthHeaderClick() {
 function openLoginModal() {
   const modal = document.getElementById('login-modal');
   if (modal) modal.style.display = 'flex';
+  
+  // Force clear all fields immediately + with delay to override Chrome autofill
+  function clearLoginFields() {
+    const emailEl = document.getElementById('login-email');
+    const passEl = document.getElementById('login-password');
+    const nameEl = document.getElementById('login-name');
+    const confirmPassEl = document.getElementById('login-confirm-password');
+    if (emailEl) emailEl.value = '';
+    if (passEl) passEl.value = '';
+    if (nameEl) nameEl.value = '';
+    if (confirmPassEl) confirmPassEl.value = '';
+  }
+  clearLoginFields();
+  setTimeout(clearLoginFields, 50);
+  setTimeout(clearLoginFields, 200);
+  setTimeout(clearLoginFields, 500);
 }
 
 function closeLoginModal() {
@@ -8352,6 +8368,7 @@ function toggleRegisterMode(e) {
   const title = document.getElementById('auth-modal-title');
   const subtitle = document.getElementById('auth-modal-subtitle');
   const nameField = document.getElementById('reg-name-field');
+  const confirmPassField = document.getElementById('reg-confirm-pass-field');
   const submitBtn = document.getElementById('auth-submit-btn');
   const switchPrompt = document.getElementById('auth-switch-prompt');
   const switchLink = document.getElementById('auth-switch-link');
@@ -8360,6 +8377,7 @@ function toggleRegisterMode(e) {
     if (title) title.textContent = "ĐĂNG KÝ";
     if (subtitle) subtitle.textContent = "Tạo tài khoản mới của bạn";
     if (nameField) nameField.style.display = 'block';
+    if (confirmPassField) confirmPassField.style.display = 'block';
     if (submitBtn) submitBtn.textContent = "ĐĂNG KÝ NGAY";
     if (switchPrompt) switchPrompt.textContent = "Đã có tài khoản? ";
     if (switchLink) switchLink.textContent = "Đăng nhập ngay";
@@ -8367,6 +8385,7 @@ function toggleRegisterMode(e) {
     if (title) title.textContent = "CHÀO MỪNG";
     if (subtitle) subtitle.textContent = "Đăng nhập tài khoản của bạn";
     if (nameField) nameField.style.display = 'none';
+    if (confirmPassField) confirmPassField.style.display = 'none';
     if (submitBtn) submitBtn.textContent = "ĐĂNG NHẬP";
     if (switchPrompt) switchPrompt.textContent = "Chưa có tài khoản? ";
     if (switchLink) switchLink.textContent = "Đăng ký ngay";
@@ -8375,11 +8394,104 @@ function toggleRegisterMode(e) {
 
 function handleManualLogin(e) {
   e.preventDefault();
-  const email = document.getElementById('login-email').value;
+  const emailEl = document.getElementById('login-email');
+  const passEl = document.getElementById('login-password');
+  const confirmPassEl = document.getElementById('login-confirm-password');
   const nameInput = document.getElementById('login-name');
-  const name = (isRegisteringMode && nameInput && nameInput.value.trim()) ? nameInput.value.trim() : (email.split('@')[0] || 'Học viên MaterNoPro');
   
-  selectGoogleAccount(name, email, `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`);
+  const email = (emailEl ? emailEl.value.trim() : '');
+  const password = (passEl ? passEl.value : '');
+  const confirmPassword = (confirmPassEl ? confirmPassEl.value : '');
+  
+  if (!email) {
+    alert('❌ Vui lòng nhập địa chỉ email!');
+    return;
+  }
+  if (!password) {
+    alert('❌ Vui lòng nhập mật khẩu!');
+    return;
+  }
+  
+  // Load stored accounts from localStorage
+  let accounts = JSON.parse(localStorage.getItem('maternopro_accounts')) || {};
+  
+  // Ensure default accounts always exist
+  let seeded = false;
+  if (!accounts['maternopro@gmail.com']) {
+    accounts['maternopro@gmail.com'] = {
+      password: 'Minhanh@09092006',
+      name: 'Mater Nopro',
+      createdAt: '2026-01-01T00:00:00Z',
+      isAdmin: true
+    };
+    seeded = true;
+  }
+  if (!accounts['minhanhf45@gmail.com']) {
+    accounts['minhanhf45@gmail.com'] = {
+      password: 'Minhanh@09092006',
+      name: 'Minh Anh Nguyen',
+      createdAt: '2026-01-01T00:00:00Z'
+    };
+    seeded = true;
+  }
+  if (!accounts['anhthyf45@gmail.com']) {
+    accounts['anhthyf45@gmail.com'] = {
+      password: 'Minhanh@09092006',
+      name: 'Anh thy Nguyễn',
+      createdAt: '2026-01-01T00:00:00Z'
+    };
+    seeded = true;
+  }
+  if (seeded) {
+    localStorage.setItem('maternopro_accounts', JSON.stringify(accounts));
+  }
+  
+  if (isRegisteringMode) {
+    // === ĐĂNG KÝ ===
+    if (accounts[email.toLowerCase()]) {
+      alert('❌ Email này đã được đăng ký! Hãy đăng nhập hoặc dùng email khác.');
+      return;
+    }
+    if (password.length < 6) {
+      alert('❌ Mật khẩu phải có ít nhất 6 ký tự!');
+      return;
+    }
+    if (password !== confirmPassword) {
+      alert('❌ Mật khẩu xác nhận không khớp! Vui lòng kiểm tra lại.');
+      return;
+    }
+    
+    const name = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : (email.split('@')[0] || 'Học viên MaterNoPro');
+    
+    // Save account
+    accounts[email.toLowerCase()] = {
+      password: password,
+      name: name,
+      createdAt: new Date().toISOString()
+    };
+    localStorage.setItem('maternopro_accounts', JSON.stringify(accounts));
+    
+    alert('✅ Đăng ký thành công! Đang đăng nhập...');
+    selectGoogleAccount(name, email, `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`);
+    
+  } else {
+    // === ĐĂNG NHẬP ===
+    const storedAccount = accounts[email.toLowerCase()];
+    
+    if (!storedAccount) {
+      alert('❌ Tài khoản không tồn tại! Hãy bấm "Đăng ký ngay" để tạo tài khoản mới.');
+      return;
+    }
+    
+    if (storedAccount.password !== password) {
+      alert('❌ Sai mật khẩu! Vui lòng nhập lại.');
+      return;
+    }
+    
+    // Password correct - login
+    const name = storedAccount.name || email.split('@')[0];
+    selectGoogleAccount(name, email, `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`);
+  }
 }
 
 function openProfileModal() {

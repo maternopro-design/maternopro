@@ -500,11 +500,11 @@
           <div style="text-align: left; display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.8rem;">
             <div class="form-group" style="margin: 0;">
               <label style="font-size: 0.85rem; font-weight: bold; color: var(--accent-cyan); display: block; margin-bottom: 0.4rem;">Tên tài khoản</label>
-              <input type="text" id="admin-login-user" placeholder="Tên đăng nhập..." style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 0.95rem;">
+              <input type="text" id="admin-login-user" autocomplete="off" placeholder="Tên đăng nhập..." style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 0.95rem;">
             </div>
             <div class="form-group" style="margin: 0;">
               <label style="font-size: 0.85rem; font-weight: bold; color: var(--accent-cyan); display: block; margin-bottom: 0.4rem;">Mật khẩu</label>
-              <input type="password" id="admin-login-pass" placeholder="Mật khẩu..." style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 0.95rem;">
+              <input type="text" id="admin-login-pass" autocomplete="off" placeholder="Mật khẩu..." style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 0.95rem; -webkit-text-security: disc; text-security: disc;">
             </div>
           </div>
 
@@ -1093,12 +1093,15 @@
       </div>
 
       <form id="auth-main-form" autocomplete="off" onsubmit="handleManualLogin(event)">
+        <!-- Hidden dummy inputs to trick Chrome autofill -->
+        <input type="text" name="fake_user" style="display:none;" tabindex="-1">
+        <input type="password" name="fake_pass" style="display:none;" tabindex="-1">
         
         <div id="reg-name-field" style="display: none; margin-bottom: 1.2rem;">
           <label style="display: block; font-weight: 800; font-size: 0.82rem; text-transform: uppercase; margin-bottom: 0.5rem; color: #e2e8f0;">HỌ VÀ TÊN</label>
           <div style="position: relative;">
             <div style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border-radius: 10px; background: #e0e7ff; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; z-index: 2;">👤</div>
-            <input type="text" id="login-name" placeholder="Nhập họ tên của bạn" style="width: 100%; padding: 0.9rem 1rem 0.9rem 3.6rem; border: 2px solid #cbd5e1; border-radius: 16px; font-size: 0.98rem; outline: none; font-weight: 700; background: #ffffff; color: #0f172a;">
+            <input type="text" id="login-name" autocomplete="off" placeholder="Nhập họ tên của bạn" style="width: 100%; padding: 0.9rem 1rem 0.9rem 3.6rem; border: 2px solid #cbd5e1; border-radius: 16px; font-size: 0.98rem; outline: none; font-weight: 700; background: #ffffff; color: #0f172a;">
           </div>
         </div>
 
@@ -1106,7 +1109,7 @@
           <label style="display: block; font-weight: 800; font-size: 0.82rem; text-transform: uppercase; margin-bottom: 0.5rem; color: #e2e8f0;">ĐỊA CHỈ EMAIL</label>
           <div style="position: relative;">
             <div style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border-radius: 10px; background: #fce7f3; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; z-index: 2;">✉️</div>
-            <input type="email" id="login-email" autocomplete="off" placeholder="Maternopro@gmail.com" style="width: 100%; padding: 0.9rem 1rem 0.9rem 3.6rem; border: 2px solid #cbd5e1; border-radius: 16px; font-size: 0.98rem; outline: none; font-weight: 700; background: #ffffff; color: #0f172a;" required>
+            <input type="text" id="login-email" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" placeholder="Nhập email của bạn" style="width: 100%; padding: 0.9rem 1rem 0.9rem 3.6rem; border: 2px solid #cbd5e1; border-radius: 16px; font-size: 0.98rem; outline: none; font-weight: 700; background: #ffffff; color: #0f172a;" required>
           </div>
         </div>
 
@@ -1114,10 +1117,18 @@
           <label style="display: block; font-weight: 800; font-size: 0.82rem; text-transform: uppercase; margin-bottom: 0.5rem; color: #e2e8f0;">MẬT KHẨU</label>
           <div style="position: relative;">
             <div style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border-radius: 10px; background: #ffedd5; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; z-index: 2;">🔒</div>
-            <input type="text" id="login-password" autocomplete="off" placeholder="••••••••••••" style="width: 100%; padding: 0.9rem 1rem 0.9rem 3.6rem; border: 2px solid #cbd5e1; border-radius: 16px; font-size: 0.98rem; outline: none; font-weight: 700; background: #ffffff; color: #0f172a; -webkit-text-security: disc; text-security: disc;" required>
+            <input type="text" id="login-password" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" placeholder="Nhập mật khẩu" style="width: 100%; padding: 0.9rem 1rem 0.9rem 3.6rem; border: 2px solid #cbd5e1; border-radius: 16px; font-size: 0.98rem; outline: none; font-weight: 700; background: #ffffff; color: #0f172a; -webkit-text-security: disc; text-security: disc;" required>
           </div>
           <div style="text-align: right; margin-top: 0.5rem;">
             <a href="#" onclick="alert('Hãy dùng Đăng nhập bằng Google hoặc bấm Đăng ký ngay!')" style="font-size: 0.85rem; color: #cbd5e1; font-weight: 700; text-decoration: none;">Quên mật khẩu?</a>
+          </div>
+        </div>
+
+        <div id="reg-confirm-pass-field" style="display: none; margin-bottom: 1.5rem;">
+          <label style="display: block; font-weight: 800; font-size: 0.82rem; text-transform: uppercase; margin-bottom: 0.5rem; color: #e2e8f0;">XÁC NHẬN MẬT KHẨU</label>
+          <div style="position: relative;">
+            <div style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border-radius: 10px; background: #dcfce7; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; z-index: 2;">🔐</div>
+            <input type="text" id="login-confirm-password" autocomplete="off" placeholder="Nhập lại mật khẩu" style="width: 100%; padding: 0.9rem 1rem 0.9rem 3.6rem; border: 2px solid #cbd5e1; border-radius: 16px; font-size: 0.98rem; outline: none; font-weight: 700; background: #ffffff; color: #0f172a; -webkit-text-security: disc; text-security: disc;">
           </div>
         </div>
 
@@ -1275,6 +1286,6 @@
   <script src="reading_texts.js?v=115"></script>
   <script src="default_db.js"></script>
   <script src="config.js"></script>
-  <script src="app.js?v=206"></script>
+  <script src="app.js?v=208"></script>
 </body>
 </html>
