@@ -4535,9 +4535,9 @@ function renderAdmin() {
   const loginWrapper = document.getElementById('admin-login-wrapper');
   const mainWrapper = document.getElementById('admin-main-wrapper');
 
-  if (!isAdminLoggedIn && !isCurrentUserAdmin()) {
-    if (loginWrapper) loginWrapper.style.display = 'flex';
-    if (mainWrapper) mainWrapper.style.display = 'none';
+  if (!isCurrentUserAdmin()) {
+    alert("❌ Chỉ tài khoản Admin (maternopro@gmail.com) mới được phép truy cập trang này!");
+    switchView('dashboard');
     return;
   }
 
@@ -8289,6 +8289,21 @@ function updateHeaderAuthUI() {
     authBtn.innerHTML = `🔐 Đăng nhập`;
     authBtn.onclick = openLoginModal;
   }
+
+  // Toggle Admin Nav Button visibility based on current user's email
+  const adminNavBtn = document.querySelector('.nav-btn[onclick="switchView(\'admin\')"]');
+  if (adminNavBtn) {
+    if (isCurrentUserAdmin()) {
+      adminNavBtn.style.display = 'inline-block';
+    } else {
+      adminNavBtn.style.display = 'none';
+      // If currently on admin page, force redirect back to dashboard
+      const adminSection = document.getElementById('admin');
+      if (adminSection && adminSection.style.display === 'block') {
+        switchView('dashboard');
+      }
+    }
+  }
 }
 
 function handleAuthHeaderClick() {
@@ -8607,8 +8622,16 @@ function logoutUser() {
   if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
     currentUser = null;
     localStorage.removeItem('maternopro_user');
+    sessionStorage.removeItem('admin_logged');
     updateHeaderAuthUI();
     closeProfileModal();
+    
+    // Redirect to dashboard if they were viewing the admin section
+    const adminSection = document.getElementById('admin');
+    if (adminSection && adminSection.style.display === 'block') {
+      switchView('dashboard');
+    }
+    
     alert('Đã đăng xuất tài khoản thành công.');
   }
 }
