@@ -8495,6 +8495,14 @@ let defaultCommunityMessages = [
   { id: 5, sender: "Minh Anh Nguyen", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=MinhAnh", text: "học sinh tuyển ầm ầm", time: "20:44", isSelf: true }
 ];
 
+// Auto-reset chat messages daily
+const todayStr = new Date().toISOString().slice(0, 10);
+const lastResetDate = localStorage.getItem('maternopro_chat_last_reset_date');
+if (lastResetDate !== todayStr) {
+  localStorage.setItem('maternopro_chat_messages', JSON.stringify(defaultCommunityMessages));
+  localStorage.setItem('maternopro_chat_last_reset_date', todayStr);
+}
+
 let communityMessages = JSON.parse(localStorage.getItem('maternopro_chat_messages')) || defaultCommunityMessages;
 
 function toggleChatAnonymousMode() {
