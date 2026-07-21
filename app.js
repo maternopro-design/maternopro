@@ -8325,92 +8325,7 @@ function closeLoginModal() {
   if (modal) modal.style.display = 'none';
 }
 
-function openGooglePickerModal() {
-  closeLoginModal();
-  const modal = document.getElementById('google-picker-modal');
-  if (modal) modal.style.display = 'flex';
-}
-
-function closeGooglePickerModal() {
-  const modal = document.getElementById('google-picker-modal');
-  if (modal) modal.style.display = 'none';
-}
-
-function selectGoogleAccount(name, email, avatar) {
-  closeGooglePickerModal();
-  
-  let accounts = JSON.parse(localStorage.getItem('maternopro_accounts')) || {};
-  
-  // Ensure default accounts always exist
-  let seeded = false;
-  if (!accounts['maternopro@gmail.com']) {
-    accounts['maternopro@gmail.com'] = {
-      password: 'Minhanh@09092006',
-      name: 'Mater Nopro',
-      createdAt: '2026-01-01T00:00:00Z',
-      isAdmin: true
-    };
-    seeded = true;
-  }
-  if (!accounts['minhanhf45@gmail.com']) {
-    accounts['minhanhf45@gmail.com'] = {
-      password: 'Minhanh@09092006',
-      name: 'Minh Anh Nguyen',
-      createdAt: '2026-01-01T00:00:00Z'
-    };
-    seeded = true;
-  }
-  if (!accounts['anhthyf45@gmail.com']) {
-    accounts['anhthyf45@gmail.com'] = {
-      password: 'Minhanh@09092006',
-      name: 'Anh thy Nguyễn',
-      createdAt: '2026-01-01T00:00:00Z'
-    };
-    seeded = true;
-  }
-  if (seeded) {
-    localStorage.setItem('maternopro_accounts', JSON.stringify(accounts));
-  }
-  
-  const storedAccount = accounts[email.toLowerCase()];
-  
-  openLoginModal();
-  
-  const emailEl = document.getElementById('login-email');
-  const nameEl = document.getElementById('login-name');
-  
-  if (emailEl) {
-    emailEl.value = email;
-  }
-  
-  if (storedAccount) {
-    // Account exists -> force Login mode
-    if (isRegisteringMode) {
-      toggleRegisterMode();
-    }
-    setTimeout(() => {
-      const passEl = document.getElementById('login-password');
-      if (passEl) passEl.focus();
-    }, 100);
-    alert(`🔑 Tài khoản ${email} đã được đăng ký. Vui lòng nhập mật khẩu để đăng nhập!`);
-  } else {
-    // Account does not exist -> force Register mode
-    if (!isRegisteringMode) {
-      toggleRegisterMode();
-    }
-    if (nameEl) {
-      nameEl.value = name;
-    }
-    setTimeout(() => {
-      const passEl = document.getElementById('login-password');
-      if (passEl) passEl.focus();
-    }, 100);
-    alert(`📝 Tài khoản ${email} chưa được đăng ký. Vui lòng đặt mật khẩu mới để tạo tài khoản!`);
-  }
-}
-
 function completeUserLogin(name, email, avatar) {
-  closeGooglePickerModal();
   closeLoginModal();
   
   let accounts = JSON.parse(localStorage.getItem('maternopro_accounts')) || {};
@@ -8844,14 +8759,12 @@ document.addEventListener('DOMContentLoaded', () => {
   updateHeaderAuthUI();
   initLiveMetrics();
   renderChatMessages();
-  if (typeof initGoogleSignIn === 'function') initGoogleSignIn();
 });
 
 setTimeout(() => {
   updateHeaderAuthUI();
   initLiveMetrics();
   renderChatMessages();
-  if (typeof initGoogleSignIn === 'function') initGoogleSignIn();
 }, 200);
 
 // =========================================================
@@ -9197,66 +9110,5 @@ function importSystemBackup(event) {
   };
   reader.readAsText(file);
   event.target.value = '';
-}
-
-// === Official Google Sign-In SDK Integration ===
-const GOOGLE_CLIENT_ID = ''; // Enter Google Client ID here to enable real Google Sign-In
-
-function initGoogleSignIn() {
-  const client_id = localStorage.getItem('google_client_id') || GOOGLE_CLIENT_ID;
-  const container = document.getElementById("google-signin-button-container");
-  const mockBtn = document.getElementById("google-signin-mock-btn");
-  
-  if (!client_id) {
-    console.log("Google Client ID not configured. Using fallback Mock Google Picker.");
-    if (container) container.style.display = 'none';
-    if (mockBtn) mockBtn.style.display = 'flex';
-    return;
-  }
-
-  if (container) container.style.display = 'flex';
-  if (mockBtn) mockBtn.style.display = 'none';
-
-  if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
-    google.accounts.id.initialize({
-      client_id: client_id,
-      callback: handleGoogleSignInResponse
-    });
-    
-    google.accounts.id.renderButton(
-      container,
-      { 
-        theme: "filled_blue", 
-        size: "large", 
-        width: 320,
-        text: "continue_with",
-        shape: "pill"
-      }
-    );
-  } else {
-    // Retry if Google library is not loaded yet
-    setTimeout(initGoogleSignIn, 300);
-  }
-}
-
-function handleGoogleSignInResponse(response) {
-  try {
-    const base64Url = response.credential.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-
-    const payload = JSON.parse(jsonPayload);
-    const email = payload.email;
-    const name = payload.name;
-    const avatar = payload.picture;
-
-    // Securely complete login for Google verified email
-    completeUserLogin(name, email, avatar);
-  } catch (error) {
-    console.error("Failed to decode Google Sign-In token:", error);
-    alert("❌ Đăng nhập Google thất bại! Vui lòng thử lại.");
-  }
 }
 
