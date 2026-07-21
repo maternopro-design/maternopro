@@ -971,11 +971,11 @@ body.light-theme .test-subnavigation {
   background: none;
   border: none;
   color: var(--text-dim);
-  padding: 1rem 1.5rem;
-  font-size: 0.95rem;
-  font-weight: 700;
+  padding: 1.1rem 1.8rem;
+  font-size: 1.08rem;
+  font-weight: 800;
   cursor: pointer;
-  border-right: 1px solid rgba(255,255,255,0.05);
+  border-right: 1px solid rgba(255,255,255,0.08);
   white-space: nowrap;
   transition: all 0.2s ease;
 }
@@ -987,6 +987,7 @@ body.light-theme .test-subnav-btn {
 .test-subnav-btn.active {
   background: var(--accent-cyan);
   color: var(--bg-dark);
+  font-weight: 900;
 }
 
 .test-split-container {
@@ -1007,9 +1008,11 @@ body.light-theme .test-subnav-btn {
   backdrop-filter: blur(15px);
   border: 1px solid rgba(0, 242, 254, 0.2);
   border-radius: 20px;
-  padding: 2rem;
+  padding: 1.5rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   transition: all 0.3s ease;
+  max-height: calc(100vh - 230px) !important;
+  overflow-y: auto !important;
 }
 
 .test-right-pane {
@@ -1017,14 +1020,27 @@ body.light-theme .test-subnav-btn {
   backdrop-filter: blur(15px);
   border: 1px solid rgba(255, 0, 122, 0.2);
   border-radius: 20px;
-  padding: 2rem;
+  padding: 1.5rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   transition: all 0.3s ease;
-  position: sticky;
-  top: 90px;
-  max-height: calc(100vh - 180px);
-  overflow-y: auto;
-  align-self: start;
+  max-height: calc(100vh - 230px) !important;
+  overflow-y: auto !important;
+}
+
+.test-left-pane::-webkit-scrollbar,
+.test-right-pane::-webkit-scrollbar {
+  width: 6px;
+}
+
+.test-left-pane::-webkit-scrollbar-thumb,
+.test-right-pane::-webkit-scrollbar-thumb {
+  background: rgba(0, 242, 254, 0.3);
+  border-radius: 4px;
+}
+
+body.light-theme .test-left-pane::-webkit-scrollbar-thumb,
+body.light-theme .test-right-pane::-webkit-scrollbar-thumb {
+  background: #cbd5e1 !important;
 }
 
 .test-left-pane:hover {
@@ -1335,7 +1351,7 @@ body.light-theme .admin-table th, body.light-theme .admin-table td {
   box-shadow: 0 15px 45px rgba(0, 242, 254, 0.2) !important;
 }
 
-/* Các đoạn văn văn bản đề thi Đức (Đọc/Nghe/Nói/Viết) */
+/* Các đoạn văn văn bản đề thi Đức (Đọc/Nghe/Nói/Viết) - CHỮ TO RÕ NÉT CHỐNG MỎI MẮT */
 .drag-text-box p, 
 .drag-text-box div,
 .test-left-pane p,
@@ -1343,11 +1359,12 @@ body.light-theme .admin-table th, body.light-theme .admin-table td {
 .text-pane p,
 .writing-prompt-text,
 .speaking-prompt-text {
-  font-size: 1.15rem !important;
+  font-size: 1.22rem !important;
   line-height: 1.85 !important;
-  color: #f8fafc !important;
+  color: var(--text-main);
   text-align: justify !important;
   font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-weight: 500 !important;
 }
 
 /* Các ô thả đáp án (Drop Targets) - Style Neon Cyberpunk */
@@ -1627,6 +1644,42 @@ span.text-fill-blank.drop-target {
     gap: 0.5rem !important;
   }
 
+/* CSS Base cho Khung Quyên góp / Lưu ý */
+.donation-alert {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.18) 0%, rgba(251, 191, 36, 0.15) 100%);
+  border: 2px solid rgba(251, 191, 36, 0.45);
+  border-left: 8px solid #ffc107;
+  border-radius: 24px;
+  padding: 1.5rem;
+  text-align: left;
+  box-shadow: 0 20px 50px rgba(251, 191, 36, 0.2);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  transition: all 0.3s ease;
+}
+.alert-glow-bg {
+  background: rgba(255, 193, 7, 0.15);
+  filter: blur(40px);
+}
+.alert-title-box {
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+.alert-main-text {
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+.alert-highlight-text {
+  color: #ffd700;
+  border-bottom: 2px solid #ffd700;
+  padding-bottom: 2px;
+}
+.donation-alert-text {
+  color: #e2e8f0;
+}
+
   /* Sửa lỗi tràn khung Donate trên mobile */
   .donation-alert-wrapper {
     padding: 0 1rem !important;
@@ -1639,5 +1692,803 @@ span.text-fill-blank.drop-target {
     flex-basis: 100% !important;
   }
 }
+
+/* ================= ================= ================= */
+/* CHẾ ĐỘ SÁNG (LIGHT MODE) - ĐẲNG CẤP, RÕ NÉT, DỄ ĐỌC   */
+/* ================= ================= ================= */
+
+body.light-theme {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+body.light-theme header {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.light-theme .nav-btn {
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+body.light-theme .nav-btn:hover {
+  color: #4f46e5 !important;
+  background-color: rgba(79, 70, 229, 0.06) !important;
+}
+
+body.light-theme .nav-btn.active {
+  color: #4f46e5 !important;
+  background-color: rgba(79, 70, 229, 0.1) !important;
+  border-bottom: 2px solid #4f46e5 !important;
+  text-shadow: none !important;
+  font-weight: 700 !important;
+}
+
+body.light-theme .hero-title {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  text-shadow: none !important;
+}
+
+body.light-theme .hero-subtitle {
+  color: #475569 !important;
+  font-weight: 500 !important;
+}
+
+/* Nút bấm trong Light Mode */
+body.light-theme .btn-cyber {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3) !important;
+  text-shadow: none !important;
+}
+
+body.light-theme .btn-cyber:hover {
+  background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%) !important;
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45) !important;
+}
+
+body.light-theme .btn-donate-pulse {
+  background: linear-gradient(135deg, #e11d48 0%, #be185d 100%) !important;
+  color: #ffffff !important;
+  border: 2px solid #f43f5e !important;
+  box-shadow: 0 4px 16px rgba(225, 29, 72, 0.3) !important;
+  text-shadow: none !important;
+}
+
+body.light-theme .btn-donate-pulse:hover {
+  box-shadow: 0 6px 22px rgba(225, 29, 72, 0.45) !important;
+}
+
+/* Khung Quyên góp / Lưu ý quan trọng trong Light Mode */
+body.light-theme .donation-alert {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important;
+  border: 2px solid #f59e0b !important;
+  border-left: 8px solid #d97706 !important;
+  box-shadow: 0 10px 30px rgba(217, 119, 6, 0.12) !important;
+}
+
+body.light-theme .alert-glow-bg {
+  background: rgba(245, 158, 11, 0.12) !important;
+}
+
+body.light-theme .alert-title-box {
+  color: #b45309 !important;
+  text-shadow: none !important;
+}
+
+body.light-theme .alert-main-text {
+  color: #1e293b !important;
+  text-shadow: none !important;
+  font-weight: 600 !important;
+}
+
+body.light-theme .alert-highlight-text {
+  color: #d97706 !important;
+  border-bottom: 2px solid #d97706 !important;
+  font-weight: 700 !important;
+}
+
+body.light-theme .alert-footer-box {
+  border-top: 2px dashed rgba(217, 119, 6, 0.3) !important;
+}
+
+body.light-theme .donation-alert-text {
+  color: #334155 !important;
+}
+
+/* Các Card & Thẻ thông tin trong Light Mode */
+body.light-theme .card,
+body.light-theme .mode-card,
+body.light-theme .option-card,
+body.light-theme .vocab-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.light-theme .mode-title {
+  color: #0f172a !important;
+}
+
+body.light-theme .mode-description {
+  color: #475569 !important;
+}
+
+body.light-theme .mode-badge {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+/* Base style cho About, Teachers & Danksagung */
+.about-title {
+  color: #ffffff;
+}
+.about-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  color: #f8fafc;
+}
+.about-box li {
+  color: #cbd5e1;
+}
+.teachers-section-title {
+  color: #ffffff;
+}
+.teacher-name {
+  color: #ffffff;
+}
+.teacher-desc {
+  color: var(--text-dim);
+}
+
+.danksagung-card {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(251, 191, 36, 0.08) 100%);
+  border: 2px solid rgba(251, 191, 36, 0.45);
+  border-left: 8px solid #ffc107;
+  box-shadow: 0 20px 50px rgba(251, 191, 36, 0.2);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+}
+.danksagung-title {
+  color: #ffd700;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.25);
+}
+.danksagung-quote {
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+.quote-watermark {
+  color: rgba(255, 193, 7, 0.08);
+}
+
+/* Light Mode Overrides cho About, Teachers & Danksagung */
+body.light-theme .about-title {
+  color: #0f172a !important;
+}
+
+body.light-theme .about-box {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.light-theme .about-box p,
+body.light-theme .about-box li {
+  color: #334155 !important;
+}
+
+body.light-theme .teachers-section-title {
+  color: #0f172a !important;
+}
+
+body.light-theme .teacher-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06) !important;
+  color: #0f172a !important;
+}
+
+body.light-theme .teacher-name {
+  color: #0f172a !important;
+}
+
+body.light-theme .teacher-desc {
+  color: #475569 !important;
+}
+
+body.light-theme .teacher-phone {
+  color: #4f46e5 !important;
+  text-shadow: none !important;
+}
+
+body.light-theme .teacher-admin-tag {
+  background: #fef3c7 !important;
+  color: #b45309 !important;
+  border: 1px solid #fde68a !important;
+  box-shadow: none !important;
+}
+
+body.light-theme .teacher-avatar-img {
+  border-color: #ffffff !important;
+}
+
+body.light-theme .danksagung-card {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important;
+  border: 2px solid #f59e0b !important;
+  border-left: 8px solid #d97706 !important;
+  box-shadow: 0 12px 35px rgba(217, 119, 6, 0.14) !important;
+}
+
+body.light-theme .danksagung-title {
+  color: #b45309 !important;
+  text-shadow: none !important;
+}
+
+body.light-theme .danksagung-quote {
+  color: #1e293b !important;
+  text-shadow: none !important;
+  font-weight: 600 !important;
+}
+
+body.light-theme .quote-watermark {
+  color: rgba(217, 119, 6, 0.12) !important;
+}
+
+/* ========================================================= */
+/* LIGHT THEME OVERRIDES FOR TEST TAKING VIEWS (LESEN & HÖREN) */
+/* ========================================================= */
+
+/* 1. Thẻ danh sách đề thi (Reading & Listening Grid Cards) */
+body.light-theme .lesen-card,
+body.light-theme .hoeren-card {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+  animation: none !important;
+}
+
+body.light-theme .lesen-card:hover,
+body.light-theme .hoeren-card:hover {
+  border-color: #4f46e5 !important;
+  box-shadow: 0 14px 35px rgba(79, 70, 229, 0.15) !important;
+}
+
+body.light-theme .lesen-card-title,
+body.light-theme .hoeren-card-title {
+  color: #0f172a !important;
+}
+
+body.light-theme .lesen-card-time,
+body.light-theme .hoeren-card-time {
+  color: #475569 !important;
+}
+
+body.light-theme .lesen-card-tag {
+  background: #eff6ff !important;
+  border: 1px solid #bfdbfe !important;
+  color: #1d4ed8 !important;
+  box-shadow: none !important;
+}
+
+/* 2. Sub-navigation tabs (Leseverstehen Teil 1, 2, 3...) - BỎ HẲN PHÁT SÁNG CHÓI MẮT */
+body.light-theme .test-subnav-btn {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+body.light-theme .test-subnav-btn.active {
+  background: #1e293b !important;
+  color: #ffffff !important;
+  border-color: #1e293b !important;
+  box-shadow: none !important;
+}
+
+/* 3. Khung làm bài 2 bên (Left Pane & Right Pane) */
+body.light-theme .test-left-pane,
+body.light-theme .test-right-pane {
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
+  color: #0f172a !important;
+}
+
+/* 4. Khung văn bản & thẻ kéo thả (Drag Text Box & Elements) */
+body.light-theme .drag-text-box {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-left: 4px solid #64748b !important;
+  color: #1e293b !important;
+  box-shadow: none !important;
+}
+
+body.light-theme .drag-text-box div,
+body.light-theme .drag-text-box b {
+  color: #0f172a !important;
+}
+
+body.light-theme .drag-text-box p {
+  color: #334155 !important;
+}
+
+/* 5. Khung Situation 11-20 (Teil 3) & Khung câu hỏi Teil 2 */
+body.light-theme .test-right-pane > div > div,
+body.light-theme .test-right-pane div[style*="margin-bottom: 0.8rem"],
+body.light-theme .test-right-pane div[style*="margin-bottom: 1.5rem"],
+body.light-theme .teil3-situation-card {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: none !important;
+}
+
+body.light-theme .test-right-pane div[style*="font-size: 1.08rem"] {
+  color: #0f172a !important;
+}
+
+/* 6. Nút lựa chọn (Option Card & Wortbank Buttons) */
+body.light-theme .option-card {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  border-left: 4px solid #64748b !important;
+  color: #0f172a !important;
+  box-shadow: none !important;
+}
+
+body.light-theme .option-card:hover {
+  background: #f1f5f9 !important;
+  border-color: #334155 !important;
+  color: #0f172a !important;
+}
+
+body.light-theme .option-card.active {
+  background: #e2e8f0 !important;
+  border-color: #1e293b !important;
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  box-shadow: none !important;
+}
+
+/* 7. Ô thả đáp án (Drop Target & Drag Zone) */
+body.light-theme .drop-target {
+  background: #ffffff !important;
+  border-color: #64748b !important;
+  color: #0f172a !important;
+  box-shadow: none !important;
+}
+
+/* 8. Thanh trạng thái bên dưới (Bottom Bar) */
+body.light-theme .test-bottom-bar {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-top: 1px solid #e2e8f0 !important;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.light-theme .progress-container span {
+  color: #334155 !important;
+}
+
+body.light-theme .progress-track {
+  background: #e2e8f0 !important;
+}
+
+/* Styling cho Nút chọn nhanh A-X và Quảng cáo đã dùng (Teil 3) */
+.btn-letter-select {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  border: 1px solid var(--border-light);
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  user-select: none !important;
+}
+
+.btn-letter-select:hover {
+  border-color: var(--accent-amber);
+  color: var(--accent-amber);
+}
+
+.btn-letter-select.active {
+  background: #f59e0b !important;
+  color: #ffffff !important;
+  border-color: #f59e0b !important;
+}
+
+.used-ad-box {
+  opacity: 0.45 !important;
+  filter: grayscale(35%) !important;
+}
+
+/* ========================================================= */
+/* STRICT NO-GLOW / NO-LED OVERRIDES IN LIGHT MODE (SÁNG DỊU) */
+/* ========================================================= */
+
+body.light-theme * {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+/* Ngoại lệ cho bóng đổ dịu nhẹ chuẩn UI chuyên nghiệp */
+body.light-theme .card,
+body.light-theme .mode-card,
+body.light-theme .lesen-card,
+body.light-theme .hoeren-card,
+body.light-theme .teacher-card,
+body.light-theme .modal-content,
+body.light-theme header,
+body.light-theme .test-left-pane,
+body.light-theme .test-right-pane,
+body.light-theme .test-bottom-bar,
+body.light-theme .danksagung-card,
+body.light-theme .donation-alert {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.light-theme .btn-letter-select {
+  background: #ffffff !important;
+  color: #334155 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+body.light-theme .btn-letter-select:hover {
+  border-color: #d97706 !important;
+  color: #d97706 !important;
+  background: #fffbeb !important;
+}
+
+body.light-theme .btn-letter-select.active {
+  background: #d97706 !important;
+  color: #ffffff !important;
+  border-color: #d97706 !important;
+}
+
+body.light-theme .teil3-situation-card {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+body.light-theme .used-ad-box {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  opacity: 0.5 !important;
+}
+
+/* Base Results Styles */
+.results-card-title {
+  color: #ffffff;
+}
+.results-score-value {
+  color: #ffffff;
+}
+.results-score-label {
+  color: var(--text-dim);
+}
+.results-subtext {
+  color: var(--text-dim);
+}
+
+/* Light Theme Results Overrides */
+body.light-theme .results-summary-card {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.light-theme .results-card-title {
+  color: #0f172a !important;
+}
+
+body.light-theme .results-score-value {
+  color: #0f172a !important;
+}
+
+body.light-theme .results-score-label {
+  color: #475569 !important;
+  font-weight: 700 !important;
+}
+
+body.light-theme .results-subtext {
+  color: #64748b !important;
+}
+
+body.light-theme .tab-btn {
+  background: #ffffff !important;
+  color: #334155 !important;
+  border: 1px solid #cbd5e1 !important;
+  font-weight: 600 !important;
+}
+
+body.light-theme .tab-btn:hover {
+  background: #f1f5f9 !important;
+  border-color: #4f46e5 !important;
+  color: #4f46e5 !important;
+}
+
+body.light-theme .tab-btn.active {
+  background: #4f46e5 !important;
+  color: #ffffff !important;
+  border-color: #4f46e5 !important;
+}
+
+/* ========================================================= */
+/* HIGHER CONTRAST & CLEAR TEXT FOR HÖREN (LISTENING)       */
+/* ========================================================= */
+
+body.light-theme .listening-q-text {
+  color: #0f172a !important;
+  font-weight: 600 !important;
+}
+
+body.light-theme table tr {
+  border-bottom: 1px solid #cbd5e1 !important;
+}
+
+body.light-theme table tbody tr:hover {
+  background: #f1f5f9 !important;
+}
+
+body.light-theme table thead tr {
+  background: #4f46e5 !important;
+  color: #ffffff !important;
+}
+
+body.light-theme table thead th {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+body.light-theme #listening-player-box,
+body.light-theme div[style*="background: rgba(255,255,255,0.01)"] {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.light-theme p[style*="color: var(--text-dim)"],
+body.light-theme span[style*="color: var(--text-dim)"] {
+  color: #475569 !important;
+}
+
+/* ========================================================= */
+/* WARM AMBER EYE-CARE THEME (ĐÈN VÀNG DỊU MẮT CHỐNG MỎI MẮT)*/
+/* ========================================================= */
+
+body.warm-theme {
+  background-color: #fef8ec !important;
+  color: #292524 !important;
+}
+
+body.warm-theme header {
+  background: rgba(254, 243, 199, 0.96) !important;
+  border-bottom: 1px solid #fde68a !important;
+  box-shadow: 0 4px 20px rgba(217, 119, 6, 0.08) !important;
+}
+
+body.warm-theme .card,
+body.warm-theme .mode-card,
+body.warm-theme .lesen-card,
+body.warm-theme .hoeren-card,
+body.warm-theme .teacher-card,
+body.warm-theme .test-left-pane,
+body.warm-theme .test-right-pane,
+body.warm-theme .modal-content,
+body.warm-theme .drag-text-box,
+body.warm-theme .option-card,
+body.warm-theme .teil3-situation-card,
+body.warm-theme .results-summary-card,
+body.warm-theme .about-box {
+  background: #fffbf5 !important;
+  border-color: #fde68a !important;
+  color: #292524 !important;
+  box-shadow: 0 4px 16px rgba(217, 119, 6, 0.06) !important;
+}
+
+body.warm-theme p,
+body.warm-theme div,
+body.warm-theme td,
+body.warm-theme span,
+body.warm-theme h1,
+body.warm-theme h2,
+body.warm-theme h3,
+body.warm-theme h4,
+body.warm-theme h5,
+body.warm-theme b {
+  color: #292524 !important;
+}
+
+body.warm-theme .listening-q-text {
+  color: #1c1917 !important;
+  font-weight: 600 !important;
+}
+
+body.warm-theme table thead tr {
+  background: #d97706 !important;
+  color: #ffffff !important;
+}
+
+body.warm-theme table thead th {
+  color: #ffffff !important;
+}
+
+body.warm-theme .test-bottom-bar {
+  background: rgba(254, 243, 199, 0.96) !important;
+  border-top: 1px solid #fde68a !important;
+}
+
+body.warm-theme .btn-letter-select {
+  background: #fffbf5 !important;
+  color: #44403c !important;
+  border-color: #fde68a !important;
+}
+
+body.warm-theme .btn-letter-select.active {
+  background: #d97706 !important;
+  color: #ffffff !important;
+  border-color: #d97706 !important;
+}
+
+body.warm-theme .nav-btn {
+  color: #44403c !important;
+}
+
+body.warm-theme .nav-btn.active {
+  color: #d97706 !important;
+  background: rgba(217, 119, 6, 0.12) !important;
+  border-bottom-color: #d97706 !important;
+}
+
+/* Styling cho Đĩa nhạc Vinyl & Trình phát Audio chuẩn MaterNoPro */
+.vinyl-disc {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #334155 0%, #1e293b 45%, #0f172a 70%, #020617 100%);
+  border: 2px solid rgba(244, 63, 94, 0.4);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.vinyl-center {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #f43f5e;
+  border: 3px solid #ffffff;
+}
+
+.vinyl-disc.playing {
+  animation: spinVinyl 4s linear infinite;
+  border-color: #f43f5e;
+  box-shadow: 0 0 18px rgba(244, 63, 94, 0.6);
+}
+
+@keyframes spinVinyl {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.audio-progress-slider {
+  flex-grow: 1;
+  accent-color: #f43f5e;
+  height: 6px;
+  cursor: pointer;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  outline: none;
+}
+
+body.light-theme .maternopro-audio-player {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06) !important;
+}
+
+body.light-theme .maternopro-audio-player div {
+  color: #0f172a !important;
+}
+
+body.light-theme .audio-progress-slider {
+  background: #e2e8f0 !important;
+}
+
+body.warm-theme .maternopro-audio-player {
+  background: #fffbf5 !important;
+  border: 1px solid #fde68a !important;
+}
+
+/* Dark Cyberpunk Modal High-Readability Input Fixes */
+#login-modal input {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+#login-modal input:focus {
+  border-color: #00f2fe !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  box-shadow: 0 0 15px rgba(0, 242, 254, 0.4) !important;
+}
+
+#auth-submit-btn {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+#auth-submit-btn:hover {
+  transform: translate(-2px, -2px) !important;
+  box-shadow: 6px 6px 0px #0f172a !important;
+  background: #f472b6 !important;
+}
+
+#auth-submit-btn:active {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 2px 2px 0px #0f172a !important;
+}
+
+#login-modal button[onclick*="openGooglePickerModal"] {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+#login-modal button[onclick*="openGooglePickerModal"]:hover {
+  transform: translate(-2px, -2px) !important;
+  box-shadow: 6px 6px 0px #0f172a !important;
+  background: #f8fafc !important;
+}
+
+#login-modal button[onclick*="openGooglePickerModal"]:active {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 2px 2px 0px #0f172a !important;
+}
+
+/* Hiệu ứng Logo Anime MaterNoPro Tia Sét Phát Sáng Siêu Ngầu */
+.lightning-logo-pulse {
+  animation: lightningPulse 2.5s infinite alternate ease-in-out !important;
+  transition: all 0.3s ease !important;
+}
+
+@keyframes lightningPulse {
+  0% {
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.8), 0 0 30px rgba(59, 130, 246, 0.5) !important;
+    border-color: #a855f7 !important;
+    transform: scale(1) !important;
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(0, 242, 254, 0.95), 0 0 55px rgba(168, 85, 247, 0.85) !important;
+    border-color: #00f2fe !important;
+    transform: scale(1.05) rotate(2deg) !important;
+  }
+  100% {
+    box-shadow: 0 0 22px rgba(236, 72, 153, 0.85), 0 0 45px rgba(59, 130, 246, 0.65) !important;
+    border-color: #ec4899 !important;
+    transform: scale(1) rotate(-2deg) !important;
+  }
+}
+
+
+
+
+
+
+
+
+
+
 
 

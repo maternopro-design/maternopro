@@ -401,11 +401,11 @@ function switchView(viewId) {
 
   // Tải nội dung phân hệ
   if (viewId === 'listening') {
-    listeningFlowState = 'grid'; // Reset to grid
+    if (!isViewingHistoryRecord) listeningFlowState = 'grid'; // Reset to grid
     renderListening();
   }
   if (viewId === 'reading') {
-    readingFlowState = 'grid'; // Reset to grid selection
+    if (!isViewingHistoryRecord) readingFlowState = 'grid'; // Reset to grid selection
     renderReading();
   }
   if (viewId === 'writing') {
@@ -4449,7 +4449,14 @@ function switchAdminTab(tabId) {
 
 console.log("MaterNoPro App Loaded - Version 2.4 with Complete 50+ Writing Tasks Grid Flow");
 
-let isAdminLoggedIn = sessionStorage.getItem('admin_logged') === 'true';
+const ADMIN_EMAIL = 'maternopro@gmail.com';
+const ADMIN_PASS = 'Minhanh@09092006';
+
+function isCurrentUserAdmin() {
+  return currentUser && currentUser.email && currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+}
+
+let isAdminLoggedIn = sessionStorage.getItem('admin_logged') === 'true' || isCurrentUserAdmin();
 
 function handleAdminLogin() {
   const userInp = document.getElementById('admin-login-user');
@@ -4459,9 +4466,22 @@ function handleAdminLogin() {
   const username = userInp.value.trim().toLowerCase();
   const password = passInp.value.trim();
 
-  if (username === 'maternopro@gmail.com' && password === 'Minhanh@09092006') {
+  if (username === ADMIN_EMAIL && password === ADMIN_PASS) {
     isAdminLoggedIn = true;
     sessionStorage.setItem('admin_logged', 'true');
+    
+    // Auto login as Mater Nopro in user profile too
+    currentUser = {
+      name: "Mater Nopro",
+      email: ADMIN_EMAIL,
+      avatar: "logo.jpg",
+      gender: "Nam",
+      dob: "2001-05-15",
+      examDate: "2026-08-30"
+    };
+    localStorage.setItem('maternopro_user', JSON.stringify(currentUser));
+    updateHeaderAuthUI();
+    
     renderAdmin();
   } else {
     alert("Sai tên đăng nhập hoặc mật khẩu quản trị!");
@@ -4515,7 +4535,7 @@ function renderAdmin() {
   const loginWrapper = document.getElementById('admin-login-wrapper');
   const mainWrapper = document.getElementById('admin-main-wrapper');
 
-  if (!isAdminLoggedIn) {
+  if (!isAdminLoggedIn && !isCurrentUserAdmin()) {
     if (loginWrapper) loginWrapper.style.display = 'flex';
     if (mainWrapper) mainWrapper.style.display = 'none';
     return;
@@ -8399,13 +8419,38 @@ function saveUserProfile(e) {
 }
 
 function changeUserAvatarPrompt() {
-  const newUrl = prompt("Nhập link URL ảnh đại diện Avatar mới của bạn:");
-  if (newUrl) {
-    currentUser.avatar = newUrl;
-    document.getElementById('profile-avatar-img').src = newUrl;
-    localStorage.setItem('maternopro_user', JSON.stringify(currentUser));
-    updateHeaderAuthUI();
+  const input = document.getElementById('avatar-file-input');
+  if (input) input.click();
+}
+
+function handleAvatarUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  if (file.size > 5 * 1024 * 1024) {
+    alert("Ảnh quá lớn! Vui lòng chọn ảnh dưới 5MB.");
+    return;
   }
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const base64 = e.target.result;
+    
+    // Update UI immediately
+    const imgEl = document.getElementById('profile-avatar-img');
+    if (imgEl) imgEl.src = base64;
+    
+    // Update current user
+    if (currentUser) {
+      currentUser.avatar = base64;
+      localStorage.setItem('maternopro_user', JSON.stringify(currentUser));
+      updateHeaderAuthUI();
+    }
+  };
+  reader.readAsDataURL(file);
+  
+  // Clear event target value to allow re-upload of same file
+  event.target.value = '';
 }
 
 function logoutUser() {
@@ -8467,6 +8512,30 @@ function renderChatMessages() {
   
   container.innerHTML = communityMessages.map(msg => {
     const isSelfMsg = msg.isSelf || (currentUser && msg.sender === currentUser.name);
+    
+    // Check if the message is from admin (by flag or sender name)
+    const isAdminMsg = msg.isAdmin || (msg.sender && (msg.sender === "Mater Nopro" || msg.sender === "maternopro"));
+
+    if (isAdminMsg) {
+      return `
+        <div style="display: flex; gap: 0.8rem; max-width: 90%; ${isSelfMsg ? 'align-self: flex-end; flex-direction: row-reverse;' : 'align-self: flex-start;'}">
+          <div style="position: relative; flex-shrink: 0;">
+            <img src="${msg.avatar}" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 3px solid #fbbf24; box-shadow: 0 0 15px rgba(251, 191, 36, 0.8);">
+            <span style="position: absolute; top: -8px; ${isSelfMsg ? 'left' : 'right'}: -4px; font-size: 1rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">👑</span>
+          </div>
+          <div>
+            <div style="font-size: 0.78rem; margin-bottom: 0.25rem; ${isSelfMsg ? 'text-align: right;' : ''}">
+              <span style="background: linear-gradient(90deg, #facc15, #f59e0b, #ef4444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; font-size: 0.9rem; text-shadow: 0 0 10px rgba(250,204,21,0.2);">👑 ADMIN Mater Nopro</span>
+              <span style="font-size: 0.7rem; color: #94a3b8; margin-left: 0.4rem;">• ${msg.time}</span>
+            </div>
+            <div style="padding: 1rem 1.4rem; border-radius: 20px; font-size: 1.05rem; font-weight: 800; line-height: 1.6; background: linear-gradient(135deg, #1e1b4b, #311042, #111827); color: #fff; border: 2.5px solid #fbbf24; box-shadow: 0 0 20px rgba(251, 191, 36, 0.45), inset 0 0 12px rgba(251, 191, 36, 0.1); text-shadow: 0 1px 2px rgba(0,0,0,0.8); ${isSelfMsg ? 'border-bottom-right-radius: 4px;' : 'border-bottom-left-radius: 4px;'}">
+              ${msg.text}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     return `
       <div style="display: flex; gap: 0.8rem; max-width: 82%; ${isSelfMsg ? 'align-self: flex-end; flex-direction: row-reverse;' : 'align-self: flex-start;'}">
         <img src="${msg.avatar}" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1.5px solid var(--border-light); box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
@@ -8495,10 +8564,12 @@ function sendChatMessage(e) {
   
   let senderName = "Ẩn danh";
   let avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`;
+  let isAdminMsg = false;
   
   if (!chatAnonymousMode && currentUser && currentUser.name) {
     senderName = currentUser.name;
     avatarUrl = currentUser.avatar || avatarUrl;
+    isAdminMsg = isCurrentUserAdmin();
   }
   
   const newMsg = {
@@ -8507,7 +8578,8 @@ function sendChatMessage(e) {
     avatar: avatarUrl,
     text: input.value.trim(),
     time: timeStr,
-    isSelf: true
+    isSelf: true,
+    isAdmin: isAdminMsg
   };
 
   communityMessages.push(newMsg);
@@ -8668,10 +8740,13 @@ function renderResultsHistoryView() {
     </div>
 
     <!-- Filter Buttons -->
-    <div style="display: flex; gap: 0.8rem; margin-bottom: 1.5rem;">
-      <button onclick="setHistoryFilter('ALL')" class="btn" style="padding: 0.5rem 1.2rem; border-radius: 20px; font-weight: 800; font-size: 0.85rem; ${activeHistoryFilter === 'ALL' ? 'background: #f59e0b; color: #ffffff;' : 'background: rgba(255,255,255,0.05); color: var(--text-dim); border: 1px solid var(--border-light);'}">Tất cả (${history.length})</button>
-      <button onclick="setHistoryFilter('LESEN')" class="btn" style="padding: 0.5rem 1.2rem; border-radius: 20px; font-weight: 800; font-size: 0.85rem; ${activeHistoryFilter === 'LESEN' ? 'background: #3b82f6; color: #ffffff;' : 'background: rgba(255,255,255,0.05); color: var(--text-dim); border: 1px solid var(--border-light);'}">📖 Đọc (Lesen)</button>
-      <button onclick="setHistoryFilter('HOEREN')" class="btn" style="padding: 0.5rem 1.2rem; border-radius: 20px; font-weight: 800; font-size: 0.85rem; ${activeHistoryFilter === 'HOEREN' ? 'background: #ec4899; color: #ffffff;' : 'background: rgba(255,255,255,0.05); color: var(--text-dim); border: 1px solid var(--border-light);'}">🎧 Nghe (Hören)</button>
+    <div style="display: flex; gap: 0.8rem; margin-bottom: 1.5rem; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+      <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+        <button onclick="setHistoryFilter('ALL')" class="btn" style="padding: 0.5rem 1.2rem; border-radius: 20px; font-weight: 800; font-size: 0.85rem; ${activeHistoryFilter === 'ALL' ? 'background: #f59e0b; color: #ffffff;' : 'background: rgba(255,255,255,0.05); color: var(--text-dim); border: 1px solid var(--border-light);'}">Tất cả (${history.length})</button>
+        <button onclick="setHistoryFilter('LESEN')" class="btn" style="padding: 0.5rem 1.2rem; border-radius: 20px; font-weight: 800; font-size: 0.85rem; ${activeHistoryFilter === 'LESEN' ? 'background: #3b82f6; color: #ffffff;' : 'background: rgba(255,255,255,0.05); color: var(--text-dim); border: 1px solid var(--border-light);'}">📖 Đọc (Lesen)</button>
+        <button onclick="setHistoryFilter('HOEREN')" class="btn" style="padding: 0.5rem 1.2rem; border-radius: 20px; font-weight: 800; font-size: 0.85rem; ${activeHistoryFilter === 'HOEREN' ? 'background: #ec4899; color: #ffffff;' : 'background: rgba(255,255,255,0.05); color: var(--text-dim); border: 1px solid var(--border-light);'}">🎧 Nghe (Hören)</button>
+      </div>
+      <button onclick="deleteAllHistoryRecords()" class="btn" style="padding: 0.5rem 1.2rem; border-radius: 20px; font-weight: 800; font-size: 0.85rem; background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.35); cursor: pointer;" title="Xóa toàn bộ lịch sử">🗑️ Xóa tất cả</button>
     </div>
 
     <!-- History List Table -->
@@ -8703,9 +8778,12 @@ function renderResultsHistoryView() {
                   ${item.grade}
                 </span>
               </td>
-              <td style="padding: 1rem 1.2rem; text-align: center;">
+              <td style="padding: 1rem 1.2rem; text-align: center; display: flex; gap: 0.5rem; justify-content: center; align-items: center;">
                 <button onclick="viewDetailedAnswerKey(${item.id})" class="btn" style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 0.45rem 1rem; border-radius: 14px; font-weight: 800; font-size: 0.82rem; cursor: pointer; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
                   👁️ Dò Đáp Án
+                </button>
+                <button onclick="deleteHistoryRecord(${item.id})" class="btn" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; padding: 0.45rem 0.8rem; border-radius: 14px; font-weight: 800; font-size: 0.82rem; cursor: pointer; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);" title="Xóa kết quả này">
+                  🗑️
                 </button>
               </td>
             </tr>
@@ -8723,13 +8801,24 @@ function switchReviewSubtab(tabKey, historyId) {
   viewDetailedAnswerKey(historyId);
 }
 
+let isViewingHistoryRecord = false;
+
 function viewDetailedAnswerKey(historyId) {
   const history = JSON.parse(localStorage.getItem('maternopro_test_history')) || [];
   const item = history.find(h => h.id === historyId);
   if (!item) return;
   
+  isViewingHistoryRecord = true;
+  
   if (item.type === 'Lesen') {
-    selectedReadingTest = item.testName;
+    // Fuzzy match item.testName to actual test name in db.reading
+    let dbTest = db.reading.find(t => t.name === item.testName);
+    if (!dbTest) {
+      const match = item.testName.match(/^(Đề\s*\d+)/i);
+      const prefix = match ? match[1].replace(/\s+/g, ' ').trim() : item.testName.trim();
+      dbTest = db.reading.find(t => t.name === prefix || (t.name && t.name.startsWith(prefix)));
+    }
+    selectedReadingTest = dbTest ? dbTest.name : item.testName;
     readingFlowState = 'results';
     
     // Nạp lại câu trả lời thực tế đã lưu của học viên vào userAnswers
@@ -8748,7 +8837,13 @@ function viewDetailedAnswerKey(historyId) {
     renderReading();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } else {
-    selectedListeningTest = item.testName;
+    let dbTest = db.listening.find(t => t.name === item.testName);
+    if (!dbTest) {
+      const match = item.testName.match(/^(Đề\s*\d+)/i);
+      const prefix = match ? match[1].replace(/\s+/g, ' ').trim() : item.testName.trim();
+      dbTest = db.listening.find(t => t.name === prefix || (t.name && t.name.startsWith(prefix)));
+    }
+    selectedListeningTest = dbTest ? dbTest.name : item.testName;
     listeningFlowState = 'results';
     
     userListeningAnswers = item.userAns || {};
@@ -8757,6 +8852,22 @@ function viewDetailedAnswerKey(historyId) {
     renderListening();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+  
+  isViewingHistoryRecord = false;
+}
+
+function deleteHistoryRecord(historyId) {
+  if (!confirm('Bạn có chắc muốn xóa kết quả này không?')) return;
+  let history = JSON.parse(localStorage.getItem('maternopro_test_history')) || [];
+  history = history.filter(h => String(h.id) !== String(historyId));
+  localStorage.setItem('maternopro_test_history', JSON.stringify(history));
+  renderResultsHistoryView();
+}
+
+function deleteAllHistoryRecords() {
+  if (!confirm('Bạn có chắc muốn XÓA TẤT CẢ kết quả không? Hành động này không thể hoàn tác!')) return;
+  localStorage.removeItem('maternopro_test_history');
+  renderResultsHistoryView();
 }
 
 function closeAnswerReviewModal() {

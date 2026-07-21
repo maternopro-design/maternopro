@@ -74,10 +74,17 @@
         <button class="nav-btn" onclick="switchView('speaking')" data-translate="nav-sprechen">Sprechen</button>
         <button class="nav-btn" onclick="switchView('grammar')" data-translate="nav-grammatik">Grammatik</button>
         <button class="nav-btn" onclick="switchView('vocab')" data-translate="nav-wortschatz">Wortschatz</button>
+        <button class="nav-btn" onclick="switchView('results_history')" style="color: #f59e0b; font-weight: 800;">📊 Kết Quả</button>
+        <button class="nav-btn" onclick="switchView('community')" style="color: #10b981; font-weight: 800;">💬 Thảo Luận</button>
         <button class="nav-btn" onclick="switchView('admin')" style="color: #ff007a; text-shadow: 0 0 8px rgba(255, 0, 122, 0.4);" data-translate="nav-admin">Admin</button>
       </nav>
       <div class="nav-right">
         
+        <!-- Auth Login / Profile Header Button -->
+        <button class="btn btn-secondary" id="auth-header-btn" onclick="handleAuthHeaderClick()" style="border-radius: 20px; font-weight: 800; font-size: 0.85rem; padding: 0.4rem 0.95rem; margin-right: 0.4rem; display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+          🔐 Đăng nhập
+        </button>
+
         <!-- Language Selector Dropdown -->
         <div class="lang-selector-container">
           <button class="icon-btn" id="lang-btn" onclick="toggleLangDropdown()" title="Chọn ngôn ngữ">🌐</button>
@@ -97,8 +104,13 @@
           <span style="font-family: 'Inter', sans-serif;">Ủng Hộ & LH</span>
         </button>
 
+        <!-- Dedicated Warm Light Button -->
+        <button class="icon-btn" id="warm-toggle-btn" onclick="toggleWarmLight()" title="Bật/Tắt Đèn Vàng Dịu Mắt (Bảo vệ mắt)" style="margin-right: 0.5rem; padding: 0.4rem 0.85rem; border-radius: 20px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; border: 1px solid var(--border-light); display: inline-flex; align-items: center; gap: 0.3rem;">
+          💡 Đèn Vàng
+        </button>
+
         <!-- Light/Dark Mode Switcher -->
-        <button class="icon-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Đổi màu nền">☀️</button>
+        <button class="icon-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Đổi màu nền (Tối/Sáng/Vàng)">☀️</button>
       </div>
     </div>
   </header>
@@ -124,36 +136,36 @@
 
       <!-- Khung Lưu ý quan trọng - TO VÀ ĐẸP HƠN NỮA -->
       <div class="donation-alert-wrapper" style="max-width: 950px; margin: 3.5rem auto 0 auto; padding: 0 1rem;">
-        <div class="donation-alert" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.18) 0%, rgba(251, 191, 36, 0.15) 100%); border: 2px solid rgba(251, 191, 36, 0.45); border-left: 8px solid #ffc107; border-radius: 24px; padding: 1.5rem; text-align: left; box-shadow: 0 20px 50px rgba(251, 191, 36, 0.2); position: relative; overflow: hidden; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); transition: all 0.3s ease;" onmouseover="this.style.boxShadow='0 25px 60px rgba(251, 191, 36, 0.35)'; this.style.transform='translateY(-3px)';" onmouseout="this.style.boxShadow='0 20px 50px rgba(251, 191, 36, 0.2)'; this.style.transform='none';">
+        <div class="donation-alert" onmouseover="this.style.transform='translateY(-3px)';" onmouseout="this.style.transform='none';">
           
           <!-- Thanh phản quang góc trên cùng bên phải -->
-          <div style="position: absolute; right: -50px; top: -50px; width: 120px; height: 120px; background: rgba(255, 193, 7, 0.15); filter: blur(40px); border-radius: 50%;"></div>
+          <div class="alert-glow-bg" style="position: absolute; right: -50px; top: -50px; width: 120px; height: 120px; border-radius: 50%;"></div>
           
-          <div style="font-weight: 900; color: #ffd700; margin-bottom: 1.2rem; font-size: 1.3rem; display: flex; align-items: center; gap: 0.8rem; letter-spacing: 0.8px; text-transform: uppercase; text-shadow: 0 0 10px rgba(255, 215, 0, 0.3); flex-wrap: wrap;">
+          <div class="alert-title-box" style="font-weight: 900; margin-bottom: 1.2rem; font-size: 1.3rem; display: flex; align-items: center; gap: 0.8rem; letter-spacing: 0.8px; text-transform: uppercase; flex-wrap: wrap;">
             <span>⚠️</span> Lưu ý quan trọng
           </div>
           
-          <p style="font-size: 1.05rem; line-height: 1.6; color: #ffffff; font-weight: 600; margin: 0 0 1.5rem 0; text-align: left; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
-            Đây là website chia sẻ đề thi tham khảo. <span style="color: #ffd700; border-bottom: 2px solid #ffd700; padding-bottom: 2px;">Mater xin chiêu đãi bạn một bữa ăn hoàn toàn miễn phí!</span> 
+          <p class="alert-main-text" style="font-size: 1.05rem; line-height: 1.6; font-weight: 600; margin: 0 0 1.5rem 0; text-align: left;">
+            Đây là website chia sẻ đề thi tham khảo. <span class="alert-highlight-text">Mater xin chiêu đãi bạn một bữa ăn hoàn toàn miễn phí!</span> 
             Trong quá trình làm bài nếu phát hiện đáp án sai sót, xin liên hệ Admin để sửa đổi.
           </p>
           
-          <div style="border-top: 2px dashed rgba(255, 193, 7, 0.25); padding-top: 1.2rem; display: flex; flex-direction: column; align-items: stretch; justify-content: space-between; gap: 1.2rem;">
-            <p class="donation-alert-text" style="font-size: 1rem; line-height: 1.6; color: #e2e8f0; font-weight: 500; margin: 0; min-width: 0;">
+          <div class="alert-footer-box" style="border-top: 2px dashed rgba(255, 193, 7, 0.25); padding-top: 1.2rem; display: flex; flex-direction: column; align-items: stretch; justify-content: space-between; gap: 1.2rem;">
+            <p class="donation-alert-text" style="font-size: 1rem; line-height: 1.6; font-weight: 500; margin: 0; min-width: 0;">
               ☕ Để duy trì website hoạt động ổn định (hosting, server), Admin kêu gọi quý bạn đọc hảo tâm ủng hộ từ <b>5k, 10k</b> ạ. Sự đóng góp của bạn là động lực to lớn với Admin!
             </p>
-            <button class="btn-donate-pulse" onclick="openDonateModal()" style="margin: 0 auto; font-size: 0.95rem; padding: 0.8rem 1.8rem; border-radius: 30px; box-shadow: 0 0 25px rgba(255, 0, 122, 0.85); font-weight: 900; letter-spacing: 1px; width: 100%; max-width: 250px;">
+            <button class="btn-donate-pulse" onclick="openDonateModal()" style="margin: 0 auto; font-size: 0.95rem; padding: 0.8rem 1.8rem; border-radius: 30px; font-weight: 900; letter-spacing: 1px; width: 100%; max-width: 250px;">
               <span>💖</span> ỦNG HỘ ADMIN
             </button>
           </div>
         </div>
       </div>
 
-      <div class="about-section" style="max-width: 900px; margin: 4rem auto 0 auto; padding: 0 2rem 4rem 2rem; text-align: center;">
-        <h2 class="about-title" style="font-size: 2.2rem; font-weight: 800; margin-bottom: 1.5rem; color: #fff; border: none; padding: 0;">Über Uns</h2>
+      <div class="about-section" style="max-width: 1000px; margin: 4rem auto 0 auto; padding: 0 1rem 4rem 1rem; text-align: center;">
+        <h2 class="about-title" style="font-size: 2.2rem; font-weight: 800; margin-bottom: 1.5rem; border: none; padding: 0;">Über Uns</h2>
         
-        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 2.5rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);">
-          <p style="font-size: 1.15rem; line-height: 1.6; color: #f8fafc; font-weight: 500; margin: 0 0 1rem 0;">
+        <div class="about-box">
+          <p style="font-size: 1.15rem; line-height: 1.6; font-weight: 500; margin: 0 0 1rem 0;">
             Mater là đơn vị 1 thành viên cung cấp đề B2 miễn phí tại Việt Nam.
           </p>
           <p style="color: var(--accent-cyan); font-weight: bold; font-size: 1.15rem; margin: 0 0 1.8rem 0; letter-spacing: 0.5px;">
@@ -161,23 +173,23 @@
           </p>
 
           <ul style="list-style: none; padding: 0; display: inline-flex; flex-direction: column; gap: 1rem; text-align: left; margin: 0;">
-            <li style="display: flex; align-items: center; gap: 1rem; color: #cbd5e1; font-size: 1.05rem;">
+            <li style="display: flex; align-items: center; gap: 1rem; font-size: 1.05rem;">
               <span style="color: var(--accent-cyan); font-weight: bold; font-size: 1.2rem;">✓</span>
               Đề thi gốc, siêu thực 90 phần trăm
             </li>
-            <li style="display: flex; align-items: center; gap: 1rem; color: #cbd5e1; font-size: 1.05rem;">
+            <li style="display: flex; align-items: center; gap: 1rem; font-size: 1.05rem;">
               <span style="color: var(--accent-cyan); font-weight: bold; font-size: 1.2rem;">✓</span>
               Thi trên máy tính như thi thật ngay tại nhà
             </li>
-            <li style="display: flex; align-items: center; gap: 1rem; color: #cbd5e1; font-size: 1.05rem;">
+            <li style="display: flex; align-items: center; gap: 1rem; font-size: 1.05rem;">
               <span style="color: var(--accent-cyan); font-weight: bold; font-size: 1.2rem;">✓</span>
               Kèm lời giải chi tiết từng câu
             </li>
           </ul>
         </div>
 
-        <!-- Khung 2 cô giáo riêng biệt -->
-        <h3 style="text-align: center; color: #fff; margin: 3.5rem 0 2rem 0; font-size: 1.8rem; font-weight: 800; letter-spacing: 0.5px;">👩‍🏫 2 Cô Giáo Siêu Cấp Vippro</h3>
+        <!-- Khung 3 cô giáo riêng biệt -->
+        <h3 class="teachers-section-title" style="text-align: center; margin: 3.5rem 0 2rem 0; font-size: 1.8rem; font-weight: 800; letter-spacing: 0.5px;">👩‍🏫 3 Cô Giáo Siêu Cấp Vippro</h3>
 
         <style>
           @keyframes pulse-purple-card {
@@ -189,6 +201,11 @@
             0% { box-shadow: 0 10px 40px rgba(0, 242, 254, 0.2); border-color: rgba(0, 242, 254, 0.3); transform: translateY(0); }
             50% { box-shadow: 0 20px 60px rgba(0, 242, 254, 0.55); border-color: rgba(0, 242, 254, 0.85); transform: translateY(-8px); }
             100% { box-shadow: 0 10px 40px rgba(0, 242, 254, 0.2); border-color: rgba(0, 242, 254, 0.3); transform: translateY(0); }
+          }
+          @keyframes pulse-pink-card {
+            0% { box-shadow: 0 10px 40px rgba(236, 72, 153, 0.2); border-color: rgba(236, 72, 153, 0.3); transform: translateY(0); }
+            50% { box-shadow: 0 20px 60px rgba(236, 72, 153, 0.55); border-color: rgba(236, 72, 153, 0.85); transform: translateY(-8px); }
+            100% { box-shadow: 0 10px 40px rgba(236, 72, 153, 0.2); border-color: rgba(236, 72, 153, 0.3); transform: translateY(0); }
           }
           @keyframes rotate-glow {
             0% { transform: rotate(0deg); }
@@ -224,13 +241,13 @@
           }
           .btn-social {
             flex: 1;
-            min-width: 80px;
+            min-width: 70px;
             text-align: center;
             color: #fff;
             text-decoration: none;
-            padding: 0.65rem 1rem;
+            padding: 0.65rem 0.6rem;
             border-radius: 14px;
-            font-size: 0.88rem;
+            font-size: 0.85rem;
             font-weight: 800;
             transition: all 0.25s ease;
             display: inline-flex;
@@ -242,70 +259,93 @@
             transform: translateY(-2px);
             filter: brightness(1.2);
           }
-          @media (max-width: 800px) {
+          @media (max-width: 900px) {
             .teachers-grid {
               grid-template-columns: 1fr !important;
             }
           }
         </style>
 
-        <div class="teachers-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; text-align: left; margin-bottom: 1rem;">
+        <div class="teachers-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; text-align: left; margin-bottom: 1rem;">
           <!-- Cô Uyên -->
-          <div style="background: linear-gradient(135deg, rgba(22, 22, 54, 0.75) 0%, rgba(10, 10, 30, 0.85) 100%); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 2px solid rgba(139, 92, 246, 0.35); padding: 3rem 2.2rem; border-radius: 28px; display: flex; flex-direction: column; align-items: center; text-align: center; animation: pulse-purple-card 4s infinite ease-in-out; transition: all 0.3s;" onmouseover="this.style.animationPlayState='paused'; this.style.borderColor='rgba(139, 92, 246, 1)';" onmouseout="this.style.animationPlayState='running';">
+          <div class="teacher-card teacher-card-uyen" style="background: linear-gradient(135deg, rgba(22, 22, 54, 0.75) 0%, rgba(10, 10, 30, 0.85) 100%); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 2px solid rgba(139, 92, 246, 0.35); padding: 2.5rem 1.8rem; border-radius: 28px; display: flex; flex-direction: column; align-items: center; text-align: center; animation: pulse-purple-card 4s infinite ease-in-out; transition: all 0.3s;" onmouseover="this.style.animationPlayState='paused';" onmouseout="this.style.animationPlayState='running';">
             
             <div class="teacher-avatar-wrapper">
               <div class="teacher-avatar-glow" style="background: linear-gradient(45deg, #7c3aed, #a855f7, #ffd700, #7c3aed);"></div>
               <img src="uyen_avatar.jpg?v=95" class="teacher-avatar-img" alt="Cô Uyên">
             </div>
 
-            <h5 style="margin: 0; color: #fff; font-size: 1.55rem; font-weight: 900; letter-spacing: 0.5px; line-height: 1.35;">Eichenwald Akademie<br>Cô Uyên</h5>
+            <h5 class="teacher-name" style="margin: 0; font-size: 1.5rem; font-weight: 900; letter-spacing: 0.5px; line-height: 1.35;">Eichenwald Akademie<br>Cô Uyên</h5>
             <span style="background: rgba(139, 92, 246, 0.15); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.3); padding: 0.25rem 0.8rem; border-radius: 20px; font-size: 0.78rem; font-weight: 800; margin-top: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">⭐ Head of Academy</span>
             
-            <p style="margin: 1.2rem 0; color: var(--text-dim); font-size: 1rem; line-height: 1.6; font-weight: 500;">
+            <p class="teacher-desc" style="margin: 1.2rem 0; font-size: 0.95rem; line-height: 1.6; font-weight: 500;">
               Chủ trung tâm - Lớp học B2<br>
-              SĐT: <span style="color: #a855f7; font-weight: 900; font-size: 1.15rem; text-shadow: 0 0 8px rgba(168, 85, 247, 0.3);">032 512 4424</span><br>
-              <span style="background: rgba(251, 191, 36, 0.12); color: #ffd700; padding: 0.4rem 0.9rem; border-radius: 10px; font-size: 0.85rem; font-weight: 800; display: inline-block; margin-top: 1rem; border: 1px solid rgba(251, 191, 36, 0.25); box-shadow: 0 0 15px rgba(251, 191, 36, 0.15);">✨ Siêu cấp vippro - Admin đang học tại đây</span>
+              SĐT: <span class="teacher-phone" style="color: #a855f7; font-weight: 900; font-size: 1.1rem;">032 512 4424</span><br>
+              <span class="teacher-admin-tag" style="background: rgba(251, 191, 36, 0.12); color: #ffd700; padding: 0.4rem 0.8rem; border-radius: 10px; font-size: 0.82rem; font-weight: 800; display: inline-block; margin-top: 1rem; border: 1px solid rgba(251, 191, 36, 0.25);">✨ Siêu cấp vippro - Admin đang học tại đây</span>
             </p>
             
-            <div style="display: flex; gap: 0.8rem; margin-top: auto; width: 100%;">
+            <div style="display: flex; gap: 0.5rem; margin-top: auto; width: 100%;">
               <a href="https://zalo.me/0325124424" target="_blank" class="btn-social" style="background: linear-gradient(135deg, #0088cc, #005588); box-shadow: 0 4px 15px rgba(0, 136, 204, 0.35);">Zalo</a>
               <a href="https://www.facebook.com/profile.php?id=61572361680513" target="_blank" class="btn-social" style="background: linear-gradient(135deg, #1877F2, #1150c4); box-shadow: 0 4px 15px rgba(24, 119, 242, 0.35);">Facebook</a>
-              <a href="https://www.tiktok.com/@eichenwald65" target="_blank" class="btn-social" style="background: linear-gradient(135deg, #222, #000); border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);">TikTok</a>
+              <a href="https://www.tiktok.com/@eichenwald65" target="_blank" class="btn-social" style="background: linear-gradient(135deg, #222, #000); border: 1px solid rgba(255,255,255,0.15);">TikTok</a>
             </div>
           </div>
- 
+
           <!-- Cô Quỳnh Doris -->
-          <div style="background: linear-gradient(135deg, rgba(22, 22, 54, 0.75) 0%, rgba(10, 10, 30, 0.85) 100%); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 2px solid rgba(0, 242, 254, 0.35); padding: 3rem 2.2rem; border-radius: 28px; display: flex; flex-direction: column; align-items: center; text-align: center; animation: pulse-cyan-card 4s infinite ease-in-out; animation-delay: 2s; transition: all 0.3s;" onmouseover="this.style.animationPlayState='paused'; this.style.borderColor='rgba(0, 242, 254, 1)';" onmouseout="this.style.animationPlayState='running';">
+          <div class="teacher-card teacher-card-quynh" style="background: linear-gradient(135deg, rgba(22, 22, 54, 0.75) 0%, rgba(10, 10, 30, 0.85) 100%); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 2px solid rgba(0, 242, 254, 0.35); padding: 2.5rem 1.8rem; border-radius: 28px; display: flex; flex-direction: column; align-items: center; text-align: center; animation: pulse-cyan-card 4s infinite ease-in-out; animation-delay: 1.5s; transition: all 0.3s;" onmouseover="this.style.animationPlayState='paused';" onmouseout="this.style.animationPlayState='running';">
             
             <div class="teacher-avatar-wrapper">
               <div class="teacher-avatar-glow" style="background: linear-gradient(45deg, #00f2fe, #4facfe, #00c6ff, #00f2fe);"></div>
               <img src="quynh_avatar.jpg?v=95" class="teacher-avatar-img" alt="Cô Quỳnh">
             </div>
 
-            <h5 style="margin: 0; color: #fff; font-size: 1.55rem; font-weight: 900; letter-spacing: 0.5px; line-height: 1.35;">Deutsch Quỳnh Doris<br>Cô Quỳnh</h5>
+            <h5 class="teacher-name" style="margin: 0; font-size: 1.5rem; font-weight: 900; letter-spacing: 0.5px; line-height: 1.35;">Deutsch Quỳnh Doris<br>Cô Quỳnh</h5>
             <span style="background: rgba(0, 242, 254, 0.15); color: #00f2fe; border: 1px solid rgba(0, 242, 254, 0.3); padding: 0.25rem 0.8rem; border-radius: 20px; font-size: 0.78rem; font-weight: 800; margin-top: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">✨ B2 Master Tutor</span>
             
-            <p style="margin: 1.2rem 0; color: var(--text-dim); font-size: 1rem; line-height: 1.6; font-weight: 500;">
+            <p class="teacher-desc" style="margin: 1.2rem 0; font-size: 0.95rem; line-height: 1.6; font-weight: 500;">
               Gia sư tiếng Đức tại Long Biên<br>
-              SĐT: <span style="color: #00f2fe; font-weight: 900; font-size: 1.15rem; text-shadow: 0 0 8px rgba(0, 242, 254, 0.3);">0377602714</span>
+              SĐT: <span class="teacher-phone" style="color: #00f2fe; font-weight: 900; font-size: 1.1rem;">0377602714</span>
             </p>
             
-            <div style="display: flex; gap: 0.8rem; margin-top: auto; width: 100%;">
+            <div style="display: flex; gap: 0.5rem; margin-top: auto; width: 100%;">
               <a href="https://zalo.me/0377602714" target="_blank" class="btn-social" style="background: linear-gradient(135deg, #0088cc, #005588); box-shadow: 0 4px 15px rgba(0, 136, 204, 0.35);">Zalo</a>
               <a href="https://www.facebook.com/deutschquynhdoris" target="_blank" class="btn-social" style="background: linear-gradient(135deg, #1877F2, #1150c4); box-shadow: 0 4px 15px rgba(24, 119, 242, 0.35);">Facebook</a>
-              <a href="https://www.tiktok.com/@deutschquynhdoris" target="_blank" class="btn-social" style="background: linear-gradient(135deg, #222, #000); border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);">TikTok</a>
+              <a href="https://www.tiktok.com/@deutschquynhdoris" target="_blank" class="btn-social" style="background: linear-gradient(135deg, #222, #000); border: 1px solid rgba(255,255,255,0.15);">TikTok</a>
+            </div>
+          </div>
+
+          <!-- Cô Thủy -->
+          <div class="teacher-card teacher-card-thuy" style="background: linear-gradient(135deg, rgba(22, 22, 54, 0.75) 0%, rgba(10, 10, 30, 0.85) 100%); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 2px solid rgba(236, 72, 153, 0.35); padding: 2.5rem 1.8rem; border-radius: 28px; display: flex; flex-direction: column; align-items: center; text-align: center; animation: pulse-pink-card 4s infinite ease-in-out; animation-delay: 3s; transition: all 0.3s;" onmouseover="this.style.animationPlayState='paused';" onmouseout="this.style.animationPlayState='running';">
+            
+            <div class="teacher-avatar-wrapper">
+              <div class="teacher-avatar-glow" style="background: linear-gradient(45deg, #ec4899, #f43f5e, #ff007a, #ec4899);"></div>
+              <img src="thuy_avatar.png" class="teacher-avatar-img" alt="Cô Thủy">
+            </div>
+
+            <h5 class="teacher-name" style="margin: 0; font-size: 1.5rem; font-weight: 900; letter-spacing: 0.5px; line-height: 1.35;">Deutsch Cô Thủy<br>Cô Thủy</h5>
+            <span style="background: rgba(236, 72, 153, 0.15); color: #ec4899; border: 1px solid rgba(236, 72, 153, 0.3); padding: 0.25rem 0.8rem; border-radius: 20px; font-size: 0.78rem; font-weight: 800; margin-top: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">💖 Premium B2 Tutor</span>
+            
+            <p class="teacher-desc" style="margin: 1.2rem 0; font-size: 0.95rem; line-height: 1.6; font-weight: 500;">
+              Chuyên gia Giảng dạy Tiếng Đức B2<br>
+              Tận tâm & Siêu nhiệt huyết
+            </p>
+            
+            <div style="display: flex; gap: 0.5rem; margin-top: auto; width: 100%;">
+              <a href="#" class="btn-social" style="background: linear-gradient(135deg, #0088cc, #005588); box-shadow: 0 4px 15px rgba(0, 136, 204, 0.35);">Zalo</a>
+              <a href="#" class="btn-social" style="background: linear-gradient(135deg, #1877F2, #1150c4); box-shadow: 0 4px 15px rgba(24, 119, 242, 0.35);">Facebook</a>
+              <a href="#" class="btn-social" style="background: linear-gradient(135deg, #222, #000); border: 1px solid rgba(255,255,255,0.15);">TikTok</a>
             </div>
           </div>
         </div>
 
-        <!-- Feedback từ Admin - NGHIÊNG NGHỆ THUẬT, TÔNG VÀNG ĐỒNG BỘ KHUNG LƯU Ý -->
-        <div style="margin-top: 4.5rem; max-width: 950px; margin-left: auto; margin-right: auto; background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(251, 191, 36, 0.08) 100%); border: 2px solid rgba(251, 191, 36, 0.45); border-left: 8px solid #ffc107; padding: 2.8rem 2.5rem; border-radius: 24px; font-size: 1.05rem; line-height: 1.65; color: #e2e8f0; text-align: left; box-shadow: 0 20px 50px rgba(251, 191, 36, 0.2); transform: rotate(-1.5deg) skewX(-1.5deg); transition: all 0.3s ease; position: relative; overflow: hidden; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);" onmouseover="this.style.boxShadow='0 25px 60px rgba(251, 191, 36, 0.35)'; this.style.transform='rotate(-0.5deg) scale(1.03) skewX(-0.5deg)';" onmouseout="this.style.boxShadow='0 20px 50px rgba(251, 191, 36, 0.2)'; this.style.transform='rotate(-1.5deg) skewX(-1.5deg)';">
+        <!-- Feedback từ Admin - NGHIÊNG NGHỆ THUẬT -->
+        <div class="danksagung-card" style="margin-top: 4.5rem; max-width: 950px; margin-left: auto; margin-right: auto; padding: 2.5rem; border-radius: 24px; font-size: 1.05rem; line-height: 1.65; text-align: left; transform: rotate(-1.5deg) skewX(-1.5deg); transition: all 0.3s ease; position: relative; overflow: hidden;" onmouseover="this.style.transform='rotate(-0.5deg) scale(1.02) skewX(-0.5deg)';" onmouseout="this.style.transform='rotate(-1.5deg) skewX(-1.5deg)';">
           <!-- Hoa văn ngoặc kép lớn ẩn phía sau -->
-          <div style="position: absolute; right: 25px; bottom: -20px; font-size: 10rem; font-family: serif; color: rgba(255, 193, 7, 0.08); user-select: none; pointer-events: none; font-weight: 900; line-height: 1;">”</div>
-          <div style="font-weight: 900; color: #ffd700; margin-bottom: 1rem; font-size: 1.35rem; display: flex; align-items: center; gap: 0.6rem; letter-spacing: 0.8px; text-transform: uppercase; text-shadow: 0 0 8px rgba(255, 215, 0, 0.25);">
+          <div class="quote-watermark" style="position: absolute; right: 25px; bottom: -20px; font-size: 10rem; font-family: serif; user-select: none; pointer-events: none; font-weight: 900; line-height: 1;">”</div>
+          <div class="danksagung-title" style="font-weight: 900; margin-bottom: 1rem; font-size: 1.35rem; display: flex; align-items: center; gap: 0.6rem; letter-spacing: 0.8px; text-transform: uppercase;">
             <span>💬</span> Lời tri ân từ Admin nhỏ / Danksagung:
           </div>
-          <p style="margin: 0; font-family: 'Playfair Display', 'Georgia', serif; font-style: italic; font-size: 1.18rem; line-height: 1.8; color: #ffffff; letter-spacing: 0.4px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); text-align: justify;">
+          <p class="danksagung-quote" style="margin: 0; font-family: 'Playfair Display', 'Georgia', serif; font-style: italic; font-size: 1.15rem; line-height: 1.8; letter-spacing: 0.4px; text-align: justify;">
             "Các cô đều là những giáo viên rất có trách nhiệm, giàu chuyên môn, uy tín và bản lĩnh. Các cô luôn tận tình giảng dạy, sẵn sàng hỗ trợ học viên và tạo động lực để mọi người tiến bộ từng ngày. Admin từng là một cậu em ngu ngơ được các cô giáo huấn và dìu dắt."
           </p>
         </div>
@@ -518,6 +558,43 @@
             <button class="btn" style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #10b981;" onclick="localStorage.removeItem('gemini_api_key'); alert('Đã xóa khóa API cũ!');">🔑 Đổi API Key AI</button>
             <input type="file" id="import-file" style="display: none;" onchange="importData(event)">
             <span id="backup-toast" style="font-size:0.85rem; color:#10b981; font-weight:700; opacity:0; transition:opacity 0.5s;"></span>
+          </div>
+        </div>
+
+        <!-- Live Real-Time Analytics Banner in Admin -->
+        <div class="admin-live-metrics" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.8rem; margin-top: 1.5rem;">
+          <div class="card" style="padding: 1.2rem; display: flex; align-items: center; gap: 1rem; border-left: 4px solid #10b981; margin: 0;">
+            <div style="font-size: 2rem;">🟢</div>
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Đang truy cập trực tiếp</div>
+              <div style="font-size: 1.5rem; font-weight: 900; color: #10b981; display: flex; align-items: center; gap: 0.4rem;">
+                <span id="live-online-count">14</span> <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-dim);">người online</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="padding: 1.2rem; display: flex; align-items: center; gap: 1rem; border-left: 4px solid #3b82f6; margin: 0;">
+            <div style="font-size: 2rem;">👥</div>
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Tổng thành viên đăng ký</div>
+              <div style="font-size: 1.5rem; font-weight: 900; color: #3b82f6;" id="live-users-count">1,284</div>
+            </div>
+          </div>
+
+          <div class="card" style="padding: 1.2rem; display: flex; align-items: center; gap: 1rem; border-left: 4px solid #f59e0b; margin: 0;">
+            <div style="font-size: 2rem;">📊</div>
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Lượt làm bài hôm nay</div>
+              <div style="font-size: 1.5rem; font-weight: 900; color: #f59e0b;" id="live-tests-count">342</div>
+            </div>
+          </div>
+
+          <div class="card" style="padding: 1.2rem; display: flex; align-items: center; gap: 1rem; border-left: 4px solid #ec4899; margin: 0;">
+            <div style="font-size: 2rem;">💬</div>
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Tin nhắn thảo luận</div>
+              <div style="font-size: 1.5rem; font-weight: 900; color: #ec4899;" id="live-chats-count">128</div>
+            </div>
           </div>
         </div>
 
@@ -858,13 +935,66 @@
       </div>
       </div>
     </section>
+
+    <!-- COMMUNITY CHAT VIEW (KÊNH THẢO LUẬN ẨN DANH B2) -->
+    <section id="community" class="section-view" style="display: none; max-width: 1100px; margin: 0 auto; padding: 2rem 1rem;">
+      <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-light); border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.25);">
+        
+        <!-- Chat Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 1.8rem; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-light); flex-wrap: wrap; gap: 0.8rem;">
+          <div style="display: flex; align-items: center; gap: 0.8rem;">
+            <span style="width: 12px; height: 12px; border-radius: 50%; background: #10b981; display: inline-block; box-shadow: 0 0 10px #10b981;"></span>
+            <h3 style="margin: 0; font-size: 1.2rem; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; color: var(--accent-cyan);">KÊNH THẢO LUẬN B2</h3>
+            <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981; font-weight: 800; padding: 0.25rem 0.7rem; border-radius: 12px; font-size: 0.8rem;" id="chat-online-badge">7 online</span>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 0.8rem;">
+            <button id="chat-anon-toggle-btn" class="btn btn-secondary" onclick="toggleChatAnonymousMode()" style="padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+              🕵️‍♂️ Chế độ Ẩn Danh: BẬT
+            </button>
+          </div>
+        </div>
+
+        <!-- Chat Messages Body -->
+        <div id="chat-messages-container" style="height: 500px; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.2rem; background: rgba(0,0,0,0.12);">
+          <!-- Chat messages rendered dynamically -->
+        </div>
+
+        <!-- Chat Input Bar -->
+        <form id="chat-send-form" onsubmit="sendChatMessage(event)" style="display: flex; align-items: center; gap: 0.8rem; padding: 1rem 1.5rem; background: rgba(0,0,0,0.25); border-top: 1px solid var(--border-light);">
+          <button type="button" style="background: none; border: none; font-size: 1.4rem; cursor: pointer;" onclick="insertChatEmoji('😊')">😊</button>
+          <input type="text" id="chat-input-text" placeholder="Nhập tin nhắn thảo luận (không giới hạn ngôn từ)..." style="flex-grow: 1; padding: 0.85rem 1.4rem; border-radius: 30px; border: 1px solid var(--border-light); background: rgba(255,255,255,0.05); color: var(--text-main); font-size: 1rem; outline: none;" required>
+          <button type="submit" style="background: linear-gradient(135deg, #f59e0b, #d97706); border: none; color: white; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); flex-shrink: 0;">
+            🚀
+          </button>
+        </form>
+
+      </div>
+    </section>
+
+    <!-- TEST RESULTS & ANSWER KEY HISTORY VIEW -->
+    <section id="results_history" class="section-view" style="display: none; max-width: 1150px; margin: 0 auto; padding: 2rem 1rem;">
+      <div id="results-history-content">
+        <!-- Rendered dynamically via JS: Login lock or Full history table -->
+      </div>
+    </section>
   </main>
+
+  <!-- Modal Review Answer Key Detail (Goethe/Telc B2 German Form 100% Matching) -->
+  <div id="answer-review-modal" class="modal" style="display: none; position: fixed; z-index: 11000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(8, 8, 20, 0.9); backdrop-filter: blur(10px); align-items: center; justify-content: center;">
+    <div style="background: #111827; color: #ffffff; border-radius: 24px; border: 1.5px solid rgba(255, 255, 255, 0.15); width: 95%; max-width: 1180px; height: 90vh; display: flex; flex-direction: column; padding: 1.8rem; box-shadow: 0 25px 60px rgba(0,0,0,0.7); position: relative; font-family: 'Plus Jakarta Sans', sans-serif;">
+      <span onclick="closeAnswerReviewModal()" style="position: absolute; right: 1.5rem; top: 1.2rem; font-size: 1.8rem; cursor: pointer; color: #94a3b8; font-weight: 800; z-index: 10;" onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='#94a3b8'">&times;</span>
+      
+      <div id="review-modal-body" style="overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 1rem;">
+        <!-- Content rendered dynamically: Top Metrics + Subtabs + 2-Column Split View -->
+      </div>
+    </div>
+  </div>
 
   <footer style="text-align: center; padding: 2rem; border-top: 1px solid var(--border-light); margin-top: 4rem; color: var(--text-dim);">
     <p>© 2026 MaterNoPro. Tất cả quyền được bảo lưu.</p>
   </footer>
 
-  <!-- Donate & Support Modal -->
   <!-- Donate & Support Modal -->
   <div id="donate-modal" class="modal" style="display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); align-items: center; justify-content: center;">
     <div class="modal-content" style="background: rgba(22, 22, 54, 0.9); border: 1px solid rgba(0, 242, 254, 0.25); border-radius: 20px; padding: 2.2rem; width: 90%; max-width: 500px; box-shadow: 0 0 35px rgba(0, 242, 254, 0.25); color: #fff; position: relative; text-align: center; font-family: 'Inter', sans-serif; animation: fadeIn 0.3s ease;">
@@ -903,8 +1033,197 @@
           <img src="logo.jpg" style="width: 60px; height: 60px; border-radius: 50%; margin-top: 1.5rem; object-fit: cover; border: 2px solid var(--accent-cyan); box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);">
         </div>
       </div>
+    </div>
+  </div>
 
-      <!-- (Removed QR code) -->
+  <!-- Login / Register Modal (Dark Cyberpunk Sleek Badass Card + Pure White High-Readability Inputs) -->
+  <div id="login-modal" class="modal" style="display: none; position: fixed; z-index: 10500; left: 0; top: 0; width: 100%; height: 100%; background: rgba(8, 8, 20, 0.85); backdrop-filter: blur(14px); align-items: center; justify-content: center;">
+    <div style="background: rgba(16, 16, 34, 0.96); color: #ffffff; border-radius: 28px; border: 2px solid rgba(0, 242, 254, 0.4); width: 92%; max-width: 440px; padding: 2.5rem 2.2rem; box-shadow: 0 0 40px rgba(168, 85, 247, 0.4), 0 0 80px rgba(0, 242, 254, 0.2); position: relative; font-family: 'Plus Jakarta Sans', sans-serif;">
+      
+      <span onclick="closeLoginModal()" style="position: absolute; right: 1.5rem; top: 1.2rem; font-size: 1.6rem; cursor: pointer; color: #94a3b8; font-weight: 800; transition: color 0.2s;" onmouseover="this.style.color='#00f2fe'" onmouseout="this.style.color='#94a3b8'">&times;</span>
+      
+      <div style="text-align: center; margin-bottom: 1.5rem;">
+        <img src="logo.jpg" class="lightning-logo-pulse" style="width: 88px; height: 88px; border-radius: 50%; object-fit: cover; border: 3px solid #00f2fe; box-shadow: 0 0 25px rgba(0, 242, 254, 0.8), 0 0 50px rgba(168, 85, 247, 0.6); margin-bottom: 0.8rem; cursor: pointer;">
+        <h2 id="auth-modal-title" style="font-size: 2.1rem; font-weight: 900; letter-spacing: -0.5px; margin: 0 0 0.3rem 0; color: #ffffff; text-shadow: 0 0 12px rgba(0, 242, 254, 0.5); text-transform: uppercase;">CHÀO MỪNG</h2>
+        <p id="auth-modal-subtitle" style="color: #94a3b8; font-size: 0.95rem; margin: 0; font-weight: 600;">Đăng nhập tài khoản của bạn</p>
+      </div>
+
+      <form id="auth-main-form" onsubmit="handleManualLogin(event)">
+        
+        <div id="reg-name-field" style="display: none; margin-bottom: 1.2rem;">
+          <label style="display: block; font-weight: 800; font-size: 0.82rem; text-transform: uppercase; margin-bottom: 0.5rem; color: #e2e8f0;">HỌ VÀ TÊN</label>
+          <div style="position: relative;">
+            <div style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border-radius: 10px; background: #e0e7ff; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; z-index: 2;">👤</div>
+            <input type="text" id="login-name" placeholder="Nhập họ tên của bạn" style="width: 100%; padding: 0.9rem 1rem 0.9rem 3.6rem; border: 2px solid #cbd5e1; border-radius: 16px; font-size: 0.98rem; outline: none; font-weight: 700; background: #ffffff; color: #0f172a;">
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1.2rem;">
+          <label style="display: block; font-weight: 800; font-size: 0.82rem; text-transform: uppercase; margin-bottom: 0.5rem; color: #e2e8f0;">ĐỊA CHỈ EMAIL</label>
+          <div style="position: relative;">
+            <div style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border-radius: 10px; background: #fce7f3; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; z-index: 2;">✉️</div>
+            <input type="email" id="login-email" value="Maternopro@gmail.com" placeholder="Maternopro@gmail.com" style="width: 100%; padding: 0.9rem 1rem 0.9rem 3.6rem; border: 2px solid #cbd5e1; border-radius: 16px; font-size: 0.98rem; outline: none; font-weight: 700; background: #ffffff; color: #0f172a;" required>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; font-weight: 800; font-size: 0.82rem; text-transform: uppercase; margin-bottom: 0.5rem; color: #e2e8f0;">MẬT KHẨU</label>
+          <div style="position: relative;">
+            <div style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border-radius: 10px; background: #ffedd5; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; z-index: 2;">🔒</div>
+            <input type="password" id="login-password" value="12345678" placeholder="••••••••••••" style="width: 100%; padding: 0.9rem 1rem 0.9rem 3.6rem; border: 2px solid #cbd5e1; border-radius: 16px; font-size: 0.98rem; outline: none; font-weight: 700; background: #ffffff; color: #0f172a;" required>
+          </div>
+          <div style="text-align: right; margin-top: 0.5rem;">
+            <a href="#" onclick="alert('Hãy dùng Đăng nhập bằng Google hoặc bấm Đăng ký ngay!')" style="font-size: 0.85rem; color: #cbd5e1; font-weight: 700; text-decoration: none;">Quên mật khẩu?</a>
+          </div>
+        </div>
+
+        <button type="submit" id="auth-submit-btn" style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #ec4899, #d946ef); color: #ffffff; border: none; border-radius: 18px; font-weight: 900; font-size: 1.1rem; text-transform: uppercase; cursor: pointer; box-shadow: 0 4px 20px rgba(236, 72, 153, 0.5); transition: all 0.2s; margin-bottom: 1.5rem;">
+          ĐĂNG NHẬP
+        </button>
+      </form>
+
+      <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+        <div style="flex-grow: 1; height: 1px; background: rgba(255, 255, 255, 0.15);"></div>
+        <span style="font-size: 0.8rem; font-weight: 800; color: #94a3b8; text-transform: uppercase;">HOẶC</span>
+        <div style="flex-grow: 1; height: 1px; background: rgba(255, 255, 255, 0.15);"></div>
+      </div>
+
+      <button type="button" onclick="openGooglePickerModal()" style="width: 100%; padding: 0.95rem; background: rgba(255, 255, 255, 0.08); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 18px; font-weight: 900; font-size: 1rem; text-transform: uppercase; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); display: flex; align-items: center; justify-content: center; gap: 0.8rem; margin-bottom: 1.5rem; transition: all 0.2s;">
+        <svg style="width: 22px; height: 22px;" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+        TIẾP TỤC VỚI GOOGLE
+      </button>
+
+      <div style="text-align: center;">
+        <span id="auth-switch-prompt" style="color: #94a3b8; font-size: 0.9rem; font-weight: 600;">Chưa có tài khoản? </span>
+        <a href="#" id="auth-switch-link" onclick="toggleRegisterMode(event)" style="color: #00f2fe; font-weight: 800; text-decoration: none; text-shadow: 0 0 8px rgba(0, 242, 254, 0.4);">Đăng ký ngay</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Profile Modal - Premium Dark Redesign -->
+  <div id="profile-modal" class="modal" style="display: none; position: fixed; z-index: 10500; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); backdrop-filter: blur(12px); align-items: center; justify-content: center;">
+    <div style="background: linear-gradient(145deg, #0f0f1a, #1a1a2e); color: #fff; border-radius: 28px; border: 1px solid rgba(255,255,255,0.1); width: 92%; max-width: 460px; padding: 0; box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(139,92,246,0.15); position: relative; overflow: hidden; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;">
+
+      <!-- Gradient top bar -->
+      <div style="height: 4px; background: linear-gradient(90deg, #7c3aed, #06b6d4, #ec4899); border-radius: 28px 28px 0 0;"></div>
+
+      <!-- Close button -->
+      <span onclick="closeProfileModal()" style="position: absolute; right: 1.2rem; top: 1.2rem; width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 900; cursor: pointer; color: #94a3b8; transition: all 0.2s; z-index: 2;" onmouseover="this.style.background='rgba(239,68,68,0.2)';this.style.color='#ef4444'" onmouseout="this.style.background='rgba(255,255,255,0.08)';this.style.color='#94a3b8'">✕</span>
+
+      <div style="padding: 2rem 2rem 1.5rem;">
+        <!-- Title -->
+        <h2 style="font-size: 1.25rem; font-weight: 900; margin: 0 0 1.5rem 0; color: #fff; text-transform: uppercase; letter-spacing: 2px; text-align: center; background: linear-gradient(135deg, #a78bfa, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Hồ Sơ Cá Nhân</h2>
+
+        <!-- Avatar Upload -->
+        <div style="text-align: center; margin-bottom: 1.8rem;">
+          <div style="position: relative; display: inline-block;">
+            <img id="profile-avatar-img" src="logo.jpg" style="width: 96px; height: 96px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(139,92,246,0.6); box-shadow: 0 0 0 6px rgba(139,92,246,0.1), 0 8px 32px rgba(0,0,0,0.4);">
+            <!-- Upload overlay -->
+            <label for="avatar-file-input" style="position: absolute; inset: 0; border-radius: 50%; background: rgba(0,0,0,0.55); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'">
+              <span style="font-size: 1.5rem;">📷</span>
+              <span style="font-size: 0.65rem; font-weight: 800; color: #fff; margin-top: 2px;">THAY ẢNH</span>
+            </label>
+            <input type="file" id="avatar-file-input" accept="image/*" style="display:none;" onchange="handleAvatarUpload(event)">
+            <!-- Camera badge -->
+            <label for="avatar-file-input" style="position: absolute; bottom: 2px; right: 2px; width: 26px; height: 26px; border-radius: 50%; background: linear-gradient(135deg,#7c3aed,#06b6d4); border: 2px solid #0f0f1a; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem;">📷</label>
+          </div>
+          <div style="font-size: 0.78rem; color: #64748b; font-weight: 600; margin-top: 0.6rem;">Bấm vào ảnh để tải ảnh đại diện từ máy</div>
+        </div>
+
+        <form onsubmit="saveUserProfile(event)">
+          <!-- Name -->
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-weight: 700; font-size: 0.78rem; margin-bottom: 0.4rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Họ tên</label>
+            <input type="text" id="profile-name" value="Maternopro" style="width: 100%; padding: 0.75rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; font-size: 0.95rem; font-weight: 700; outline: none; color: #fff; box-sizing: border-box; transition: border 0.2s;" onfocus="this.style.borderColor='rgba(139,92,246,0.6)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'" required>
+          </div>
+
+          <!-- Gender + DOB -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1rem;">
+            <div>
+              <label style="display: block; font-weight: 700; font-size: 0.78rem; margin-bottom: 0.4rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Giới tính</label>
+              <select id="profile-gender" style="width: 100%; padding: 0.75rem 0.8rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; font-size: 0.9rem; font-weight: 700; outline: none; color: #fff; box-sizing: border-box;" onfocus="this.style.borderColor='rgba(139,92,246,0.6)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                <option value="Chưa chọn" style="background:#1a1a2e">Chưa chọn</option>
+                <option value="Nam" style="background:#1a1a2e">Nam</option>
+                <option value="Nữ" style="background:#1a1a2e">Nữ</option>
+                <option value="Khác" style="background:#1a1a2e">Khác</option>
+              </select>
+            </div>
+            <div>
+              <label style="display: block; font-weight: 700; font-size: 0.78rem; margin-bottom: 0.4rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Ngày sinh</label>
+              <input type="date" id="profile-dob" style="width: 100%; padding: 0.75rem 0.6rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; font-size: 0.85rem; font-weight: 700; outline: none; color: #fff; box-sizing: border-box; color-scheme: dark;" onfocus="this.style.borderColor='rgba(139,92,246,0.6)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+            </div>
+          </div>
+
+          <!-- Exam date -->
+          <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; font-weight: 700; font-size: 0.78rem; margin-bottom: 0.4rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Ngày thi dự kiến <span style="color:#f59e0b">(để đếm ngược)</span></label>
+            <input type="date" id="profile-exam-date" style="width: 100%; padding: 0.75rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; font-size: 0.9rem; font-weight: 700; outline: none; color: #fff; box-sizing: border-box; color-scheme: dark;" onfocus="this.style.borderColor='rgba(245,158,11,0.6)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+          </div>
+
+          <!-- Save button -->
+          <button type="submit" style="width: 100%; padding: 0.85rem; background: linear-gradient(135deg, #7c3aed, #2563eb); color: #fff; border: none; border-radius: 14px; font-weight: 900; font-size: 0.95rem; text-transform: uppercase; cursor: pointer; letter-spacing: 1px; margin-bottom: 0.7rem; box-shadow: 0 6px 20px rgba(124,58,237,0.35); transition: transform 0.15s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
+            💾 Lưu Hồ Sơ
+          </button>
+
+          <!-- Stats button -->
+          <button type="button" onclick="switchView('results_history'); closeProfileModal();" style="width: 100%; padding: 0.85rem; background: rgba(255,255,255,0.05); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; font-weight: 800; font-size: 0.9rem; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 0.7rem; letter-spacing: 0.5px; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+            📊 Xem Thống Kê Bài Thi
+          </button>
+
+          <!-- Logout button -->
+          <button type="button" onclick="logoutUser()" style="width: 100%; padding: 0.75rem; background: rgba(239,68,68,0.08); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; font-weight: 800; font-size: 0.88rem; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px;" onmouseover="this.style.background='rgba(239,68,68,0.18)'" onmouseout="this.style.background='rgba(239,68,68,0.08)'">
+            🚪 Đăng xuất
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Google Account Chooser Popup Modal (Screenshot 4 style) -->
+  <div id="google-picker-modal" class="modal" style="display: none; position: fixed; z-index: 11000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); align-items: center; justify-content: center;">
+    <div style="background: #ffffff; color: #1f2937; border-radius: 16px; width: 90%; max-width: 440px; padding: 2rem; box-shadow: 0 20px 50px rgba(0,0,0,0.3); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; position: relative;">
+      <span onclick="closeGooglePickerModal()" style="position: absolute; right: 1.2rem; top: 1rem; font-size: 1.5rem; cursor: pointer; color: #6b7280;">&times;</span>
+      
+      <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.5rem;">
+        <svg style="width: 24px; height: 24px;" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+        <span style="font-weight: 700; font-size: 1.1rem; color: #111827;">Đăng nhập bằng Google</span>
+      </div>
+
+      <h3 style="font-size: 1.5rem; font-weight: 600; color: #111827; margin-bottom: 0.3rem;">Chọn tài khoản</h3>
+      <p style="font-size: 0.9rem; color: #4b5563; margin-bottom: 1.5rem;">Tiếp tục tới <b>maternopro.com</b></p>
+
+      <div style="display: flex; flex-direction: column; gap: 0.5rem; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; padding: 0.8rem 0; margin-bottom: 1.2rem;">
+        
+        <div onclick="selectGoogleAccount('Minh Anh Nguyen', 'minhanhf45@gmail.com', 'https://api.dicebear.com/7.x/avataaars/svg?seed=MinhAnh')" style="display: flex; align-items: center; gap: 1rem; padding: 0.8rem; border-radius: 8px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='none'">
+          <div style="width: 40px; height: 40px; border-radius: 50%; background: #ea580c; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1rem;">M</div>
+          <div>
+            <div style="font-weight: 600; font-size: 0.95rem; color: #111827;">Minh Anh Nguyen</div>
+            <div style="font-size: 0.85rem; color: #6b7280;">minhanhf45@gmail.com</div>
+          </div>
+        </div>
+
+        <div onclick="selectGoogleAccount('Anh thy Nguyễn', 'anhthyf45@gmail.com', 'https://api.dicebear.com/7.x/avataaars/svg?seed=AnhThy')" style="display: flex; align-items: center; gap: 1rem; padding: 0.8rem; border-radius: 8px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='none'">
+          <div style="width: 40px; height: 40px; border-radius: 50%; background: #16a34a; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1rem;">A</div>
+          <div>
+            <div style="font-weight: 600; font-size: 0.95rem; color: #111827;">Anh thy Nguyễn</div>
+            <div style="font-size: 0.85rem; color: #6b7280;">anhthyf45@gmail.com</div>
+          </div>
+        </div>
+
+        <div onclick="selectGoogleAccount('Mater Nopro', 'maternopro@gmail.com', 'logo.jpg')" style="display: flex; align-items: center; gap: 1rem; padding: 0.8rem; border-radius: 8px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='none'">
+          <img src="logo.jpg" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+          <div>
+            <div style="font-weight: 600; font-size: 0.95rem; color: #111827;">Mater Nopro</div>
+            <div style="font-size: 0.85rem; color: #6b7280;">maternopro@gmail.com</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div onclick="customGoogleAccountInput()" style="display: flex; align-items: center; gap: 1rem; padding: 0.6rem 0.8rem; border-radius: 8px; cursor: pointer; color: #2563eb; font-weight: 600; font-size: 0.95rem;">
+        <span>👤</span> Sử dụng một tài khoản khác
+      </div>
     </div>
   </div>
 
@@ -912,6 +1231,6 @@
   <script src="reading_texts.js?v=115"></script>
   <script src="default_db.js"></script>
   <script src="config.js"></script>
-  <script src="app_draft.js"></script>
+  <script src="app_draft.js?v=206"></script>
 </body>
 </html>
