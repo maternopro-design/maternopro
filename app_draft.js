@@ -8844,12 +8844,14 @@ document.addEventListener('DOMContentLoaded', () => {
   updateHeaderAuthUI();
   initLiveMetrics();
   renderChatMessages();
+  if (typeof initGoogleSignIn === 'function') initGoogleSignIn();
 });
 
 setTimeout(() => {
   updateHeaderAuthUI();
   initLiveMetrics();
   renderChatMessages();
+  if (typeof initGoogleSignIn === 'function') initGoogleSignIn();
 }, 200);
 
 // =========================================================
@@ -9195,5 +9197,66 @@ function importSystemBackup(event) {
   };
   reader.readAsText(file);
   event.target.value = '';
+}
+
+// === Official Google Sign-In SDK Integration ===
+const GOOGLE_CLIENT_ID = ''; // Enter Google Client ID here to enable real Google Sign-In
+
+function initGoogleSignIn() {
+  const client_id = localStorage.getItem('google_client_id') || GOOGLE_CLIENT_ID;
+  const container = document.getElementById("google-signin-button-container");
+  const mockBtn = document.getElementById("google-signin-mock-btn");
+  
+  if (!client_id) {
+    console.log("Google Client ID not configured. Using fallback Mock Google Picker.");
+    if (container) container.style.display = 'none';
+    if (mockBtn) mockBtn.style.display = 'flex';
+    return;
+  }
+
+  if (container) container.style.display = 'flex';
+  if (mockBtn) mockBtn.style.display = 'none';
+
+  if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+    google.accounts.id.initialize({
+      client_id: client_id,
+      callback: handleGoogleSignInResponse
+    });
+    
+    google.accounts.id.renderButton(
+      container,
+      { 
+        theme: "filled_blue", 
+        size: "large", 
+        width: 320,
+        text: "continue_with",
+        shape: "pill"
+      }
+    );
+  } else {
+    // Retry if Google library is not loaded yet
+    setTimeout(initGoogleSignIn, 300);
+  }
+}
+
+function handleGoogleSignInResponse(response) {
+  try {
+    const base64Url = response.credential.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    const payload = JSON.parse(jsonPayload);
+    const email = payload.email;
+    const name = payload.name;
+    const avatar = payload.picture;
+
+    // Securely complete login for Google verified email
+    completeUserLogin(name, email, avatar);
+  } catch (error) {
+    console.error("Failed to decode Google Sign-In token:", error);
+    alert("❌ Đăng nhập Google thất bại! Vui lòng thử lại.");
+  }
 }
 
