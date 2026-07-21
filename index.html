@@ -1092,7 +1092,7 @@
         <p id="auth-modal-subtitle" style="color: #94a3b8; font-size: 0.95rem; margin: 0; font-weight: 600;">Đăng nhập tài khoản của bạn</p>
       </div>
 
-      <form id="auth-main-form" onsubmit="handleManualLogin(event)">
+      <form id="auth-main-form" autocomplete="off" onsubmit="handleManualLogin(event)">
         
         <div id="reg-name-field" style="display: none; margin-bottom: 1.2rem;">
           <label style="display: block; font-weight: 800; font-size: 0.82rem; text-transform: uppercase; margin-bottom: 0.5rem; color: #e2e8f0;">HỌ VÀ TÊN</label>
@@ -1114,7 +1114,7 @@
           <label style="display: block; font-weight: 800; font-size: 0.82rem; text-transform: uppercase; margin-bottom: 0.5rem; color: #e2e8f0;">MẬT KHẨU</label>
           <div style="position: relative;">
             <div style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border-radius: 10px; background: #ffedd5; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; z-index: 2;">🔒</div>
-            <input type="password" id="login-password" autocomplete="new-password" placeholder="••••••••••••" style="width: 100%; padding: 0.9rem 1rem 0.9rem 3.6rem; border: 2px solid #cbd5e1; border-radius: 16px; font-size: 0.98rem; outline: none; font-weight: 700; background: #ffffff; color: #0f172a;" required>
+            <input type="text" id="login-password" autocomplete="off" placeholder="••••••••••••" style="width: 100%; padding: 0.9rem 1rem 0.9rem 3.6rem; border: 2px solid #cbd5e1; border-radius: 16px; font-size: 0.98rem; outline: none; font-weight: 700; background: #ffffff; color: #0f172a; -webkit-text-security: disc; text-security: disc;" required>
           </div>
           <div style="text-align: right; margin-top: 0.5rem;">
             <a href="#" onclick="alert('Hãy dùng Đăng nhập bằng Google hoặc bấm Đăng ký ngay!')" style="font-size: 0.85rem; color: #cbd5e1; font-weight: 700; text-decoration: none;">Quên mật khẩu?</a>
