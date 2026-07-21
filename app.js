@@ -8338,17 +8338,57 @@ function closeGooglePickerModal() {
 
 function selectGoogleAccount(name, email, avatar) {
   closeGooglePickerModal();
-  currentUser = {
-    name: name,
-    email: email,
-    avatar: avatar || 'logo.jpg',
-    gender: 'Nam',
-    dob: '2001-05-15',
-    examDate: '2026-08-30'
-  };
+  
+  // Try to load existing profile details from the accounts system first!
+  let accounts = JSON.parse(localStorage.getItem('maternopro_accounts')) || {};
+  const storedAccount = accounts[email.toLowerCase()];
+  
+  if (storedAccount) {
+    currentUser = {
+      name: storedAccount.name || name,
+      email: email,
+      avatar: storedAccount.avatar || avatar || 'logo.jpg',
+      gender: storedAccount.gender || 'Nam',
+      dob: storedAccount.dob || '2001-05-15',
+      examDate: storedAccount.examDate || '2026-08-30'
+    };
+    
+    // In case the account existed but didn't have basic fields filled yet
+    let updated = false;
+    if (!storedAccount.avatar) { storedAccount.avatar = currentUser.avatar; updated = true; }
+    if (!storedAccount.gender) { storedAccount.gender = currentUser.gender; updated = true; }
+    if (!storedAccount.dob) { storedAccount.dob = currentUser.dob; updated = true; }
+    if (!storedAccount.examDate) { storedAccount.examDate = currentUser.examDate; updated = true; }
+    if (updated) {
+      localStorage.setItem('maternopro_accounts', JSON.stringify(accounts));
+    }
+  } else {
+    // New account (e.g. login from Google picker for the first time)
+    currentUser = {
+      name: name,
+      email: email,
+      avatar: avatar || 'logo.jpg',
+      gender: 'Nam',
+      dob: '2001-05-15',
+      examDate: '2026-08-30'
+    };
+    
+    // Save to accounts system so it has profile details saved
+    accounts[email.toLowerCase()] = {
+      password: '', // passwordless Google sign-in account
+      name: name,
+      avatar: avatar || 'logo.jpg',
+      gender: 'Nam',
+      dob: '2001-05-15',
+      examDate: '2026-08-30',
+      createdAt: new Date().toISOString()
+    };
+    localStorage.setItem('maternopro_accounts', JSON.stringify(accounts));
+  }
+  
   localStorage.setItem('maternopro_user', JSON.stringify(currentUser));
   updateHeaderAuthUI();
-  alert(`🎉 Đăng nhập thành công với tài khoản Google: ${name} (${email})!`);
+  alert(`🎉 Đăng nhập thành công với tài khoản: ${currentUser.name} (${email})!`);
 }
 
 function customGoogleAccountInput() {
@@ -8523,6 +8563,20 @@ function saveUserProfile(e) {
   currentUser.dob = document.getElementById('profile-dob').value;
   currentUser.examDate = document.getElementById('profile-exam-date').value;
   localStorage.setItem('maternopro_user', JSON.stringify(currentUser));
+  
+  // Sync changes to the accounts database
+  if (currentUser.email) {
+    let accounts = JSON.parse(localStorage.getItem('maternopro_accounts')) || {};
+    const lowerEmail = currentUser.email.toLowerCase();
+    if (accounts[lowerEmail]) {
+      accounts[lowerEmail].name = currentUser.name;
+      accounts[lowerEmail].gender = currentUser.gender;
+      accounts[lowerEmail].dob = currentUser.dob;
+      accounts[lowerEmail].examDate = currentUser.examDate;
+      localStorage.setItem('maternopro_accounts', JSON.stringify(accounts));
+    }
+  }
+  
   updateHeaderAuthUI();
   closeProfileModal();
   alert('✅ Đã lưu thông tin Hồ sơ cá nhân thành công!');
@@ -8554,6 +8608,17 @@ function handleAvatarUpload(event) {
     if (currentUser) {
       currentUser.avatar = base64;
       localStorage.setItem('maternopro_user', JSON.stringify(currentUser));
+      
+      // Sync changes to the accounts database
+      if (currentUser.email) {
+        let accounts = JSON.parse(localStorage.getItem('maternopro_accounts')) || {};
+        const lowerEmail = currentUser.email.toLowerCase();
+        if (accounts[lowerEmail]) {
+          accounts[lowerEmail].avatar = base64;
+          localStorage.setItem('maternopro_accounts', JSON.stringify(accounts));
+        }
+      }
+      
       updateHeaderAuthUI();
     }
   };
