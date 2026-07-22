@@ -8290,18 +8290,30 @@ function updateHeaderAuthUI() {
     authBtn.onclick = openLoginModal;
   }
 
-  // Toggle Admin Nav Button visibility based on current user's email
+  // Toggle Admin Nav Button, Unban & Reset Buttons visibility based on current user's email
   const adminNavBtn = document.querySelector('.nav-btn[onclick="switchView(\'admin\')"]');
-  if (adminNavBtn) {
-    if (isCurrentUserAdmin()) {
-      adminNavBtn.style.display = 'inline-block';
-    } else {
-      adminNavBtn.style.display = 'none';
-      // If currently on admin page, force redirect back to dashboard
-      const adminSection = document.getElementById('admin');
-      if (adminSection && adminSection.style.display === 'block') {
-        switchView('dashboard');
-      }
+  const unbanBtn = document.getElementById('admin-unban-manage-btn');
+  const unbanBtnFloat = document.getElementById('admin-unban-manage-btn-float');
+  const resetBtn = document.getElementById('admin-reset-chat-btn');
+  const resetBtnFloat = document.getElementById('admin-reset-chat-btn-float');
+  
+  if (isCurrentUserAdmin()) {
+    if (adminNavBtn) adminNavBtn.style.display = 'inline-block';
+    if (unbanBtn) unbanBtn.style.display = 'inline-flex';
+    if (unbanBtnFloat) unbanBtnFloat.style.display = 'inline-flex';
+    if (resetBtn) resetBtn.style.display = 'inline-flex';
+    if (resetBtnFloat) resetBtnFloat.style.display = 'inline-flex';
+  } else {
+    if (adminNavBtn) adminNavBtn.style.display = 'none';
+    if (unbanBtn) unbanBtn.style.display = 'none';
+    if (unbanBtnFloat) unbanBtnFloat.style.display = 'none';
+    if (resetBtn) resetBtn.style.display = 'none';
+    if (resetBtnFloat) resetBtnFloat.style.display = 'none';
+    
+    // If currently on admin page, force redirect back to dashboard
+    const adminSection = document.getElementById('admin');
+    if (adminSection && adminSection.style.display === 'block') {
+      switchView('dashboard');
     }
   }
 }
@@ -8381,11 +8393,82 @@ function completeUserLogin(name, email, avatar) {
   alert(`🎉 Đăng nhập thành công với tài khoản: ${currentUser.name} (${email})!`);
 }
 
-function customGoogleAccountInput() {
-  const email = prompt("Nhập địa chỉ Email Google của bạn:");
-  if (email && email.includes('@')) {
-    const name = email.split('@')[0];
-    selectGoogleAccount(name, email, `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`);
+function initGoogleSignIn() {
+  const clientId = localStorage.getItem('google_client_id');
+  if (!clientId) return;
+  
+  // Wait for Google Identity Services library to load (it's async)
+  if (!window.google || !google.accounts || !google.accounts.id) {
+    setTimeout(initGoogleSignIn, 500);
+    return;
+  }
+  
+  google.accounts.id.initialize({
+    client_id: clientId,
+    callback: handleGoogleSignInResponse,
+    auto_select: false
+  });
+  
+  // Render the official Google button inside the container
+  const btnContainer = document.getElementById('google-signin-btn-container');
+  if (btnContainer) {
+    btnContainer.innerHTML = '';
+    google.accounts.id.renderButton(
+      btnContainer,
+      { theme: 'outline', size: 'large', width: 340, text: 'continue_with', shape: 'pill', locale: 'vi' }
+    );
+  }
+}
+
+function triggerGoogleSignIn() {
+  const clientId = localStorage.getItem('google_client_id');
+  
+  if (!clientId) {
+    alert("❌ Chưa có mã Google Client ID! Vui lòng kiểm tra lại file config.js.");
+    return;
+  }
+  
+  if (window.google && google.accounts && google.accounts.id) {
+    google.accounts.id.initialize({
+      client_id: clientId,
+      callback: handleGoogleSignInResponse,
+      auto_select: false
+    });
+    google.accounts.id.prompt();
+  } else {
+    alert("⏳ Thư viện Google đang tải, vui lòng thử lại sau vài giây!");
+  }
+}
+
+function handleGoogleSignInResponse(response) {
+  try {
+    const base64Url = response.credential.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+    const payload = JSON.parse(jsonPayload);
+    
+    const email = payload.email;
+    const name = payload.name || email.split('@')[0];
+    const avatar = payload.picture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`;
+    
+    // Auto-register Google user if not exists
+    let accounts = JSON.parse(localStorage.getItem('maternopro_accounts')) || {};
+    const lowerEmail = email.toLowerCase();
+    if (!accounts[lowerEmail]) {
+      accounts[lowerEmail] = {
+        password: 'GOOGLE_AUTHENTICATED_NO_PASS',
+        name: name,
+        avatar: avatar,
+        createdAt: new Date().toISOString(),
+        isGoogleAuth: true
+      };
+      localStorage.setItem('maternopro_accounts', JSON.stringify(accounts));
+    }
+    
+    completeUserLogin(name, lowerEmail, avatar);
+  } catch (err) {
+    console.error("Google sign in parse error:", err);
+    alert("❌ Không thể xử lý phản hồi từ Google. Vui lòng thử lại!");
   }
 }
 
@@ -8712,7 +8795,7 @@ let defaultCommunityMessages = [
   { id: 5, sender: "Minh Anh Nguyen", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=MinhAnh", text: "học sinh tuyển ầm ầm", time: "20:44", isSelf: true }
 ];
 
-// Auto-reset chat messages daily
+// Auto-reset chat messages daily (tự động xóa sạch tin nhắn cũ sau mỗi ngày mới)
 const todayStr = new Date().toISOString().slice(0, 10);
 const lastResetDate = localStorage.getItem('maternopro_chat_last_reset_date');
 if (lastResetDate !== todayStr) {
@@ -8722,6 +8805,12 @@ if (lastResetDate !== todayStr) {
 
 let communityMessages = JSON.parse(localStorage.getItem('maternopro_chat_messages')) || defaultCommunityMessages;
 
+// Giới hạn tuyệt đối tối đa 40 tin nhắn gần nhất
+if (communityMessages.length > 40) {
+  communityMessages = communityMessages.slice(communityMessages.length - 40);
+  localStorage.setItem('maternopro_chat_messages', JSON.stringify(communityMessages));
+}
+
 function toggleChatAnonymousMode() {
   chatAnonymousMode = !chatAnonymousMode;
   const btn = document.getElementById('chat-anon-toggle-btn');
@@ -8729,16 +8818,127 @@ function toggleChatAnonymousMode() {
     btn.innerHTML = chatAnonymousMode ? '🕵️‍♂️ Chế độ Ẩn Danh: BẬT' : '👤 Chế độ Tên Thật: BẬT';
     btn.style.color = chatAnonymousMode ? '#10b981' : '#3b82f6';
   }
+  const btnFloat = document.getElementById('chat-anon-toggle-btn-float');
+  if (btnFloat) {
+    btnFloat.innerHTML = chatAnonymousMode ? '🕵️‍♂️ Ẩn Danh' : '👤 Tên Thật';
+    btnFloat.style.color = chatAnonymousMode ? '#10b981' : '#38bdf8';
+  }
+}
+
+function adminResetChatMessages() {
+  if (!isCurrentUserAdmin()) {
+    alert("❌ Chỉ Admin mới có quyền Reset kênh chat!");
+    return;
+  }
+
+  if (confirm("🔄 Cô có chắc chắn muốn XÓA SẠCH TOÀN BỘ tin nhắn trong Kênh Thảo Luận không?\n(Hành động này sẽ làm mới khung chat ngay lập tức!)")) {
+    communityMessages = [];
+    localStorage.setItem('maternopro_chat_messages', JSON.stringify([]));
+    renderChatMessages();
+    alert("✨ Đã Reset làm sạch toàn bộ kênh chat thành công!");
+  }
+}
+
+function openAdminUnbanModal() {
+  if (!isCurrentUserAdmin()) {
+    alert("❌ Chỉ Admin mới có quyền truy cập!");
+    return;
+  }
+  
+  const modal = document.getElementById('admin-unban-modal');
+  if (modal) modal.style.display = 'flex';
+  
+  renderAdminUnbanList();
+}
+
+function closeAdminUnbanModal() {
+  const modal = document.getElementById('admin-unban-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+function renderAdminUnbanList() {
+  const container = document.getElementById('admin-unban-list-container');
+  if (!container) return;
+  
+  const bannedList = JSON.parse(localStorage.getItem('maternopro_banned_chat_users')) || [];
+  
+  if (bannedList.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; color: #94a3b8; padding: 2rem; background: rgba(255,255,255,0.03); border-radius: 16px;">
+        🎉 Chưa có ai bị Ban Mõm! Kênh thảo luận hoàn toàn yên bình.
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = bannedList.map(name => `
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;">
+      <div style="display: flex; align-items: center; gap: 0.8rem;">
+        <span style="font-size: 1.2rem;">🚫</span>
+        <div>
+          <b style="color: #f8fafc; font-size: 1rem;">${name}</b>
+          <div style="font-size: 0.75rem; color: #ef4444;">Đang bị cấm nhắn tin</div>
+        </div>
+      </div>
+      <button onclick="removeAdminBan('${name}')" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 0.45rem 1rem; border-radius: 12px; font-size: 0.85rem; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+        ✅ HỦY BAN
+      </button>
+    </div>
+  `).join('');
+}
+
+function removeAdminBan(nameToUnban) {
+  if (!confirm(`✅ Bạn có chắc chắn muốn HỦY BAN cho tài khoản/tên "${nameToUnban}" không?\n(Sau khi Hủy Ban, người này sẽ nhắn tin lại được bình thường).`)) return;
+
+  let bannedList = JSON.parse(localStorage.getItem('maternopro_banned_chat_users')) || [];
+  bannedList = bannedList.filter(n => n !== nameToUnban);
+  localStorage.setItem('maternopro_banned_chat_users', JSON.stringify(bannedList));
+
+  renderAdminUnbanList();
+  alert(`✨ Đã Hủy Ban thành công cho "${nameToUnban}"!`);
+}
+
+function adminBanUser(msgId, senderName) {
+  if (!isCurrentUserAdmin()) {
+    alert("❌ Chỉ Admin mới có quyền Ban mõm!");
+    return;
+  }
+  
+  if (confirm(`🚫 Bạn có chắc chắn muốn BAN MÕM thành viên "${senderName}" không?\n(Sau khi Ban, tài khoản/tên này sẽ bị cấm nhắn tin vĩnh viễn và toàn bộ tin nhắn sẽ bị xóa!)`)) {
+    let bannedList = JSON.parse(localStorage.getItem('maternopro_banned_chat_users')) || [];
+    if (!bannedList.includes(senderName.toLowerCase())) {
+      bannedList.push(senderName.toLowerCase());
+      localStorage.setItem('maternopro_banned_chat_users', JSON.stringify(bannedList));
+    }
+
+    // Delete all messages from this banned user
+    communityMessages = communityMessages.filter(m => m.sender.toLowerCase() !== senderName.toLowerCase() && m.id !== msgId);
+    localStorage.setItem('maternopro_chat_messages', JSON.stringify(communityMessages));
+    
+    renderChatMessages();
+    alert(`⚡ Đã Ban Mõm thành công "${senderName}"!`);
+  }
+}
+
+function isUserBannedFromChat() {
+  const bannedList = JSON.parse(localStorage.getItem('maternopro_banned_chat_users')) || [];
+  if (currentUser && currentUser.name && bannedList.includes(currentUser.name.toLowerCase())) {
+    return true;
+  }
+  if (currentUser && currentUser.email && bannedList.includes(currentUser.email.toLowerCase())) {
+    return true;
+  }
+  return false;
 }
 
 function renderChatMessages() {
   const container = document.getElementById('chat-messages-container');
   if (!container) return;
   
+  const amIAdmin = isCurrentUserAdmin();
+
   container.innerHTML = communityMessages.map(msg => {
     const isSelfMsg = msg.isSelf || (currentUser && msg.sender === currentUser.name);
-    
-    // Check if the message is from admin (by flag or sender name)
     const isAdminMsg = msg.isAdmin || (msg.sender && (msg.sender === "Mater Nopro" || msg.sender === "maternopro"));
 
     if (isAdminMsg) {
@@ -8749,11 +8949,11 @@ function renderChatMessages() {
             <span style="position: absolute; top: -8px; ${isSelfMsg ? 'left' : 'right'}: -4px; font-size: 1rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">👑</span>
           </div>
           <div>
-            <div style="font-size: 0.78rem; margin-bottom: 0.25rem; ${isSelfMsg ? 'text-align: right;' : ''}">
-              <span style="background: linear-gradient(90deg, #facc15, #f59e0b, #ef4444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; font-size: 0.9rem; text-shadow: 0 0 10px rgba(250,204,21,0.2);">👑 ADMIN Mater Nopro</span>
-              <span style="font-size: 0.7rem; color: #94a3b8; margin-left: 0.4rem;">• ${msg.time}</span>
+            <div style="font-size: 0.85rem; margin-bottom: 0.25rem; ${isSelfMsg ? 'text-align: right;' : ''}">
+              <span style="background: linear-gradient(90deg, #facc15, #f59e0b, #ef4444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; font-size: 0.95rem; text-shadow: 0 0 10px rgba(250,204,21,0.2);">👑 ADMIN Mater Nopro</span>
+              <span style="font-size: 0.75rem; color: #cbd5e1; margin-left: 0.4rem;">• ${msg.time}</span>
             </div>
-            <div style="padding: 1rem 1.4rem; border-radius: 20px; font-size: 1.05rem; font-weight: 800; line-height: 1.6; background: linear-gradient(135deg, #1e1b4b, #311042, #111827); color: #fff; border: 2.5px solid #fbbf24; box-shadow: 0 0 20px rgba(251, 191, 36, 0.45), inset 0 0 12px rgba(251, 191, 36, 0.1); text-shadow: 0 1px 2px rgba(0,0,0,0.8); ${isSelfMsg ? 'border-bottom-right-radius: 4px;' : 'border-bottom-left-radius: 4px;'}">
+            <div style="padding: 1rem 1.4rem; border-radius: 20px; font-size: 1.15rem; font-weight: 800; line-height: 1.6; background: #1e1b4b; color: #ffffff; border: 2.5px solid #fbbf24; box-shadow: 0 0 20px rgba(251, 191, 36, 0.45); ${isSelfMsg ? 'border-bottom-right-radius: 4px;' : 'border-bottom-left-radius: 4px;'}">
               ${msg.text}
             </div>
           </div>
@@ -8761,14 +8961,21 @@ function renderChatMessages() {
       `;
     }
 
+    const banBtnMarkup = (amIAdmin && !isSelfMsg) ? `
+      <button onclick="adminBanUser(${msg.id}, '${msg.sender}')" style="background: #ef4444; color: #fff; border: none; padding: 0.2rem 0.6rem; border-radius: 8px; font-size: 0.7rem; font-weight: 900; cursor: pointer; margin-left: 0.5rem; box-shadow: 0 2px 6px rgba(239,68,68,0.5);" title="Cấm nhắn tin vĩnh viễn">
+        🚫 BAN MÕM
+      </button>
+    ` : '';
+
     return `
-      <div style="display: flex; gap: 0.8rem; max-width: 82%; ${isSelfMsg ? 'align-self: flex-end; flex-direction: row-reverse;' : 'align-self: flex-start;'}">
-        <img src="${msg.avatar}" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1.5px solid var(--border-light); box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+      <div style="display: flex; gap: 0.8rem; max-width: 85%; ${isSelfMsg ? 'align-self: flex-end; flex-direction: row-reverse;' : 'align-self: flex-start;'}">
+        <img src="${msg.avatar}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.3); box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
         <div>
-          <div style="font-size: 0.78rem; color: var(--text-dim); margin-bottom: 0.25rem; ${isSelfMsg ? 'text-align: right;' : ''}">
-            <b style="color: ${isSelfMsg ? '#10b981' : 'var(--accent-cyan)'};">${msg.sender}</b> <span style="font-size: 0.7rem; opacity: 0.7;">[B2] • ${msg.time}</span>
+          <div style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 0.25rem; ${isSelfMsg ? 'text-align: right;' : ''}">
+            <b style="color: ${isSelfMsg ? '#10b981' : '#38bdf8'}; font-size: 0.95rem;">${msg.sender}</b> <span style="font-size: 0.75rem; opacity: 0.85;">[B2] • ${msg.time}</span>
+            ${banBtnMarkup}
           </div>
-          <div style="padding: 0.85rem 1.2rem; border-radius: 18px; font-size: 0.98rem; line-height: 1.55; ${isSelfMsg ? 'background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);' : 'background: rgba(255, 255, 255, 0.08); color: var(--text-main); border-bottom-left-radius: 4px; border: 1px solid var(--border-light);'}">
+          <div style="padding: 0.9rem 1.3rem; border-radius: 20px; font-size: 1.15rem; font-weight: 700; line-height: 1.55; ${isSelfMsg ? 'background: #059669; color: #ffffff; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(5, 150, 105, 0.4);' : 'background: #1e293b; color: #ffffff; border-bottom-left-radius: 4px; border: 1.5px solid rgba(255,255,255,0.2); box-shadow: 0 4px 14px rgba(0,0,0,0.3);'}">
             ${msg.text}
           </div>
         </div>
@@ -8777,10 +8984,94 @@ function renderChatMessages() {
   }).join('');
   
   container.scrollTop = container.scrollHeight;
+  renderFloatingChatMessages();
+}
+
+function renderFloatingChatMessages() {
+  const container = document.getElementById('floating-chat-messages-container');
+  if (!container) return;
+
+  const amIAdmin = isCurrentUserAdmin();
+
+  container.innerHTML = communityMessages.map(msg => {
+    const isSelfMsg = msg.isSelf || (currentUser && msg.sender === currentUser.name);
+    const isAdminMsg = msg.isAdmin || (msg.sender && (msg.sender === "Mater Nopro" || msg.sender === "maternopro"));
+
+    if (isAdminMsg) {
+      return `
+        <div style="display: flex; gap: 0.8rem; max-width: 92%; ${isSelfMsg ? 'align-self: flex-end; flex-direction: row-reverse;' : 'align-self: flex-start;'}">
+          <img src="${msg.avatar}" style="width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2.5px solid #f59e0b; flex-shrink: 0; box-shadow: 0 0 12px rgba(245, 158, 11, 0.7);">
+          <div>
+            <div style="font-size: 0.85rem; margin-bottom: 0.3rem; ${isSelfMsg ? 'text-align: right;' : ''}">
+              <b style="color: #facc15; font-size: 0.95rem; text-shadow: 0 0 8px rgba(250, 204, 21, 0.4);">👑 ADMIN Mater Nopro</b> <span style="font-size: 0.78rem; color: #cbd5e1;">• ${msg.time}</span>
+            </div>
+            <div style="padding: 0.95rem 1.35rem; border-radius: 20px; font-size: 1.15rem; font-weight: 800; line-height: 1.6; background: #1e1b4b; color: #ffffff; border: 2px solid #f59e0b; box-shadow: 0 4px 15px rgba(0,0,0,0.5); text-shadow: 0 1px 2px rgba(0,0,0,0.6); ${isSelfMsg ? 'border-bottom-right-radius: 4px;' : 'border-bottom-left-radius: 4px;'}">
+              ${msg.text}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    const banBtnMarkup = (amIAdmin && !isSelfMsg) ? `
+      <button onclick="adminBanUser(${msg.id}, '${msg.sender}')" style="background: #ef4444; color: #fff; border: none; padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.68rem; font-weight: 900; cursor: pointer; margin-left: 0.4rem;" title="Cấm nhắn tin vĩnh viễn">
+        🚫 BAN
+      </button>
+    ` : '';
+
+    return `
+      <div style="display: flex; gap: 0.8rem; max-width: 90%; ${isSelfMsg ? 'align-self: flex-end; flex-direction: row-reverse;' : 'align-self: flex-start;'}">
+        <img src="${msg.avatar}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.4); box-shadow: 0 2px 8px rgba(0,0,0,0.4);">
+        <div>
+          <div style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 0.3rem; ${isSelfMsg ? 'text-align: right;' : ''}">
+            <b style="color: ${isSelfMsg ? '#34d399' : '#38bdf8'}; font-size: 0.95rem; text-shadow: 0 0 6px rgba(56, 189, 248, 0.3);">${msg.sender}</b> <span style="font-size: 0.75rem; opacity: 0.85;">• ${msg.time}</span>
+            ${banBtnMarkup}
+          </div>
+          <div style="padding: 0.9rem 1.3rem; border-radius: 20px; font-size: 1.15rem; font-weight: 700; line-height: 1.55; ${isSelfMsg ? 'background: #059669; color: #ffffff; border-bottom-right-radius: 4px; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.4);' : 'background: #1e293b; color: #ffffff; border-bottom-left-radius: 4px; border: 1.5px solid rgba(255,255,255,0.2); box-shadow: 0 4px 14px rgba(0,0,0,0.3);'}">
+            ${msg.text}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.scrollTop = container.scrollHeight;
+}
+
+function toggleFloatingChatWidget() {
+  const windowEl = document.getElementById('floating-chat-window');
+  if (!windowEl) return;
+
+  if (windowEl.style.display === 'none' || !windowEl.style.display) {
+    windowEl.style.display = 'flex';
+    renderFloatingChatMessages();
+    const input = document.getElementById('floating-chat-input-text');
+    if (input) setTimeout(() => input.focus(), 100);
+  } else {
+    windowEl.style.display = 'none';
+  }
+}
+
+function sendFloatingChatMessage(e) {
+  e.preventDefault();
+  const input = document.getElementById('floating-chat-input-text');
+  if (!input || !input.value.trim()) return;
+
+  const mainInput = document.getElementById('chat-input-text');
+  if (mainInput) mainInput.value = input.value;
+
+  sendChatMessage(e);
+  input.value = '';
 }
 
 function sendChatMessage(e) {
   e.preventDefault();
+
+  if (isUserBannedFromChat()) {
+    alert("🚫 Bạn đã bị Admin BAN MÕM vĩnh viễn do vi phạm quy định trò chuyện!");
+    return;
+  }
+
   const input = document.getElementById('chat-input-text');
   if (!input || !input.value.trim()) return;
   
@@ -8791,12 +9082,16 @@ function sendChatMessage(e) {
   let avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`;
   let isAdminMsg = false;
   
-  if (!chatAnonymousMode && currentUser && currentUser.name) {
-    senderName = currentUser.name;
-    avatarUrl = currentUser.avatar || avatarUrl;
-    isAdminMsg = isCurrentUserAdmin();
+  // Keep only the latest 40 messages to prevent QuotaExceededError in localStorage
+  if (communityMessages.length > 40) {
+    communityMessages = communityMessages.slice(communityMessages.length - 40);
   }
-  
+
+  // Optimize avatar image string to avoid bloated base64 in chat payload
+  if (avatarUrl && avatarUrl.startsWith('data:image') && avatarUrl.length > 500) {
+    avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(senderName)}`;
+  }
+
   const newMsg = {
     id: Date.now(),
     sender: senderName,
@@ -8808,25 +9103,58 @@ function sendChatMessage(e) {
   };
 
   communityMessages.push(newMsg);
-  localStorage.setItem('maternopro_chat_messages', JSON.stringify(communityMessages));
+  
+  try {
+    localStorage.setItem('maternopro_chat_messages', JSON.stringify(communityMessages));
+  } catch (err) {
+    console.warn("localStorage quota full, trimming chat messages further:", err);
+    communityMessages = communityMessages.slice(-20);
+    try {
+      localStorage.setItem('maternopro_chat_messages', JSON.stringify(communityMessages));
+    } catch (e) {
+      console.error("Could not save chat messages:", e);
+    }
+  }
   
   input.value = '';
   renderChatMessages();
 }
 
-function insertChatEmoji(emoji) {
-  const input = document.getElementById('chat-input-text');
+function toggleEmojiDrawer(target) {
+  const drawerId = target === 'float' ? 'float-chat-emoji-drawer' : 'main-chat-emoji-drawer';
+  const drawer = document.getElementById(drawerId);
+  if (!drawer) return;
+  
+  if (drawer.style.display === 'none' || !drawer.style.display) {
+    drawer.style.display = 'block';
+  } else {
+    drawer.style.display = 'none';
+  }
+}
+
+function insertChatEmoji(emoji, target = 'main') {
+  const inputId = target === 'float' ? 'floating-chat-input-text' : 'chat-input-text';
+  const input = document.getElementById(inputId);
   if (input) {
     input.value += emoji;
     input.focus();
   }
+  toggleEmojiDrawer(target);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   updateHeaderAuthUI();
+  initGoogleSignIn();
   initLiveMetrics();
   renderChatMessages();
 });
+
+setTimeout(() => {
+  updateHeaderAuthUI();
+  initGoogleSignIn();
+  initLiveMetrics();
+  renderChatMessages();
+}, 300);
 
 setTimeout(() => {
   updateHeaderAuthUI();
