@@ -2578,12 +2578,17 @@ body.warm-theme #dashboard svg {
 @media (max-width: 992px) {
   .cyber-hud-grid {
     grid-template-columns: 1fr !important;
-    gap: 2rem !important;
+    gap: 1rem !important;
   }
 
   .cyber-hud-grid .hero-section {
     order: -1 !important; /* Logo + Title always displayed AT THE VERY TOP on Mobile */
     width: 100% !important;
+  }
+
+  /* Ẩn panel Lộ Trình B2 + Bảng Vàng trên mobile để hero hiện full */
+  .cyber-hud-grid > .cyber-hud-panel {
+    display: none !important;
   }
 
   .hero-logo-img {
@@ -2598,12 +2603,6 @@ body.warm-theme #dashboard svg {
   .hero-subtitle {
     font-size: 0.95rem !important;
     padding: 0 0.5rem !important;
-  }
-
-  .cyber-hud-panel {
-    width: 100% !important;
-    max-width: 500px !important;
-    margin: 0 auto !important;
   }
 }
 
