@@ -8835,62 +8835,176 @@ setInterval(() => {
   try { localStorage.setItem('maternopro_online_seconds', myOnlineSeconds.toString()); } catch(e){}
 }, 5000);
 
-// BẢNG VÀNG VINH DANH TỰ ĐỘNG CẬP NHẬT THEO TIẾN ĐỘ HỌC CHĂM & THỜI GIAN ONLINE REALTIME (TOP 1 -> TOP 10)
+// =========================================================
+// BẢNG VÀNG VINH DANH - CLOUD REALTIME (NGƯỜI DÙNG THẬT)
+// Đồng bộ dữ liệu xếp hạng qua ntfy.sh giữa tất cả thiết bị
+// =========================================================
+const NTFY_LEADERBOARD_URL = 'https://ntfy.sh/maternopro_b2_leaderboard_v2';
+let leaderboardCache = {};
+try {
+  leaderboardCache = JSON.parse(localStorage.getItem('maternopro_leaderboard_cache')) || {};
+} catch(e) { leaderboardCache = {}; }
+
+// Gửi thống kê bài thi + thời gian online của mình lên Cloud
+function postMyLeaderboardStats() {
+  if (!currentUser) return; // Chỉ người đăng nhập mới được lên bảng
+
+  const myDoneResults = JSON.parse(localStorage.getItem('maternopro_test_results')) || [];
+  const myDoneCount = myDoneResults.length;
+  const myOnlineMins = Math.floor((myOnlineSeconds || 0) / 60);
+
+  const name = currentUser.name || currentUser.email || "Học viên B2";
+  const avatar = currentUser.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`;
+
+  const stats = {
+    type: 'leaderboard',
+    name: name,
+    avatar: avatar,
+    done: myDoneCount,
+    onlineMins: myOnlineMins,
+    timestamp: Date.now()
+  };
+
+  // Cập nhật local cache
+  const key = name.toLowerCase().trim();
+  leaderboardCache[key] = stats;
+  try { localStorage.setItem('maternopro_leaderboard_cache', JSON.stringify(leaderboardCache)); } catch(e) {}
+
+  // POST lên Cloud để tất cả thiết bị khác đồng bộ
+  fetch(NTFY_LEADERBOARD_URL, {
+    method: 'POST',
+    body: JSON.stringify(stats)
+  }).catch(err => console.warn("Lỗi gửi leaderboard:", err));
+}
+
+// Đồng bộ bảng xếp hạng từ Cloud (poll tất cả tin nhắn trong 24h gần nhất)
+function syncCloudLeaderboard() {
+  fetch(`${NTFY_LEADERBOARD_URL}/json?poll=1&since=24h`)
+    .then(res => res.text())
+    .then(text => {
+      if (!text) { updateRealtimeLeaderboard(); return; }
+      const lines = text.trim().split('\n');
+
+      lines.forEach(line => {
+        try {
+          const item = JSON.parse(line);
+          if (!item || item.event !== 'message' || !item.message) return;
+
+          let data;
+          if (typeof item.message === 'object') {
+            data = item.message;
+          } else {
+            try { data = JSON.parse(item.message); } catch(e) { return; }
+          }
+
+          if (!data || data.type !== 'leaderboard' || !data.name) return;
+          if (String(data.name) === 'undefined' || String(data.name) === 'null') return;
+
+          const key = data.name.toLowerCase().trim();
+          const existing = leaderboardCache[key];
+
+          // Giữ bản ghi mới nhất + merge giá trị cao nhất
+          if (!existing || (data.timestamp || 0) > (existing.timestamp || 0)) {
+            leaderboardCache[key] = data;
+          }
+          if (leaderboardCache[key]) {
+            leaderboardCache[key].done = Math.max(leaderboardCache[key].done || 0, data.done || 0);
+            leaderboardCache[key].onlineMins = Math.max(leaderboardCache[key].onlineMins || 0, data.onlineMins || 0);
+          }
+        } catch(e) {}
+      });
+
+      try { localStorage.setItem('maternopro_leaderboard_cache', JSON.stringify(leaderboardCache)); } catch(e) {}
+      updateRealtimeLeaderboard();
+    })
+    .catch(err => {
+      console.warn("Lỗi sync leaderboard:", err);
+      updateRealtimeLeaderboard(); // Vẫn render từ local cache
+    });
+}
+
+// SSE Realtime: nhận cập nhật bảng xếp hạng tức thì từ Cloud
+try {
+  const leaderboardSSE = new EventSource(`${NTFY_LEADERBOARD_URL}/sse`);
+  leaderboardSSE.onmessage = function(e) {
+    try {
+      const item = JSON.parse(e.data);
+      if (!item || item.event !== 'message' || !item.message) return;
+
+      let data;
+      if (typeof item.message === 'object') {
+        data = item.message;
+      } else {
+        try { data = JSON.parse(item.message); } catch(e) { return; }
+      }
+
+      if (!data || data.type !== 'leaderboard' || !data.name) return;
+      if (String(data.name) === 'undefined' || String(data.name) === 'null') return;
+
+      const key = data.name.toLowerCase().trim();
+      const existing = leaderboardCache[key];
+      if (!existing || (data.timestamp || 0) > (existing.timestamp || 0)) {
+        leaderboardCache[key] = data;
+      }
+      if (leaderboardCache[key]) {
+        leaderboardCache[key].done = Math.max(leaderboardCache[key].done || 0, data.done || 0);
+        leaderboardCache[key].onlineMins = Math.max(leaderboardCache[key].onlineMins || 0, data.onlineMins || 0);
+      }
+      try { localStorage.setItem('maternopro_leaderboard_cache', JSON.stringify(leaderboardCache)); } catch(e) {}
+      updateRealtimeLeaderboard();
+    } catch(e) {}
+  };
+} catch(e) { console.warn("Leaderboard SSE không hỗ trợ:", e); }
+
+// Khởi động: đồng bộ ngay + gửi stats + lặp lại
+syncCloudLeaderboard();
+postMyLeaderboardStats();
+setInterval(syncCloudLeaderboard, 30000);  // Sync mỗi 30 giây
+setInterval(postMyLeaderboardStats, 120000); // Gửi stats mỗi 2 phút
+
+// Render bảng xếp hạng từ dữ liệu Cloud thật
 function updateRealtimeLeaderboard() {
   const extraListContainer = document.getElementById('leaderboard-extra-list');
   if (!extraListContainer) return;
 
-  // Lấy các bài thi đã làm của user hiện tại
-  const myDoneResults = JSON.parse(localStorage.getItem('maternopro_test_results')) || [];
-  const myDoneCount = myDoneResults.length;
-  const myOnlineMins = Math.floor(myOnlineSeconds / 60);
+  // Tạo pool từ cloud cache (CHỈ người dùng thật)
+  let pool = Object.values(leaderboardCache).filter(u => u && u.name && String(u.name) !== 'undefined');
 
-  let currentUserName = "Học viên Ẩn Danh";
-  let currentUserAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=Learner";
-
+  // Thêm/cập nhật user hiện tại vào pool
   if (currentUser) {
-    currentUserName = currentUser.name || currentUser.email || "Học viên B2";
-    currentUserAvatar = currentUser.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(currentUserName)}`;
-  } else {
-    const savedName = localStorage.getItem('maternopro_user_display_name');
-    if (savedName) currentUserName = savedName;
+    const myDoneResults = JSON.parse(localStorage.getItem('maternopro_test_results')) || [];
+    const myDoneCount = myDoneResults.length;
+    const myOnlineMins = Math.floor((myOnlineSeconds || 0) / 60);
+    const myName = currentUser.name || currentUser.email || "Học viên B2";
+    const myAvatar = currentUser.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(myName)}`;
+    const myKey = myName.toLowerCase().trim();
+
+    const existing = pool.find(p => p.name.toLowerCase().trim() === myKey);
+    if (existing) {
+      existing.done = Math.max(existing.done || 0, myDoneCount);
+      existing.onlineMins = Math.max(existing.onlineMins || 0, myOnlineMins);
+      existing.avatar = myAvatar;
+    } else {
+      pool.push({ name: myName, avatar: myAvatar, done: myDoneCount, onlineMins: myOnlineMins });
+    }
   }
 
-  // Danh sách các học viên online học tập trên hệ thống
-  let pool = [
-    { name: "Minh Anh", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=MinhAnh", done: 42, onlineMins: 185 },
-    { name: "Đức Hoàng", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=DucHoang", done: 38, onlineMins: 160 },
-    { name: "Thu Trang", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=ThuTrang", done: 35, onlineMins: 145 },
-    { name: "Yumdan90", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yumdan90", done: 31, onlineMins: 130 },
-    { name: "Tontyan", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Tontyan", done: 28, onlineMins: 115 },
-    { name: "Hoàng Nam", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=HoangNam", done: 25, onlineMins: 95 },
-    { name: "Phương Thảo", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=PhuongThao", done: 22, onlineMins: 85 },
-    { name: "Khánh Linh", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=KhanhLinh", done: 19, onlineMins: 70 },
-    { name: "Bảo Long", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=BaoLong", done: 16, onlineMins: 60 }
-  ];
-
-  // Thêm tài khoản hiện tại vào pool xếp hạng dựa theo số bài thi + phút online thật
-  let myIndex = pool.findIndex(p => p.name.toLowerCase() === currentUserName.toLowerCase());
-  if (myIndex !== -1) {
-    pool[myIndex].done = Math.max(pool[myIndex].done, myDoneCount);
-    pool[myIndex].onlineMins = Math.max(pool[myIndex].onlineMins, myOnlineMins);
-    pool[myIndex].avatar = currentUserAvatar;
-  } else {
-    pool.push({
-      name: currentUserName,
-      avatar: currentUserAvatar,
-      done: myDoneCount,
-      onlineMins: myOnlineMins
-    });
-  }
-
-  // Tính điểm vinh danh = (Số bài thi đã làm * 10) + Số phút online thực tế
+  // Tính điểm vinh danh = (Số bài thi * 10) + Số phút online
   pool.forEach(user => {
-    user.score = (user.done * 10) + user.onlineMins;
+    user.score = ((user.done || 0) * 10) + (user.onlineMins || 0);
   });
 
-  // Sắp xếp thứ tự từ cao xuống thấp (Top 1 -> Top 10)
+  // Sắp xếp từ cao xuống thấp
   pool.sort((a, b) => b.score - a.score);
+
+  // Giới hạn Top 10
+  pool = pool.slice(0, 10);
+
+  // Nếu chưa có ai → hiện thông báo
+  if (pool.length === 0) {
+    extraListContainer.innerHTML = '<div style="text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 1rem;">Chưa có học viên nào trên bảng xếp hạng. Hãy đăng nhập và làm bài thi để lên bảng!</div>';
+    return;
+  }
 
   // TOP 1 PODIUM
   const top1Img = document.getElementById('top1-img');
@@ -8899,7 +9013,7 @@ function updateRealtimeLeaderboard() {
   if (top1Img && pool[0]) {
     top1Img.src = pool[0].avatar;
     if (top1Name) top1Name.textContent = pool[0].name;
-    if (top1Score) top1Score.textContent = `${pool[0].done} bài · ${pool[0].onlineMins}m online`;
+    if (top1Score) top1Score.textContent = `${pool[0].done || 0} bài · ${pool[0].onlineMins || 0}m online`;
   }
 
   // TOP 2 PODIUM
@@ -8909,7 +9023,11 @@ function updateRealtimeLeaderboard() {
   if (top2Img && pool[1]) {
     top2Img.src = pool[1].avatar;
     if (top2Name) top2Name.textContent = pool[1].name;
-    if (top2Score) top2Score.textContent = `${pool[1].done} bài · ${pool[1].onlineMins}m online`;
+    if (top2Score) top2Score.textContent = `${pool[1].done || 0} bài · ${pool[1].onlineMins || 0}m online`;
+  } else if (top2Img) {
+    top2Img.src = "https://api.dicebear.com/7.x/avataaars/svg?seed=empty2";
+    if (top2Name) top2Name.textContent = "---";
+    if (top2Score) top2Score.textContent = "Đang chờ...";
   }
 
   // TOP 3 PODIUM
@@ -8919,11 +9037,19 @@ function updateRealtimeLeaderboard() {
   if (top3Img && pool[2]) {
     top3Img.src = pool[2].avatar;
     if (top3Name) top3Name.textContent = pool[2].name;
-    if (top3Score) top3Score.textContent = `${pool[2].done} bài · ${pool[2].onlineMins}m online`;
+    if (top3Score) top3Score.textContent = `${pool[2].done || 0} bài · ${pool[2].onlineMins || 0}m online`;
+  } else if (top3Img) {
+    top3Img.src = "https://api.dicebear.com/7.x/avataaars/svg?seed=empty3";
+    if (top3Name) top3Name.textContent = "---";
+    if (top3Score) top3Score.textContent = "Đang chờ...";
   }
 
-  // Cập nhật danh sách từ TOP 4 đến TOP 10
+  // TOP 4 đến TOP 10
   const extraRanks = pool.slice(3, 10);
+  if (extraRanks.length === 0) {
+    extraListContainer.innerHTML = '<div style="text-align: center; color: #64748b; font-size: 0.8rem; padding: 0.5rem;">Cần thêm học viên để lấp đầy Top 10!</div>';
+    return;
+  }
   extraListContainer.innerHTML = extraRanks.map((item, idx) => `
     <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 0.5rem 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease;">
       <div style="display: flex; align-items: center; gap: 0.6rem;">
@@ -8931,7 +9057,7 @@ function updateRealtimeLeaderboard() {
         <img src="${item.avatar}" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1.5px solid #38bdf8;">
         <div>
           <div style="font-size: 0.82rem; font-weight: 800; color: #f8fafc;">${item.name}</div>
-          <div style="font-size: 0.68rem; color: #34d399; font-weight: 700;">${item.done} Bài thi · ${item.onlineMins} Phút On</div>
+          <div style="font-size: 0.68rem; color: #34d399; font-weight: 700;">${item.done || 0} Bài thi · ${item.onlineMins || 0} Phút On</div>
         </div>
       </div>
       <span style="font-size: 0.7rem; font-weight: 800; color: #facc15; background: rgba(250, 204, 21, 0.12); padding: 0.15rem 0.45rem; border-radius: 8px;">🔥 Top ${idx + 4}</span>
