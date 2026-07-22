@@ -2574,6 +2574,39 @@ body.warm-theme #dashboard svg {
   opacity: 0.6 !important;
 }
 
+/* Mobile Responsive Optimization for Cyber Gamer HUD Dashboard */
+@media (max-width: 992px) {
+  .cyber-hud-grid {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+  }
+
+  .cyber-hud-grid .hero-section {
+    order: -1 !important; /* Logo + Title always displayed AT THE VERY TOP on Mobile */
+    width: 100% !important;
+  }
+
+  .hero-logo-img {
+    width: 160px !important;
+    height: 160px !important;
+  }
+
+  .hero-title {
+    font-size: 2.4rem !important;
+  }
+
+  .hero-subtitle {
+    font-size: 0.95rem !important;
+    padding: 0 0.5rem !important;
+  }
+
+  .cyber-hud-panel {
+    width: 100% !important;
+    max-width: 500px !important;
+    margin: 0 auto !important;
+  }
+}
+
 
 
 
