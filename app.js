@@ -8828,33 +8828,42 @@ function initLiveMetrics() {
 }
 
 // =========================================================
-// COMMUNITY CHAT ROOM (KÊNH THẢO LUẬN KHÔNG GIỚI HẠN NGÔN TỪ)
+// REALTIME CLOUD COMMUNITY CHAT (ĐỒNG BỘ THỜI GIAN THỰC ĐIỆN THOẠI & MÁY TÍNH)
 // =========================================================
 let chatAnonymousMode = false; // Mặc định dùng tên thật nếu đã đăng nhập
 
-let defaultCommunityMessages = [
-  { id: 1, sender: "Ẩn danh", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Anon1", text: "mình thi nói hôm 30 nè ae", time: "23:21", isSelf: false },
-  { id: 2, sender: "Ẩn danh", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Anon2", text: "bên bla t có hỏi bà làm bên đó thì bảo tầm cuối t8 tổ chức thi, nma đến giờ vẫn ch thấy gì haha", time: "07:59", isSelf: false },
-  { id: 3, sender: "Minh Anh Nguyen", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=MinhAnh", text: "xin chào ae", time: "20:44", isSelf: true },
-  { id: 4, sender: "Minh Anh Nguyen", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=MinhAnh", text: "bla kiểu j chẳng thi cử j nhỉ", time: "20:44", isSelf: true },
-  { id: 5, sender: "Minh Anh Nguyen", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=MinhAnh", text: "học sinh tuyển ầm ầm", time: "20:44", isSelf: true }
-];
+const CHAT_FIREBASE_ENDPOINT = 'https://maternopro-chat-default-rtdb.asia-southeast1.firebasedatabase.app/chat_messages';
 
-// Auto-reset chat messages daily (tự động xóa sạch tin nhắn cũ sau mỗi ngày mới)
-const todayStr = new Date().toISOString().slice(0, 10);
-const lastResetDate = localStorage.getItem('maternopro_chat_last_reset_date');
-if (lastResetDate !== todayStr) {
-  localStorage.setItem('maternopro_chat_messages', JSON.stringify(defaultCommunityMessages));
-  localStorage.setItem('maternopro_chat_last_reset_date', todayStr);
+let myChatSessionId = localStorage.getItem('maternopro_chat_session_id');
+if (!myChatSessionId) {
+  myChatSessionId = 'user_' + Math.random().toString(36).substring(2, 10);
+  localStorage.setItem('maternopro_chat_session_id', myChatSessionId);
 }
 
-let communityMessages = JSON.parse(localStorage.getItem('maternopro_chat_messages')) || defaultCommunityMessages;
+let communityMessages = JSON.parse(localStorage.getItem('maternopro_chat_messages')) || [];
 
-// Giới hạn tuyệt đối tối đa 40 tin nhắn gần nhất
-if (communityMessages.length > 40) {
-  communityMessages = communityMessages.slice(communityMessages.length - 40);
-  localStorage.setItem('maternopro_chat_messages', JSON.stringify(communityMessages));
+function syncCloudChatMessages() {
+  fetch(`${CHAT_FIREBASE_ENDPOINT}.json?orderBy="$key"&limitToLast=50`)
+    .then(res => res.json())
+    .then(data => {
+      if (data) {
+        const list = Object.keys(data).map(k => ({ ...data[k], cloudKey: k }));
+        list.sort((a, b) => (a.id || 0) - (b.id || 0));
+        communityMessages = list;
+        try {
+          localStorage.setItem('maternopro_chat_messages', JSON.stringify(communityMessages));
+        } catch (e) {}
+        renderChatMessages();
+      }
+    })
+    .catch(err => {
+      console.warn("Lỗi kết nối Cloud Chat, dùng bộ nhớ máy:", err);
+    });
 }
+
+// Khởi chạy đồng bộ ngay lập tức và lập lịch polling mỗi 2.5s
+syncCloudChatMessages();
+setInterval(syncCloudChatMessages, 2500);
 
 function toggleChatAnonymousMode() {
   chatAnonymousMode = !chatAnonymousMode;
@@ -8877,11 +8886,19 @@ function adminResetChatMessages() {
     return;
   }
 
-  if (confirm("🔄 Cô có chắc chắn muốn XÓA SẠCH TOÀN BỘ tin nhắn trong Kênh Thảo Luận không?\n(Hành động này sẽ làm mới khung chat ngay lập tức!)")) {
-    communityMessages = [];
-    localStorage.setItem('maternopro_chat_messages', JSON.stringify([]));
-    renderChatMessages();
-    alert("✨ Đã Reset làm sạch toàn bộ kênh chat thành công!");
+  if (confirm("🔄 Cô có chắc chắn muốn XÓA SẠCH TOÀN BỘ tin nhắn trong Kênh Thảo Luận không?\n(Hành động này sẽ xóa sạch tin nhắn trên tất cả điện thoại & máy tính!)")) {
+    fetch(`${CHAT_FIREBASE_ENDPOINT}.json`, { method: 'DELETE' })
+      .then(() => {
+        communityMessages = [];
+        localStorage.setItem('maternopro_chat_messages', JSON.stringify([]));
+        renderChatMessages();
+        alert("✨ Đã Reset làm sạch toàn bộ kênh chat thành công!");
+      })
+      .catch(() => {
+        communityMessages = [];
+        localStorage.setItem('maternopro_chat_messages', JSON.stringify([]));
+        renderChatMessages();
+      });
   }
 }
 
@@ -8957,7 +8974,13 @@ function adminBanUser(msgId, senderName) {
       localStorage.setItem('maternopro_banned_chat_users', JSON.stringify(bannedList));
     }
 
-    // Delete all messages from this banned user
+    // Delete all messages from this banned user locally and on Cloud
+    communityMessages.forEach(m => {
+      if (m.sender.toLowerCase() === senderName.toLowerCase() && m.cloudKey) {
+        fetch(`${CHAT_FIREBASE_ENDPOINT}/${m.cloudKey}.json`, { method: 'DELETE' });
+      }
+    });
+
     communityMessages = communityMessages.filter(m => m.sender.toLowerCase() !== senderName.toLowerCase() && m.id !== msgId);
     localStorage.setItem('maternopro_chat_messages', JSON.stringify(communityMessages));
     
@@ -8984,7 +9007,7 @@ function renderChatMessages() {
   const amIAdmin = isCurrentUserAdmin();
 
   container.innerHTML = communityMessages.map(msg => {
-    const isSelfMsg = msg.isSelf || (currentUser && msg.sender === currentUser.name);
+    const isSelfMsg = (msg.sessionId === myChatSessionId) || (currentUser && msg.sender === currentUser.name);
     const isAdminMsg = msg.isAdmin || (msg.sender && (msg.sender === "Mater Nopro" || msg.sender === "maternopro"));
 
     if (isAdminMsg) {
