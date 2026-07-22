@@ -8832,7 +8832,7 @@ function initLiveMetrics() {
 // =========================================================
 let chatAnonymousMode = false; // Mặc định dùng tên thật nếu đã đăng nhập
 
-const NTFY_CHAT_URL = 'https://ntfy.sh/maternopro_b2_chat_room_v2';
+const NTFY_CHAT_URL = 'https://ntfy.sh/maternopro_b2_chat_v5';
 
 let myChatSessionId = localStorage.getItem('maternopro_chat_session_id');
 if (!myChatSessionId) {
@@ -8841,6 +8841,41 @@ if (!myChatSessionId) {
 }
 
 let communityMessages = JSON.parse(localStorage.getItem('maternopro_chat_messages')) || [];
+
+function parseCloudMessage(item) {
+  if (!item || item.event !== 'message' || !item.message) return null;
+  
+  let msgObj = null;
+  if (typeof item.message === 'object') {
+    msgObj = item.message;
+  } else {
+    try {
+      msgObj = JSON.parse(item.message);
+    } catch (e) {
+      msgObj = {
+        id: item.time ? item.time * 1000 : Date.now(),
+        sender: "Ẩn danh",
+        text: item.message,
+        time: item.time ? new Date(item.time * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Anon"
+      };
+    }
+  }
+
+  if (!msgObj || typeof msgObj !== 'object') return null;
+  if (msgObj.sender === 'SYSTEM_CLEAR') return { isClear: true };
+  if (!msgObj.text) return null;
+
+  return {
+    id: msgObj.id || (item.time ? item.time * 1000 : Date.now()),
+    sessionId: msgObj.sessionId || '',
+    sender: msgObj.sender || 'Ẩn danh',
+    avatar: msgObj.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(msgObj.sender || 'Anon')}`,
+    text: String(msgObj.text),
+    time: msgObj.time || (item.time ? new Date(item.time * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''),
+    isAdmin: !!msgObj.isAdmin
+  };
+}
 
 function syncCloudChatMessages() {
   fetch(`${NTFY_CHAT_URL}/json?poll=1&since=24h`)
@@ -8852,18 +8887,17 @@ function syncCloudChatMessages() {
       lines.forEach(line => {
         try {
           const item = JSON.parse(line);
-          if (item.event === 'message' && item.message) {
-            const msgObj = JSON.parse(item.message);
-            if (msgObj.sender === 'SYSTEM_CLEAR') {
+          const parsed = parseCloudMessage(item);
+          if (parsed) {
+            if (parsed.isClear) {
               list = [];
             } else {
-              list.push(msgObj);
+              list.push(parsed);
             }
           }
         } catch(e) {}
       });
       if (list.length > 0 || text.includes('SYSTEM_CLEAR')) {
-        // Lấy tối đa 40 tin nhắn mới nhất
         if (list.length > 40) list = list.slice(list.length - 40);
         list.sort((a, b) => (a.id || 0) - (b.id || 0));
         communityMessages = list;
@@ -8874,7 +8908,7 @@ function syncCloudChatMessages() {
       }
     })
     .catch(err => {
-      console.warn("Lỗi kết nối Cloud Chat, dùng bộ nhớ máy:", err);
+      console.warn("Lỗi kết nối Cloud Chat:", err);
     });
 }
 
@@ -8884,13 +8918,13 @@ try {
   eventSource.onmessage = function(e) {
     try {
       const data = JSON.parse(e.data);
-      if (data.event === 'message' && data.message) {
-        const msgObj = JSON.parse(data.message);
-        if (msgObj.sender === 'SYSTEM_CLEAR') {
+      const parsed = parseCloudMessage(data);
+      if (parsed) {
+        if (parsed.isClear) {
           communityMessages = [];
           renderChatMessages();
-        } else if (!communityMessages.some(m => m.id === msgObj.id)) {
-          communityMessages.push(msgObj);
+        } else if (!communityMessages.some(m => m.id === parsed.id)) {
+          communityMessages.push(parsed);
           if (communityMessages.length > 40) communityMessages = communityMessages.slice(-40);
           renderChatMessages();
         }
