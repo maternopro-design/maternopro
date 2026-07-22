@@ -8840,7 +8840,7 @@ if (!myChatSessionId) {
   localStorage.setItem('maternopro_chat_session_id', myChatSessionId);
 }
 
-let communityMessages = JSON.parse(localStorage.getItem('maternopro_chat_messages')) || [];
+let communityMessages = (JSON.parse(localStorage.getItem('maternopro_chat_messages')) || []).filter(msg => msg && msg.text && String(msg.text) !== 'undefined' && String(msg.text) !== 'null');
 
 function parseCloudMessage(item) {
   if (!item || item.event !== 'message' || !item.message) return null;
@@ -8864,13 +8864,18 @@ function parseCloudMessage(item) {
 
   if (!msgObj || typeof msgObj !== 'object') return null;
   if (msgObj.sender === 'SYSTEM_CLEAR') return { isClear: true };
-  if (!msgObj.text) return null;
+  
+  // Bỏ qua tin nhắn trống hoặc bị lỗi chữ undefined
+  if (!msgObj.text || String(msgObj.text).trim() === '' || String(msgObj.text) === 'undefined' || String(msgObj.text) === 'null') return null;
+  if (!msgObj.sender || String(msgObj.sender) === 'undefined' || String(msgObj.sender) === 'null') {
+    msgObj.sender = 'Ẩn danh';
+  }
 
   return {
     id: msgObj.id || (item.time ? item.time * 1000 : Date.now()),
     sessionId: msgObj.sessionId || '',
-    sender: msgObj.sender || 'Ẩn danh',
-    avatar: msgObj.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(msgObj.sender || 'Anon')}`,
+    sender: msgObj.sender,
+    avatar: msgObj.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(msgObj.sender)}`,
     text: String(msgObj.text),
     time: msgObj.time || (item.time ? new Date(item.time * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''),
     isAdmin: !!msgObj.isAdmin
@@ -9250,13 +9255,21 @@ function sendChatMessage(e) {
 
   const newMsg = {
     id: Date.now(),
+    sessionId: myChatSessionId,
     sender: senderName,
     avatar: avatarUrl,
     text: input.value.trim(),
     time: timeStr,
-    isSelf: true,
     isAdmin: isAdminMsg
   };
+
+  // POST tin nhắn lên Cloud (ntfy) để tất cả các thiết bị khác nhận realtime lập tức
+  fetch(NTFY_CHAT_URL, {
+    method: 'POST',
+    body: JSON.stringify(newMsg)
+  }).catch(err => {
+    console.warn("Lỗi gửi tin nhắn lên Cloud:", err);
+  });
 
   communityMessages.push(newMsg);
   
