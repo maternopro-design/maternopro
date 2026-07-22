@@ -8967,7 +8967,7 @@ function updateRealtimeLeaderboard() {
   const extraListContainer = document.getElementById('leaderboard-extra-list');
   if (!extraListContainer) return;
 
-  // Tạo pool từ cloud cache (CHỈ người dùng thật)
+  // Tạo pool từ cloud cache (người dùng thật)
   let pool = Object.values(leaderboardCache).filter(u => u && u.name && String(u.name) !== 'undefined');
 
   // Thêm/cập nhật user hiện tại vào pool
@@ -8988,6 +8988,24 @@ function updateRealtimeLeaderboard() {
       pool.push({ name: myName, avatar: myAvatar, done: myDoneCount, onlineMins: myOnlineMins });
     }
   }
+
+  // User giả làm nền (bị đẩy ra khi có đủ user thật)
+  const seedUsers = [
+    { name: "Minh Anh", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=MinhAnh", done: 42, onlineMins: 185, isSeed: true },
+    { name: "Thu Trang", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=ThuTrang", done: 35, onlineMins: 145, isSeed: true },
+    { name: "Yumdan90", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yumdan90", done: 31, onlineMins: 130, isSeed: true },
+    { name: "Hoàng Nam", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=HoangNam", done: 25, onlineMins: 95, isSeed: true },
+    { name: "Khánh Linh", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=KhanhLinh", done: 19, onlineMins: 70, isSeed: true },
+    { name: "Bảo Long", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=BaoLong", done: 16, onlineMins: 60, isSeed: true }
+  ];
+
+  // Chỉ thêm user giả nếu chưa có user thật trùng tên
+  seedUsers.forEach(seed => {
+    const alreadyExists = pool.some(p => p.name.toLowerCase().trim() === seed.name.toLowerCase().trim());
+    if (!alreadyExists) {
+      pool.push(seed);
+    }
+  });
 
   // Tính điểm vinh danh = (Số bài thi * 10) + Số phút online
   pool.forEach(user => {
