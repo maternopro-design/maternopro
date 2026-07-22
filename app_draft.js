@@ -8552,18 +8552,26 @@ function saveUserProfile(e) {
   currentUser.gender = document.getElementById('profile-gender').value;
   currentUser.dob = document.getElementById('profile-dob').value;
   currentUser.examDate = document.getElementById('profile-exam-date').value;
-  localStorage.setItem('maternopro_user', JSON.stringify(currentUser));
+  try {
+    localStorage.setItem('maternopro_user', JSON.stringify(currentUser));
+  } catch (err) {
+    console.warn("Could not update maternopro_user profile:", err);
+  }
   
   // Sync changes to the accounts database
   if (currentUser.email) {
-    let accounts = JSON.parse(localStorage.getItem('maternopro_accounts')) || {};
-    const lowerEmail = currentUser.email.toLowerCase();
-    if (accounts[lowerEmail]) {
-      accounts[lowerEmail].name = currentUser.name;
-      accounts[lowerEmail].gender = currentUser.gender;
-      accounts[lowerEmail].dob = currentUser.dob;
-      accounts[lowerEmail].examDate = currentUser.examDate;
-      localStorage.setItem('maternopro_accounts', JSON.stringify(accounts));
+    try {
+      let accounts = JSON.parse(localStorage.getItem('maternopro_accounts')) || {};
+      const lowerEmail = currentUser.email.toLowerCase();
+      if (accounts[lowerEmail]) {
+        accounts[lowerEmail].name = currentUser.name;
+        accounts[lowerEmail].gender = currentUser.gender;
+        accounts[lowerEmail].dob = currentUser.dob;
+        accounts[lowerEmail].examDate = currentUser.examDate;
+        localStorage.setItem('maternopro_accounts', JSON.stringify(accounts));
+      }
+    } catch (err) {
+      console.warn("Could not update maternopro_accounts profile:", err);
     }
   }
   
@@ -8588,29 +8596,65 @@ function handleAvatarUpload(event) {
   
   const reader = new FileReader();
   reader.onload = function(e) {
-    const base64 = e.target.result;
-    
-    // Update UI immediately
-    const imgEl = document.getElementById('profile-avatar-img');
-    if (imgEl) imgEl.src = base64;
-    
-    // Update current user
-    if (currentUser) {
-      currentUser.avatar = base64;
-      localStorage.setItem('maternopro_user', JSON.stringify(currentUser));
+    const img = new Image();
+    img.onload = function() {
+      // Resize avatar image to max 250x250 for lightweight localStorage storage
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const maxDim = 250;
+      let width = img.width;
+      let height = img.height;
       
-      // Sync changes to the accounts database
-      if (currentUser.email) {
-        let accounts = JSON.parse(localStorage.getItem('maternopro_accounts')) || {};
-        const lowerEmail = currentUser.email.toLowerCase();
-        if (accounts[lowerEmail]) {
-          accounts[lowerEmail].avatar = base64;
-          localStorage.setItem('maternopro_accounts', JSON.stringify(accounts));
+      if (width > height) {
+        if (width > maxDim) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        }
+      } else {
+        if (height > maxDim) {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
         }
       }
       
-      updateHeaderAuthUI();
-    }
+      canvas.width = width;
+      canvas.height = height;
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      // Compress to JPEG with 0.8 quality (usually ~20-50KB)
+      const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+      
+      // Update UI immediately
+      const imgEl = document.getElementById('profile-avatar-img');
+      if (imgEl) imgEl.src = compressedBase64;
+      
+      // Update current user
+      if (currentUser) {
+        currentUser.avatar = compressedBase64;
+        try {
+          localStorage.setItem('maternopro_user', JSON.stringify(currentUser));
+        } catch (err) {
+          console.warn("Could not save avatar to maternopro_user:", err);
+        }
+        
+        // Sync changes to the accounts database
+        if (currentUser.email) {
+          try {
+            let accounts = JSON.parse(localStorage.getItem('maternopro_accounts')) || {};
+            const lowerEmail = currentUser.email.toLowerCase();
+            if (accounts[lowerEmail]) {
+              accounts[lowerEmail].avatar = compressedBase64;
+              localStorage.setItem('maternopro_accounts', JSON.stringify(accounts));
+            }
+          } catch (err) {
+            console.warn("Could not save avatar to maternopro_accounts:", err);
+          }
+        }
+        
+        updateHeaderAuthUI();
+      }
+    };
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
   
