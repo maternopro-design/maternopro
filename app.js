@@ -115,15 +115,23 @@ async function writeToFile() {
   }
 }
 
+function safeSetItem(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch (e) {
+    console.warn('Dung lượng localStorage đầy hoặc bị giới hạn trên điện thoại/trình duyệt:', key, e);
+  }
+}
+
 function saveDB() {
-  localStorage.setItem('maternopro_listening', JSON.stringify(db.listening));
-  localStorage.setItem('maternopro_reading', JSON.stringify(db.reading));
-  localStorage.setItem('maternopro_writing', JSON.stringify(db.writing));
-  localStorage.setItem('maternopro_speaking', JSON.stringify(db.speaking));
-  localStorage.setItem('maternopro_grammar', JSON.stringify(db.grammar));
-  localStorage.setItem('maternopro_vocab', JSON.stringify(db.vocab));
+  safeSetItem('maternopro_listening', JSON.stringify(db.listening));
+  safeSetItem('maternopro_reading', JSON.stringify(db.reading));
+  safeSetItem('maternopro_writing', JSON.stringify(db.writing));
+  safeSetItem('maternopro_speaking', JSON.stringify(db.speaking));
+  safeSetItem('maternopro_grammar', JSON.stringify(db.grammar));
+  safeSetItem('maternopro_vocab', JSON.stringify(db.vocab));
   // Lưu gộp toàn bộ vào 1 key để dễ khôi phục
-  localStorage.setItem('maternoproDB_full', JSON.stringify(db));
+  safeSetItem('maternoproDB_full', JSON.stringify(db));
 
   // Ghi thẳng ra file trên máy nếu cô đã chọn file
   if (_fileHandle) writeToFile();
@@ -139,7 +147,6 @@ function saveDB() {
     })
     .catch(err => {
       // Server chưa bật, bỏ qua lỗi im lặng
-
     });
 }
 
