@@ -8393,8 +8393,10 @@ function completeUserLogin(name, email, avatar) {
   alert(`🎉 Đăng nhập thành công với tài khoản: ${currentUser.name} (${email})!`);
 }
 
+const GOOGLE_CLIENT_ID = '228609559534-7rjf90g011rikjtjtdhhomp7q6i0dcu1.apps.googleusercontent.com';
+
 function initGoogleSignIn() {
-  const clientId = localStorage.getItem('google_client_id');
+  const clientId = localStorage.getItem('google_client_id') || GOOGLE_CLIENT_ID;
   if (!clientId) return;
   
   // Wait for Google Identity Services library to load (it's async)
@@ -8421,7 +8423,7 @@ function initGoogleSignIn() {
 }
 
 function triggerGoogleSignIn() {
-  const clientId = localStorage.getItem('google_client_id');
+  const clientId = localStorage.getItem('google_client_id') || GOOGLE_CLIENT_ID;
   
   if (!clientId) {
     alert("❌ Chưa có mã Google Client ID! Vui lòng kiểm tra lại file config.js.");
