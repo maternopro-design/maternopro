@@ -9139,7 +9139,7 @@ function parseCloudMessage(item) {
 }
 
 function syncCloudChatMessages() {
-  fetch(`${NTFY_CHAT_URL}/json?poll=1&since=24h`)
+  fetch(`${NTFY_CHAT_URL}/json?poll=1&since=24h&_t=${Date.now()}`, { cache: 'no-store' })
     .then(res => res.text())
     .then(text => {
       if (!text) return;
@@ -9196,9 +9196,9 @@ try {
   console.warn("EventSource SSE không hỗ trợ:", err);
 }
 
-// Polling dự phòng mỗi 3 giây
+// Polling dự phòng mỗi 2 giây ép trình duyệt mobile luôn nhận tin mới
 syncCloudChatMessages();
-setInterval(syncCloudChatMessages, 3000);
+setInterval(syncCloudChatMessages, 2000);
 
 function toggleChatAnonymousMode() {
   chatAnonymousMode = !chatAnonymousMode;
