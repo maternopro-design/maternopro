@@ -8828,11 +8828,11 @@ function initLiveMetrics() {
 }
 
 // =========================================================
-// REALTIME CLOUD COMMUNITY CHAT (ĐỒNG BỘ THỜI GIAN THỰC ĐIỆN THOẠI & MÁY TÍNH)
+// REALTIME CLOUD COMMUNITY CHAT (ĐỒNG BỘ THỜI GIAN THỰC ĐIỆN THOẠI & MÁY TÍNH VỚI NTFY SSE)
 // =========================================================
 let chatAnonymousMode = false; // Mặc định dùng tên thật nếu đã đăng nhập
 
-const CHAT_FIREBASE_ENDPOINT = 'https://maternopro-chat-default-rtdb.asia-southeast1.firebasedatabase.app/chat_messages';
+const NTFY_CHAT_URL = 'https://ntfy.sh/maternopro_b2_chat_room_v2';
 
 let myChatSessionId = localStorage.getItem('maternopro_chat_session_id');
 if (!myChatSessionId) {
@@ -8843,11 +8843,28 @@ if (!myChatSessionId) {
 let communityMessages = JSON.parse(localStorage.getItem('maternopro_chat_messages')) || [];
 
 function syncCloudChatMessages() {
-  fetch(`${CHAT_FIREBASE_ENDPOINT}.json?orderBy="$key"&limitToLast=50`)
-    .then(res => res.json())
-    .then(data => {
-      if (data) {
-        const list = Object.keys(data).map(k => ({ ...data[k], cloudKey: k }));
+  fetch(`${NTFY_CHAT_URL}/json?poll=1&since=24h`)
+    .then(res => res.text())
+    .then(text => {
+      if (!text) return;
+      const lines = text.trim().split('\n');
+      let list = [];
+      lines.forEach(line => {
+        try {
+          const item = JSON.parse(line);
+          if (item.event === 'message' && item.message) {
+            const msgObj = JSON.parse(item.message);
+            if (msgObj.sender === 'SYSTEM_CLEAR') {
+              list = [];
+            } else {
+              list.push(msgObj);
+            }
+          }
+        } catch(e) {}
+      });
+      if (list.length > 0 || text.includes('SYSTEM_CLEAR')) {
+        // Lấy tối đa 40 tin nhắn mới nhất
+        if (list.length > 40) list = list.slice(list.length - 40);
         list.sort((a, b) => (a.id || 0) - (b.id || 0));
         communityMessages = list;
         try {
@@ -8861,9 +8878,32 @@ function syncCloudChatMessages() {
     });
 }
 
-// Khởi chạy đồng bộ ngay lập tức và lập lịch polling mỗi 2.5s
+// Khởi tạo EventSource để nhận tin nhắn Realtime lập tức (<100ms)
+try {
+  const eventSource = new EventSource(`${NTFY_CHAT_URL}/sse`);
+  eventSource.onmessage = function(e) {
+    try {
+      const data = JSON.parse(e.data);
+      if (data.event === 'message' && data.message) {
+        const msgObj = JSON.parse(data.message);
+        if (msgObj.sender === 'SYSTEM_CLEAR') {
+          communityMessages = [];
+          renderChatMessages();
+        } else if (!communityMessages.some(m => m.id === msgObj.id)) {
+          communityMessages.push(msgObj);
+          if (communityMessages.length > 40) communityMessages = communityMessages.slice(-40);
+          renderChatMessages();
+        }
+      }
+    } catch(err) {}
+  };
+} catch(err) {
+  console.warn("EventSource SSE không hỗ trợ:", err);
+}
+
+// Polling dự phòng mỗi 3 giây
 syncCloudChatMessages();
-setInterval(syncCloudChatMessages, 2500);
+setInterval(syncCloudChatMessages, 3000);
 
 function toggleChatAnonymousMode() {
   chatAnonymousMode = !chatAnonymousMode;
@@ -8887,17 +8927,13 @@ function adminResetChatMessages() {
   }
 
   if (confirm("🔄 Cô có chắc chắn muốn XÓA SẠCH TOÀN BỘ tin nhắn trong Kênh Thảo Luận không?\n(Hành động này sẽ xóa sạch tin nhắn trên tất cả điện thoại & máy tính!)")) {
-    fetch(`${CHAT_FIREBASE_ENDPOINT}.json`, { method: 'DELETE' })
+    const clearMsg = { id: Date.now(), sender: 'SYSTEM_CLEAR', text: 'CLEAR' };
+    fetch(NTFY_CHAT_URL, { method: 'POST', body: JSON.stringify(clearMsg) })
       .then(() => {
         communityMessages = [];
         localStorage.setItem('maternopro_chat_messages', JSON.stringify([]));
         renderChatMessages();
         alert("✨ Đã Reset làm sạch toàn bộ kênh chat thành công!");
-      })
-      .catch(() => {
-        communityMessages = [];
-        localStorage.setItem('maternopro_chat_messages', JSON.stringify([]));
-        renderChatMessages();
       });
   }
 }
