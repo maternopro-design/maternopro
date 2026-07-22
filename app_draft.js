@@ -8853,13 +8853,14 @@ function toggleChatAnonymousMode() {
   chatAnonymousMode = !chatAnonymousMode;
   const btn = document.getElementById('chat-anon-toggle-btn');
   if (btn) {
-    btn.innerHTML = chatAnonymousMode ? '🕵️‍♂️ Chế độ Ẩn Danh: BẬT' : '👤 Chế độ Tên Thật: BẬT';
-    btn.style.color = chatAnonymousMode ? '#10b981' : '#3b82f6';
+    btn.innerHTML = chatAnonymousMode ? '🕵️‍♂️ Ẩn Danh: BẬT' : '👤 Tên Thật: BẬT';
+    btn.style.color = chatAnonymousMode ? '#10b981' : '#38bdf8';
   }
   const btnFloat = document.getElementById('chat-anon-toggle-btn-float');
   if (btnFloat) {
     btnFloat.innerHTML = chatAnonymousMode ? '🕵️‍♂️ Ẩn Danh' : '👤 Tên Thật';
     btnFloat.style.color = chatAnonymousMode ? '#10b981' : '#38bdf8';
+    btnFloat.style.border = chatAnonymousMode ? '1px solid #10b981' : '1px solid #38bdf8';
   }
 }
 
@@ -9121,10 +9122,19 @@ function sendChatMessage(e) {
   let isAdminMsg = false;
 
   if (currentUser) {
-    senderName = currentUser.name || currentUser.email || "Học viên B2";
-    avatarUrl = currentUser.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(senderName)}`;
+    if (!chatAnonymousMode) {
+      senderName = currentUser.name || currentUser.email || "Học viên B2";
+      avatarUrl = currentUser.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(senderName)}`;
+    } else {
+      senderName = "Ẩn danh";
+      avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`;
+    }
+    
     if (isCurrentUserAdmin()) {
       isAdminMsg = true;
+      if (!chatAnonymousMode) {
+        senderName = "Mater Nopro";
+      }
     }
   }
   
@@ -9133,9 +9143,9 @@ function sendChatMessage(e) {
     communityMessages = communityMessages.slice(communityMessages.length - 40);
   }
 
-  // Optimize avatar image string to avoid bloated base64 in chat payload
-  if (avatarUrl && avatarUrl.startsWith('data:image') && avatarUrl.length > 500) {
-    avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(senderName)}`;
+  // Keep custom profile avatar if available
+  if (currentUser && currentUser.avatar && !chatAnonymousMode) {
+    avatarUrl = currentUser.avatar;
   }
 
   const newMsg = {
