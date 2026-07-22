@@ -19,8 +19,71 @@
   <meta property="og:description" content="Nền tảng ôn thi và thi thử tiếng Đức B2 trực tuyến miễn phí. Đầy đủ các phần đọc, nghe, viết kèm giải thích đáp án chi tiết.">
   <meta property="og:image" content="https://maternorpo.online/logo.jpg">
 
-  <link rel="stylesheet" href="style_draft.css?v=601">
+  <link rel="stylesheet" href="style_draft.css?v=700">
   <style>
+    /* CRITICAL MOBILE RESPONSIVE OVERRIDES */
+    @media (max-width: 992px) {
+      .nav-actions {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 0.4rem !important;
+        width: 100% !important;
+      }
+      .cyber-hud-container {
+        padding: 0.5rem !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      .cyber-hud-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        gap: 1.2rem !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+      }
+      /* Order 1: HERO SECTION AT THE VERY TOP */
+      .cyber-hud-grid > .hero-section {
+        order: 1 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 1rem 0.5rem !important;
+        box-sizing: border-box !important;
+        text-align: center !important;
+      }
+      /* Order 2: LỘ TRÌNH B2 IN THE MIDDLE */
+      .cyber-hud-grid > div:nth-child(1) {
+        order: 2 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      /* Order 3: BẢNG VÀNG AT THE BOTTOM */
+      .cyber-hud-grid > div:nth-child(3) {
+        order: 3 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      .hero-logo-img {
+        width: 140px !important;
+        height: 140px !important;
+      }
+      .hero-logo {
+        padding: 10px !important;
+      }
+      .hero-title {
+        font-size: 2rem !important;
+      }
+      .hero-subtitle {
+        font-size: 0.88rem !important;
+        padding: 0 0.5rem !important;
+        line-height: 1.5 !important;
+      }
+    }
+
     @keyframes heartbeat {
       0% { transform: scale(1); box-shadow: 0 0 15px rgba(255, 0, 122, 0.7); }
       14% { transform: scale(1.1); box-shadow: 0 0 30px rgba(255, 0, 122, 0.95); }
