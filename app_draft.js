@@ -8828,87 +8828,113 @@ function initLiveMetrics() {
   }, 4000);
 }
 
-// BẢNG VÀNG VINH DANH TỰ ĐỘNG CẬP NHẬT THEO TIẾN ĐỘ HỌC CHĂM & ONLINE REALTIME
+// Theo dõi thời gian online thực tế của học viên trên máy (tính bằng giây)
+let myOnlineSeconds = parseInt(localStorage.getItem('maternopro_online_seconds') || '0', 10);
+setInterval(() => {
+  myOnlineSeconds += 5;
+  try { localStorage.setItem('maternopro_online_seconds', myOnlineSeconds.toString()); } catch(e){}
+}, 5000);
+
+// BẢNG VÀNG VINH DANH TỰ ĐỘNG CẬP NHẬT THEO TIẾN ĐỘ HỌC CHĂM & THỜI GIAN ONLINE REALTIME (TOP 1 -> TOP 10)
 function updateRealtimeLeaderboard() {
   const extraListContainer = document.getElementById('leaderboard-extra-list');
   if (!extraListContainer) return;
 
-  // Lấy dữ liệu học tập từ localStorage hoặc cộng điểm chăm học
-  let userStats = JSON.parse(localStorage.getItem('maternopro_user_stats')) || {};
-  let currentUserName = "Học viên B2";
+  // Lấy các bài thi đã làm của user hiện tại
+  const myDoneResults = JSON.parse(localStorage.getItem('maternopro_test_results')) || [];
+  const myDoneCount = myDoneResults.length;
+  const myOnlineMins = Math.floor(myOnlineSeconds / 60);
+
+  let currentUserName = "Học viên Ẩn Danh";
   let currentUserAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=Learner";
 
   if (currentUser) {
     currentUserName = currentUser.name || currentUser.email || "Học viên B2";
     currentUserAvatar = currentUser.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(currentUserName)}`;
+  } else {
+    const savedName = localStorage.getItem('maternopro_user_display_name');
+    if (savedName) currentUserName = savedName;
   }
 
-  // Danh sách các học viên chăm học hàng đầu
-  let learners = [
-    { name: "Mater Admin 👑", avatar: "logo.jpg", score: 148, isTop: true, badge: "🥇 TOP 1" },
-    { name: "Minh Anh", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=MinhAnh", score: 96, badge: "🥈 TOP 2" },
-    { name: "Đức Hoàng", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=DucHoang", score: 88, badge: "🥉 TOP 3" },
-    { name: "Thu Trang", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=ThuTrang", score: 79, badge: "🔥 Siêu Chăm Học" },
-    { name: "Yumdan90", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yumdan90", score: 74, badge: "⭐ Top Bảng Vàng" },
-    { name: "Tontyan", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Tontyan", score: 68, badge: "⭐ Top Bảng Vàng" }
+  // Danh sách các học viên online học tập trên hệ thống
+  let pool = [
+    { name: "Minh Anh", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=MinhAnh", done: 42, onlineMins: 185 },
+    { name: "Đức Hoàng", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=DucHoang", done: 38, onlineMins: 160 },
+    { name: "Thu Trang", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=ThuTrang", done: 35, onlineMins: 145 },
+    { name: "Yumdan90", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yumdan90", done: 31, onlineMins: 130 },
+    { name: "Tontyan", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Tontyan", done: 28, onlineMins: 115 },
+    { name: "Hoàng Nam", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=HoangNam", done: 25, onlineMins: 95 },
+    { name: "Phương Thảo", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=PhuongThao", done: 22, onlineMins: 85 },
+    { name: "Khánh Linh", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=KhanhLinh", done: 19, onlineMins: 70 },
+    { name: "Bảo Long", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=BaoLong", done: 16, onlineMins: 60 }
   ];
 
-  // Nếu tài khoản hiện tại đã làm bài hoặc đăng nhập, chèn tài khoản đó vào Bảng Vàng
-  if (currentUser && !learners.some(l => l.name.toLowerCase() === currentUserName.toLowerCase())) {
-    const myDoneCount = (JSON.parse(localStorage.getItem('maternopro_test_results')) || []).length || 55;
-    learners.push({
+  // Thêm tài khoản hiện tại vào pool xếp hạng dựa theo số bài thi + phút online thật
+  let myIndex = pool.findIndex(p => p.name.toLowerCase() === currentUserName.toLowerCase());
+  if (myIndex !== -1) {
+    pool[myIndex].done = Math.max(pool[myIndex].done, myDoneCount);
+    pool[myIndex].onlineMins = Math.max(pool[myIndex].onlineMins, myOnlineMins);
+    pool[myIndex].avatar = currentUserAvatar;
+  } else {
+    pool.push({
       name: currentUserName,
       avatar: currentUserAvatar,
-      score: myDoneCount,
-      badge: "⚡ Thành Viên Tích Cực"
+      done: myDoneCount,
+      onlineMins: myOnlineMins
     });
   }
 
-  // Sắp xếp theo số bài đã hoàn thành (số điểm chăm học)
-  learners.sort((a, b) => b.score - a.score);
+  // Tính điểm vinh danh = (Số bài thi đã làm * 10) + Số phút online thực tế
+  pool.forEach(user => {
+    user.score = (user.done * 10) + user.onlineMins;
+  });
 
-  // Cập nhật TOP 1
+  // Sắp xếp thứ tự từ cao xuống thấp (Top 1 -> Top 10)
+  pool.sort((a, b) => b.score - a.score);
+
+  // TOP 1 PODIUM
   const top1Img = document.getElementById('top1-img');
   const top1Name = document.getElementById('top1-name');
   const top1Score = document.getElementById('top1-score');
-  if (top1Img && learners[0]) {
-    top1Img.src = learners[0].avatar;
-    if (top1Name) top1Name.textContent = learners[0].name;
-    if (top1Score) top1Score.textContent = `${learners[0].score} Bài`;
+  if (top1Img && pool[0]) {
+    top1Img.src = pool[0].avatar;
+    if (top1Name) top1Name.textContent = pool[0].name;
+    if (top1Score) top1Score.textContent = `${pool[0].done} bài · ${pool[0].onlineMins}m online`;
   }
 
-  // Cập nhật TOP 2
+  // TOP 2 PODIUM
   const top2Img = document.getElementById('top2-img');
   const top2Name = document.getElementById('top2-name');
   const top2Score = document.getElementById('top2-score');
-  if (top2Img && learners[1]) {
-    top2Img.src = learners[1].avatar;
-    if (top2Name) top2Name.textContent = learners[1].name;
-    if (top2Score) top2Score.textContent = `${learners[1].score} Bài`;
+  if (top2Img && pool[1]) {
+    top2Img.src = pool[1].avatar;
+    if (top2Name) top2Name.textContent = pool[1].name;
+    if (top2Score) top2Score.textContent = `${pool[1].done} bài · ${pool[1].onlineMins}m online`;
   }
 
-  // Cập nhật TOP 3
+  // TOP 3 PODIUM
   const top3Img = document.getElementById('top3-img');
   const top3Name = document.getElementById('top3-name');
   const top3Score = document.getElementById('top3-score');
-  if (top3Img && learners[2]) {
-    top3Img.src = learners[2].avatar;
-    if (top3Name) top3Name.textContent = learners[2].name;
-    if (top3Score) top3Score.textContent = `${learners[2].score} Bài`;
+  if (top3Img && pool[2]) {
+    top3Img.src = pool[2].avatar;
+    if (top3Name) top3Name.textContent = pool[2].name;
+    if (top3Score) top3Score.textContent = `${pool[2].done} bài · ${pool[2].onlineMins}m online`;
   }
 
-  // Cập nhật dải các Top tiếp theo
-  const extraRanks = learners.slice(3, 6);
-  extraListContainer.innerHTML = extraRanks.map(item => `
-    <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 0.55rem 0.8rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease;">
+  // Cập nhật danh sách từ TOP 4 đến TOP 10
+  const extraRanks = pool.slice(3, 10);
+  extraListContainer.innerHTML = extraRanks.map((item, idx) => `
+    <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 0.5rem 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease;">
       <div style="display: flex; align-items: center; gap: 0.6rem;">
+        <span style="font-size: 0.75rem; font-weight: 900; color: #a78bfa; width: 18px; text-align: center;">#${idx + 4}</span>
         <img src="${item.avatar}" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1.5px solid #38bdf8;">
         <div>
           <div style="font-size: 0.82rem; font-weight: 800; color: #f8fafc;">${item.name}</div>
-          <div style="font-size: 0.68rem; color: #34d399; font-weight: 700;">${item.score} Bài Đã Giải</div>
+          <div style="font-size: 0.68rem; color: #34d399; font-weight: 700;">${item.done} Bài thi · ${item.onlineMins} Phút On</div>
         </div>
       </div>
-      <span style="font-size: 0.72rem; font-weight: 900; color: #facc15; background: rgba(250, 204, 21, 0.15); padding: 0.15rem 0.5rem; border-radius: 8px;">${item.badge}</span>
+      <span style="font-size: 0.7rem; font-weight: 800; color: #facc15; background: rgba(250, 204, 21, 0.12); padding: 0.15rem 0.45rem; border-radius: 8px;">🔥 Top ${idx + 4}</span>
     </div>
   `).join('');
 }
