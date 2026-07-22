@@ -23,10 +23,17 @@
   <style>
     @keyframes heartbeat {
       0% { transform: scale(1); box-shadow: 0 0 15px rgba(255, 0, 122, 0.7); }
-      14% { transform: scale(1.12); box-shadow: 0 0 30px rgba(255, 0, 122, 0.95); }
+      14% { transform: scale(1.1); box-shadow: 0 0 30px rgba(255, 0, 122, 0.95); }
       28% { transform: scale(1); box-shadow: 0 0 15px rgba(255, 0, 122, 0.7); }
-      42% { transform: scale(1.12); box-shadow: 0 0 30px rgba(255, 0, 122, 0.95); }
+      42% { transform: scale(1.1); box-shadow: 0 0 30px rgba(255, 0, 122, 0.95); }
       70% { transform: scale(1); box-shadow: 0 0 15px rgba(255, 0, 122, 0.7); }
+    }
+    @keyframes cyanPulse {
+      0% { transform: scale(1); box-shadow: 0 0 18px rgba(0, 242, 254, 0.8), inset 0 0 10px rgba(0, 242, 254, 0.4); }
+      14% { transform: scale(1.1); box-shadow: 0 0 35px rgba(0, 242, 254, 1), 0 0 15px rgba(139, 92, 246, 0.8), inset 0 0 15px rgba(0, 242, 254, 0.6); }
+      28% { transform: scale(1); box-shadow: 0 0 18px rgba(0, 242, 254, 0.8), inset 0 0 10px rgba(0, 242, 254, 0.4); }
+      42% { transform: scale(1.1); box-shadow: 0 0 35px rgba(0, 242, 254, 1), 0 0 15px rgba(139, 92, 246, 0.8), inset 0 0 15px rgba(0, 242, 254, 0.6); }
+      70% { transform: scale(1); box-shadow: 0 0 18px rgba(0, 242, 254, 0.8), inset 0 0 10px rgba(0, 242, 254, 0.4); }
     }
     @keyframes shimmer {
       0% { background-position: -200% 0; }
@@ -304,23 +311,13 @@
             </div>
             <h1 class="hero-title" style="position: relative; z-index: 2; background: linear-gradient(135deg, #00f2fe 0%, #a78bfa 50%, #ff007a 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 18px rgba(0, 242, 254, 0.5));">MaterNoPro</h1>
             <p class="hero-subtitle" data-translate="hero-subtitle" style="position: relative; z-index: 2;">MaterNoPro ist eine Ein-Personen-GmbH. Der gewerbliche Verkauf von Prüfungsfragen ist strengstens untersagt. B2-Prüfung zu schwer? Komm zu Mater!</p>
-            <!-- UNIQUE SCI-FI GAMER HEXAGONAL ACTION BUTTONS -->
+            <!-- ACTION BUTTONS WITH PULSE HEARTBEAT ANIMATION -->
             <div style="display: flex; gap: 1.5rem; justify-content: center; align-items: center; margin-top: 2rem; flex-wrap: wrap; position: relative; z-index: 2;">
-              
-              <!-- JETZT ÜBEN BUTTON: VIBRANT CYBER SOLID BOLD HEXAGONAL -->
-              <button class="btn-gamer-hex-primary" onclick="switchView('reading')" data-translate="hero-btn" style="position: relative; background: linear-gradient(135deg, #0284c7 0%, #2563eb 50%, #7c3aed 100%); color: #ffffff; border: none; padding: 1.05rem 2.5rem; font-size: 1.1rem; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px); transition: all 0.25s ease; box-shadow: 0 0 30px rgba(2, 132, 199, 0.8), inset 0 0 15px rgba(255, 255, 255, 0.4); text-shadow: 0 2px 4px rgba(0,0,0,0.6);">
-                <span style="position: relative; z-index: 2;">⚡ JETZT ÜBEN</span>
-                <div style="position: absolute; inset: 0; border: 3.5px solid #00f2fe; clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px); pointer-events: none;"></div>
+              <button class="btn btn-cyber-pulse" onclick="switchView('reading')" data-translate="hero-btn" style="min-width: 185px; padding: 0.85rem 2.2rem; font-size: 1.05rem; margin: 0; background: linear-gradient(135deg, #0284c7 0%, #2563eb 50%, #7c3aed 100%); border: 2.5px solid #00f2fe; color: #fff; border-radius: 30px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; text-shadow: 0 1px 4px rgba(0,0,0,0.6); animation: cyanPulse 2.5s infinite ease-in-out; transition: all 0.3s ease;">⚡ JETZT ÜBEN</button>
+              <button class="btn-donate-pulse" onclick="openDonateModal()" style="min-width: 185px; padding: 0.85rem 2.2rem; font-size: 1.05rem; margin: 0; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; text-shadow: 0 1px 3px rgba(0,0,0,0.6);">
+                <span>💖</span>
+                <span style="font-family: 'Inter', sans-serif;">ỦNG HỘ & LIÊN HỆ</span>
               </button>
-
-              <!-- ỦNG HỘ & LIÊN HỆ BUTTON: VIBRANT SOLID NEON PINK/GOLD -->
-              <button class="btn-gamer-hex-secondary" onclick="openDonateModal()" style="position: relative; background: linear-gradient(135deg, #e11d48 0%, #c026d3 50%, #f59e0b 100%); color: #ffffff; border: none; padding: 1.05rem 2.5rem; font-size: 1.1rem; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px)); transition: all 0.25s ease; box-shadow: 0 0 35px rgba(225, 29, 72, 0.85), inset 0 0 15px rgba(255, 255, 255, 0.4); text-shadow: 0 2px 4px rgba(0,0,0,0.6);">
-                <span style="position: relative; z-index: 2; display: flex; align-items: center; gap: 0.5rem;">
-                  <span style="font-size: 1.2rem;">💖</span> <span>ỦNG HỘ & LIÊN HỆ</span>
-                </span>
-                <div style="position: absolute; inset: 0; border: 3.5px solid #facc15; clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px)); pointer-events: none;"></div>
-              </button>
-
             </div>
           </div>
 
