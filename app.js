@@ -9119,6 +9119,14 @@ function sendChatMessage(e) {
   let senderName = "Ẩn danh";
   let avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`;
   let isAdminMsg = false;
+
+  if (currentUser) {
+    senderName = currentUser.name || currentUser.email || "Học viên B2";
+    avatarUrl = currentUser.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(senderName)}`;
+    if (isCurrentUserAdmin()) {
+      isAdminMsg = true;
+    }
+  }
   
   // Keep only the latest 40 messages to prevent QuotaExceededError in localStorage
   if (communityMessages.length > 40) {
