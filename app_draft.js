@@ -8965,15 +8965,16 @@ function adminResetChatMessages() {
     return;
   }
 
-  if (confirm("🔄 Cô có chắc chắn muốn XÓA SẠCH TOÀN BỘ tin nhắn trong Kênh Thảo Luận không?\n(Hành động này sẽ xóa sạch tin nhắn trên tất cả điện thoại & máy tính!)")) {
+  if (confirm("🔄 Cô có chắc chắn muốn XÓA SẠCH TOÀN BỘ tin nhắn trong Kênh Thảo Luận không?\n(Hành động này sẽ xóa sạch tin nhắn ngay lập tức!)")) {
+    communityMessages = [];
+    localStorage.removeItem('maternopro_chat_messages');
+    renderChatMessages();
+    
+    // Gửi lệnh xóa lên Cloud server ntfy
     const clearMsg = { id: Date.now(), sender: 'SYSTEM_CLEAR', text: 'CLEAR' };
-    fetch(NTFY_CHAT_URL, { method: 'POST', body: JSON.stringify(clearMsg) })
-      .then(() => {
-        communityMessages = [];
-        localStorage.setItem('maternopro_chat_messages', JSON.stringify([]));
-        renderChatMessages();
-        alert("✨ Đã Reset làm sạch toàn bộ kênh chat thành công!");
-      });
+    fetch(NTFY_CHAT_URL, { method: 'POST', body: JSON.stringify(clearMsg) }).catch(err => console.warn(err));
+    
+    alert("✨ Đã Reset làm sạch toàn bộ kênh chat thành công!");
   }
 }
 
@@ -9138,7 +9139,7 @@ function renderFloatingChatMessages() {
   const amIAdmin = isCurrentUserAdmin();
 
   container.innerHTML = communityMessages.map(msg => {
-    const isSelfMsg = msg.isSelf || (currentUser && msg.sender === currentUser.name);
+    const isSelfMsg = (msg.sessionId === myChatSessionId) || (currentUser && msg.sender === currentUser.name);
     const isAdminMsg = msg.isAdmin || (msg.sender && (msg.sender === "Mater Nopro" || msg.sender === "maternopro"));
 
     if (isAdminMsg) {
