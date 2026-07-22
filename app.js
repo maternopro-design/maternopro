@@ -8832,7 +8832,7 @@ function initLiveMetrics() {
 // =========================================================
 let chatAnonymousMode = false; // Mặc định dùng tên thật nếu đã đăng nhập
 
-const NTFY_CHAT_URL = 'https://ntfy.sh/maternopro_b2_chat_v5';
+const NTFY_CHAT_URL = 'https://ntfy.sh/maternopro_b2_chat_v6';
 
 let myChatSessionId = localStorage.getItem('maternopro_chat_session_id');
 if (!myChatSessionId) {
