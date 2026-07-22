@@ -2271,8 +2271,8 @@ function renderReadingLeftPane() {
       const ans = userAnswers.teil4[i];
       const correctVal = correctAns ? correctAns[i] : '';
       
-      let style = ans ? `font-weight: bold; background: var(--accent-cyan); padding: 0.1rem 0.5rem; border-radius: 4px; cursor: pointer; display: inline-block; box-shadow: 0 0 8px rgba(0, 210, 255, 0.4);` : `color: var(--accent-cyan); font-weight: bold; border-bottom: 2px dashed var(--accent-cyan); padding: 0 0.5rem; cursor: pointer; display: inline-block;`;
-      let innerHTML = `[ ${ans ? ans : '______'} ]`;
+      let style = ans ? `font-weight: 700; background: rgba(99, 102, 241, 0.22); color: #818cf8; border: 1px solid rgba(129, 140, 248, 0.5); padding: 0.2rem 0.65rem; border-radius: 8px; cursor: pointer; display: inline-block;` : `color: #64748b; font-weight: 600; background: rgba(255, 255, 255, 0.04); border: 1px dashed rgba(255, 255, 255, 0.15); padding: 0.15rem 0.55rem; border-radius: 8px; cursor: pointer; display: inline-block;`;
+      let innerHTML = ans ? `${ans}` : `( ${i} )`;
       
       if (readingFlowState === 'results') {
         const isRight = ans && correctVal && ans.trim().toUpperCase() === correctVal.trim().toUpperCase();
@@ -2284,7 +2284,7 @@ function renderReadingLeftPane() {
           innerHTML = `✗ ${ans ? ans : '?'} (👉 ${correctVal})`;
         }
       }
-      const rep = `<b>(${i})</b> <span class="text-fill-blank drop-target" data-teil="teil4" data-id="${i}" style="${style}">${innerHTML}</span>`;
+      const rep = `<span class="text-fill-blank drop-target" data-teil="teil4" data-id="${i}" style="${style}">${innerHTML}</span>`;
       parsedHTML = parsedHTML.replace(placeholder, rep);
     }
 
@@ -2323,8 +2323,8 @@ function renderReadingLeftPane() {
       const ans = userAnswers.teil5[i];
       const correctVal = correctAns ? correctAns[i] : '';
       
-      let style = ans ? `font-weight: bold; background: var(--accent-cyan); padding: 0.1rem 0.5rem; border-radius: 4px; cursor: pointer; display: inline-block; box-shadow: 0 0 8px rgba(0, 210, 255, 0.4);` : `color: var(--accent-cyan); font-weight: bold; border-bottom: 2px dashed var(--accent-cyan); padding: 0 0.5rem; cursor: pointer; display: inline-block;`;
-      let innerHTML = `[ ${ans ? ans : '______'} ]`;
+      let style = ans ? `font-weight: 700; background: rgba(99, 102, 241, 0.22); color: #818cf8; border: 1px solid rgba(129, 140, 248, 0.5); padding: 0.2rem 0.65rem; border-radius: 8px; cursor: pointer; display: inline-block;` : `color: #64748b; font-weight: 600; background: rgba(255, 255, 255, 0.04); border: 1px dashed rgba(255, 255, 255, 0.15); padding: 0.15rem 0.55rem; border-radius: 8px; cursor: pointer; display: inline-block;`;
+      let innerHTML = ans ? `${ans}` : `( ${i} )`;
       
       if (readingFlowState === 'results') {
         let correctWord = '';
@@ -2346,7 +2346,7 @@ function renderReadingLeftPane() {
           innerHTML = `✗ ${ans ? ans : '?'} (👉 ${correctVal}. ${correctWord})`;
         }
       }
-      const rep = `<b>(${i})</b> <span class="text-fill-blank drop-target" data-teil="teil5" data-id="${i}" style="${style}">${innerHTML}</span>`;
+      const rep = `<span class="text-fill-blank drop-target" data-teil="teil5" data-id="${i}" style="${style}">${innerHTML}</span>`;
       parsedHTML = parsedHTML.replace(placeholder, rep);
     }
 
@@ -2654,21 +2654,57 @@ function renderReadingRightPane() {
   }
   return "";
 }
+function preserveReadingScrollAndRender() {
+  const windowY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+  const rightPane = document.querySelector('.test-right-pane');
+  const rightScrollY = rightPane ? rightPane.scrollTop : 0;
+  const leftPane = document.querySelector('.test-left-pane');
+  const leftScrollY = leftPane ? leftPane.scrollTop : 0;
+  
+  renderReading();
+  
+  window.scrollTo(0, windowY);
+  const newRightPane = document.querySelector('.test-right-pane');
+  if (newRightPane) {
+    newRightPane.scrollTop = rightScrollY;
+  }
+  const newLeftPane = document.querySelector('.test-left-pane');
+  if (newLeftPane) {
+    newLeftPane.scrollTop = leftScrollY;
+  }
+}
+
 function selectReadingOption(qId, val) {
   if (qId >= 6 && qId <= 10) {
     userAnswers.teil2[qId] = val;
   } else if (qId >= 21 && qId <= 30) {
-    userAnswers.teil4[qId] = val;
+    // Lấy đáp án chữ tương ứng để hiển thị thẳng vào đoạn văn bên trái
+    const test = db.reading.find(t => t.name === selectedReadingTest);
+    let defaultOpts = {
+      21: ["A. mir", "B. uns", "C. euch"], 22: ["A. trotz", "B. wegen", "C. dank"],
+      23: ["A. so dass", "B. weil", "C. obwohl"], 24: ["A. damit", "B. um", "C. für"],
+      25: ["A. obwohl", "B. trotzdem", "C. denn"], 26: ["A. belohnt", "B. entschädigt", "C. geholfen"],
+      27: ["A. geschmeckt", "B. gefallen", "C. gepasst"], 28: ["A. da", "B. obwohl", "C. weil"],
+      29: ["A. lassen", "B. haben", "C. angehen"], 30: ["A. von", "B. über", "C. bei"]
+    };
+    const opts = (test?.teil4?.options && test.teil4.options[qId]) ? test.teil4.options[qId] : defaultOpts[qId];
+    const idx = ['A', 'B', 'C'].indexOf(val);
+    let word = val;
+    if (opts && idx !== -1 && opts[idx]) {
+      const optStr = opts[idx];
+      word = optStr.includes('. ') ? optStr.split('. ')[1] : optStr.replace(/^[A-C][\.\s]+/, '');
+    }
+    userAnswers.teil4[qId] = word;
   }
-  renderReading();
+  preserveReadingScrollAndRender();
 }
 window.clearTeil1Answer = function(qId) {
   userAnswers.teil1[qId] = '';
-  renderReading();
+  preserveReadingScrollAndRender();
 }
 function clearTeil3Answer(qId) {
   userAnswers.teil3[qId] = '';
-  renderReading();
+  preserveReadingScrollAndRender();
 }
 
 function selectTeil3Letter(sId, letter) {
@@ -2677,12 +2713,12 @@ function selectTeil3Letter(sId, letter) {
   } else {
     userAnswers.teil3[sId] = letter.toUpperCase();
   }
-  renderReading();
+  preserveReadingScrollAndRender();
 }
 
 function clearTeil5Answer(qId) {
   userAnswers.teil5[qId] = '';
-  renderReading();
+  preserveReadingScrollAndRender();
 }
 
 function attachInteractionEvents() {
@@ -2718,7 +2754,7 @@ function attachInteractionEvents() {
         }
         activeSelection.type = null;
         activeSelection.value = null;
-        renderReading();
+        preserveReadingScrollAndRender();
       }
     });
   });
