@@ -8902,7 +8902,7 @@ function syncCloudChatMessages() {
           }
         } catch(e) {}
       });
-      if (list.length > 0 || text.includes('SYSTEM_CLEAR')) {
+      if (list.length > 0 || text.includes('SYSTEM_CLEAR') || text.trim() === '') {
         if (list.length > 40) list = list.slice(list.length - 40);
         list.sort((a, b) => (a.id || 0) - (b.id || 0));
         communityMessages = list;
