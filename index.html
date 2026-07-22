@@ -53,6 +53,46 @@
       transition: all 0.3s ease;
       margin-right: 0.8rem;
     }
+    
+    /* Cyber Gamer Outer Bevel Frame */
+    .cyber-frame-wrapper {
+      position: relative;
+      max-width: 1380px;
+      margin: 1.5rem auto;
+      border: 3px solid #7c4dff;
+      border-image: linear-gradient(135deg, #c5a059 0%, #8b5cf6 30%, #00f2fe 70%, #c5a059 100%) 1;
+      background: rgba(10, 10, 26, 0.95);
+      box-shadow: 0 0 50px rgba(124, 77, 255, 0.3), inset 0 0 30px rgba(0, 0, 0, 0.8);
+      border-radius: 24px;
+      padding: 1.5rem;
+      overflow: hidden;
+    }
+
+    .cyber-frame-corner {
+      position: absolute;
+      width: 25px;
+      height: 25px;
+      border: 3px solid #c5a059;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .cyber-corner-tl { top: 8px; left: 8px; border-right: none; border-bottom: none; }
+    .cyber-corner-tr { top: 8px; right: 8px; border-left: none; border-bottom: none; }
+    .cyber-corner-bl { bottom: 8px; left: 8px; border-right: none; border-top: none; }
+    .cyber-corner-br { bottom: 8px; right: 8px; border-left: none; border-top: none; }
+
+    .circuit-bg-lines {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.15;
+      background-image: 
+        radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.4) 0%, transparent 60%),
+        linear-gradient(90deg, rgba(0,242,254,0.1) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(0,242,254,0.1) 1px, transparent 1px);
+      background-size: 100% 100%, 40px 40px, 40px 40px;
+      z-index: 1;
+    }
     .btn-donate-pulse:hover {
       background-position: right center;
       transform: scale(1.15) !important;
@@ -120,44 +160,249 @@
 
   <main>
     <!-- 1. DASHBOARD VIEW -->
-    <section id="dashboard" class="section-view active">
-      <div class="hero-section">
-        <div class="hero-logo">
-          <img src="logo.jpg" class="hero-logo-img" alt="MaterNoPro Logo Big">
-        </div>
-        <h1 class="hero-title">MaterNoPro</h1>
-        <p class="hero-subtitle" data-translate="hero-subtitle">MaterNoPro ist eine Ein-Personen-GmbH. Der gewerbliche Verkauf von Prüfungsfragen ist strengstens untersagt. B2-Prüfung zu schwer? Komm zu Mater!</p>
-        <div style="display: flex; gap: 1.5rem; justify-content: center; align-items: center; margin-top: 2rem; flex-wrap: wrap;">
-          <button class="btn btn-cyber" onclick="switchView('reading')" data-translate="hero-btn" style="min-width: 180px; padding: 0.8rem 2rem; font-size: 1rem; margin: 0;">JETZT ÜBEN</button>
-          <button class="btn-donate-pulse" onclick="openDonateModal()" style="min-width: 180px; padding: 0.8rem 2rem; font-size: 1rem; margin: 0; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; text-shadow: 0 1px 3px rgba(0,0,0,0.6);">
-            <span>💖</span>
-            <span style="font-family: 'Inter', sans-serif;">ỦNG HỘ & LIÊN HỆ</span>
-          </button>
-        </div>
-        </div>
+    <section id="dashboard" class="section-view active" style="position: relative; overflow: hidden; width: 100%;">
+      
+      <!-- FULL SCREEN 100VW CYBER CIRCUIT LINES, PHOENIX WING & TRỐNG ĐỒNG OVERLAY -->
+      <div style="position: absolute; inset: 0; width: 100vw; left: 50%; transform: translateX(-50%); pointer-events: none; opacity: 0.85; z-index: 0; overflow: hidden;">
+        <svg width="100%" height="100%" viewBox="0 0 1600 650" preserveAspectRatio="xMidYMid slice" fill="none" xmlns="http://www.w3.org/2000/svg">
+          
+          <!-- HẠT NĂNG LƯỢNG KHIẾU PHÁT SÁNG LƠ LỬNG -->
+          <circle cx="250" cy="120" r="3" fill="#00f2fe" opacity="0.8"><animate attributeName="opacity" values="0.2;1;0.2" dur="3s" repeatCount="indefinite"/></circle>
+          <circle cx="1350" cy="140" r="3" fill="#ec4899" opacity="0.8"><animate attributeName="opacity" values="1;0.2;1" dur="2.5s" repeatCount="indefinite"/></circle>
+          <circle cx="800" cy="60" r="4" fill="#facc15" opacity="0.9"><animate attributeName="r" values="3;5;3" dur="2s" repeatCount="indefinite"/></circle>
+
+          <!-- TRỐNG ĐỒNG CỔ TRUYỀN HÀO QUANG ĐA TẦNG XOAY NHỊP NHÀNG TRUNG TÂM -->
+          <g transform="translate(800, 220)" opacity="0.3">
+            <circle cx="0" cy="0" r="220" stroke="#00f2fe" stroke-width="2" stroke-dasharray="14 8"/>
+            <circle cx="0" cy="0" r="180" stroke="#ec4899" stroke-width="1.5" stroke-dasharray="8 6"/>
+            <circle cx="0" cy="0" r="140" stroke="#a78bfa" stroke-width="2"/>
+            <circle cx="0" cy="0" r="90" stroke="#facc15" stroke-width="2.5" stroke-dasharray="6 4"/>
+            <!-- 14 CÁNH SAO TRỐNG ĐỒNG HÀO QUANG -->
+            <path d="M0 -110 L18 -35 L90 -55 L35 0 L90 55 L18 35 L0 110 L-18 35 L-90 55 L-35 0 L-90 -55 L-18 -35 Z" fill="url(#drumStarGrad)" opacity="0.6"/>
+            <defs>
+              <linearGradient id="drumStarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00f2fe"/>
+                <stop offset="50%" stop-color="#a78bfa"/>
+                <stop offset="100%" stop-color="#ec4899"/>
+              </linearGradient>
+            </defs>
+          </g>
+
+          <!-- CIRCUIT LINES STRETCHING 100% FULL SCREEN LEFT EDGE -->
+          <path d="M 0 80 H 480 L 580 170 H 700" stroke="#00f2fe" stroke-width="3" stroke-dasharray="10 5" filter="drop-shadow(0 0 8px #00f2fe)"/>
+          <circle cx="40" cy="80" r="6" fill="#00f2fe"/>
+          <circle cx="300" cy="80" r="5" fill="#00f2fe"/>
+          <path d="M 0 200 H 420 L 510 150 H 680" stroke="#00f2fe" stroke-width="2.2"/>
+          <circle cx="20" cy="200" r="5" fill="#00f2fe"/>
+          <path d="M 0 360 H 500 L 630 250 H 720" stroke="#a78bfa" stroke-width="3" filter="drop-shadow(0 0 8px #a78bfa)"/>
+          <circle cx="60" cy="360" r="6" fill="#a78bfa"/>
+
+          <!-- CIRCUIT LINES STRETCHING 100% FULL SCREEN RIGHT EDGE -->
+          <path d="M 1600 80 H 1120 L 1020 170 H 900" stroke="#ec4899" stroke-width="3" stroke-dasharray="10 5" filter="drop-shadow(0 0 8px #ec4899)"/>
+          <circle cx="1560" cy="80" r="6" fill="#ec4899"/>
+          <circle cx="1300" cy="80" r="5" fill="#ec4899"/>
+          <path d="M 1600 200 H 1180 L 1090 150 H 920" stroke="#ec4899" stroke-width="2.2"/>
+          <circle cx="1580" cy="200" r="5" fill="#ec4899"/>
+          <path d="M 1600 360 H 1100 L 970 250 H 880" stroke="#a78bfa" stroke-width="3" filter="drop-shadow(0 0 8px #a78bfa)"/>
+          <circle cx="1540" cy="360" r="6" fill="#a78bfa"/>
+
+          <!-- ELABORATE GLOWING PHOENIX FEATHER WINGS RIGHT -->
+          <g filter="drop-shadow(0 0 15px rgba(236,72,153,0.5))">
+            <path d="M 1120 30 C 1380 -20, 1620 90, 1560 300 C 1490 440, 1300 540, 1150 620 C 1320 510, 1520 360, 1450 220 Z" fill="url(#phoenixGradFullRight)" opacity="0.9"/>
+            <!-- Lông vũ phượng hoàng phụ -->
+            <path d="M 1200 100 C 1400 60, 1580 160, 1520 320 C 1420 420, 1280 480, 1200 520 Z" fill="url(#phoenixGradSub)" opacity="0.6"/>
+          </g>
+          
+          <!-- ELABORATE GLOWING PHOENIX FEATHER WINGS LEFT -->
+          <g filter="drop-shadow(0 0 15px rgba(0,242,254,0.5))">
+            <path d="M 480 30 C 220 -20, -20 90, 40 300 C 110 440, 300 540, 450 620 C 280 510, 80 360, 150 220 Z" fill="url(#phoenixGradFullLeft)" opacity="0.9"/>
+            <!-- Lông vũ phượng hoàng phụ -->
+            <path d="M 400 100 C 200 60, 20 160, 80 320 C 180 420, 320 480, 400 520 Z" fill="url(#phoenixGradSubLeft)" opacity="0.6"/>
+          </g>
+
+          <defs>
+            <linearGradient id="phoenixGradFullRight" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ec4899" stop-opacity="0.95"/>
+              <stop offset="40%" stop-color="#8b5cf6" stop-opacity="0.75"/>
+              <stop offset="100%" stop-color="#00f2fe" stop-opacity="0.0"/>
+            </linearGradient>
+            <linearGradient id="phoenixGradSub" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#facc15" stop-opacity="0.8"/>
+              <stop offset="100%" stop-color="#ec4899" stop-opacity="0.1"/>
+            </linearGradient>
+            <linearGradient id="phoenixGradFullLeft" x1="100%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#00f2fe" stop-opacity="0.95"/>
+              <stop offset="40%" stop-color="#8b5cf6" stop-opacity="0.75"/>
+              <stop offset="100%" stop-color="#ec4899" stop-opacity="0.0"/>
+            </linearGradient>
+            <linearGradient id="phoenixGradSubLeft" x1="100%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#facc15" stop-opacity="0.8"/>
+              <stop offset="100%" stop-color="#00f2fe" stop-opacity="0.1"/>
+            </linearGradient>
+          </defs>
+        </svg>
       </div>
 
-      <!-- Khung Lưu ý quan trọng - TO VÀ ĐẸP HƠN NỮA -->
+      <!-- CYBER GAMER HUD DASHBOARD CONTAINER -->
+      <div class="cyber-hud-container" style="position: relative; z-index: 2; max-width: 1300px; margin: 0 auto; padding: 1.5rem 1rem;">
+        
+        <div style="display: grid; grid-template-columns: 280px 1fr 280px; gap: 1.5rem; align-items: start;">
+          
+          <!-- LEFT PANEL: LỊCH SỬ HỌC TẬP / ROADMAP -->
+          <div class="cyber-hud-panel" style="background: rgba(17, 24, 39, 0.75); backdrop-filter: blur(12px); border: 1.5px solid rgba(139, 92, 246, 0.4); border-radius: 20px; padding: 1.2rem; box-shadow: 0 0 25px rgba(139, 92, 246, 0.15);">
+            <div style="display: flex; align-items: center; gap: 0.6rem; border-bottom: 1.5px dashed rgba(139, 92, 246, 0.3); padding-bottom: 0.8rem; margin-bottom: 1rem;">
+              <span style="font-size: 1.2rem;">⏱️</span>
+              <span style="font-weight: 900; font-size: 0.95rem; color: #a78bfa; letter-spacing: 0.5px;">LỊCH SỬ HỌC TẬP</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 1rem; position: relative;">
+              <div style="position: absolute; left: 15px; top: 10px; bottom: 10px; width: 2px; background: linear-gradient(180deg, #8b5cf6, #3b82f6, #10b981);"></div>
+              
+              <div style="display: flex; gap: 0.8rem; position: relative; z-index: 2;">
+                <div style="width: 32px; height: 32px; border-radius: 50%; background: #8b5cf6; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem; color: #fff; flex-shrink: 0; box-shadow: 0 0 10px #8b5cf6;">🏆</div>
+                <div style="background: rgba(255,255,255,0.04); padding: 0.6rem 0.8rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); flex: 1;">
+                  <div style="font-size: 0.8rem; font-weight: 800; color: #f43f5e;">Thi về học thuộc?</div>
+                  <div style="font-size: 0.72rem; color: #94a3b8;">Dùng hoàn toàn thực tế des han!</div>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 0.8rem; position: relative; z-index: 2;">
+                <div style="width: 32px; height: 32px; border-radius: 50%; background: #3b82f6; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem; color: #fff; flex-shrink: 0; box-shadow: 0 0 10px #3b82f6;">📅</div>
+                <div style="background: rgba(255,255,255,0.04); padding: 0.6rem 0.8rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); flex: 1;">
+                  <div style="font-size: 0.8rem; font-weight: 800; color: #38bdf8;">Vào sao nguyên mới</div>
+                  <div style="font-size: 0.72rem; color: #94a3b8;">ahznc and rang lles han</div>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 0.8rem; position: relative; z-index: 2;">
+                <div style="width: 32px; height: 32px; border-radius: 50%; background: #10b981; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem; color: #fff; flex-shrink: 0; box-shadow: 0 0 10px #10b981;">⚡</div>
+                <div style="background: rgba(255,255,255,0.04); padding: 0.6rem 0.8rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); flex: 1;">
+                  <div style="font-size: 0.8rem; font-weight: 800; color: #34d399;">Chuyên hàng kích làng</div>
+                  <div style="font-size: 0.72rem; color: #94a3b8;">Chỉng xứng giỏi người ào hes</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CENTER HERO CORE -->
+          <div class="hero-section" style="margin: 0; position: relative; padding: 2rem 1rem;">
+
+            <!-- CYBER 8-POINTED SUPER STAR LOGO FRAME - BIGGER & ULTRA CLEAR HD -->
+            <div class="hero-logo" style="position: relative; display: inline-block; z-index: 2; padding: 30px;">
+              
+              <!-- 8-POINTED CYBER STAR OUTER BORDER FRAME SVG WITH SHARP SOLID LINES & ROTATION -->
+              <svg style="position: absolute; inset: -20px; width: calc(100% + 40px); height: calc(100% + 40px); pointer-events: none; z-index: 1; animation: rotate-glow 14s linear infinite;" viewBox="0 0 200 200">
+                <!-- 8-Pointed Outer Star Polygon - Crisp Solid Cyan -->
+                <polygon points="100,5 125,45 175,25 150,75 195,100 150,125 175,175 125,155 100,195 75,155 25,175 50,125 5,100 50,75 25,25 75,45" fill="none" stroke="#00f2fe" stroke-width="4.5" stroke-linejoin="round" filter="drop-shadow(0 0 10px #00f2fe)"/>
+                <!-- Inner Octagram Star Polygon Rotating Reverse - Crisp Solid Pink -->
+                <g style="transform-origin: 100px 100px; animation: rotate-glow 9s linear infinite reverse;">
+                  <polygon points="100,20 120,55 160,40 140,80 175,100 140,120 160,160 120,145 100,180 80,145 40,160 60,120 25,100 60,80 40,40 80,55" fill="none" stroke="#ec4899" stroke-width="3" stroke-linejoin="round" filter="drop-shadow(0 0 8px #ec4899)"/>
+                </g>
+              </svg>
+
+              <!-- MAIN LOGO IMAGE HD LARGE SIZE (210PX) WITH LIGHTNING PULSE BORDER -->
+              <img src="logo.jpg" class="hero-logo-img lightning-logo-pulse" alt="MaterNoPro Logo Big" style="position: relative; z-index: 2; width: 210px; height: 210px; border-radius: 50%; object-fit: cover; border: 4.5px solid #00f2fe; box-shadow: 0 0 35px rgba(0, 242, 254, 0.9), 0 0 20px rgba(236, 72, 153, 0.7); image-rendering: -webkit-optimize-contrast;">
+            </div>
+            <h1 class="hero-title" style="position: relative; z-index: 2; background: linear-gradient(135deg, #00f2fe 0%, #a78bfa 50%, #ff007a 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 18px rgba(0, 242, 254, 0.5));">MaterNoPro</h1>
+            <p class="hero-subtitle" data-translate="hero-subtitle" style="position: relative; z-index: 2;">MaterNoPro ist eine Ein-Personen-GmbH. Der gewerbliche Verkauf von Prüfungsfragen ist strengstens untersagt. B2-Prüfung zu schwer? Komm zu Mater!</p>
+            <div style="display: flex; gap: 1.2rem; justify-content: center; align-items: center; margin-top: 1.8rem; flex-wrap: wrap; position: relative; z-index: 2;">
+              <button class="btn btn-cyber" onclick="switchView('reading')" data-translate="hero-btn" style="min-width: 170px; padding: 0.8rem 1.8rem; font-size: 0.95rem; margin: 0; box-shadow: 0 0 25px rgba(0, 242, 254, 0.5);">JETZT ÜBEN</button>
+              <button class="btn-donate-pulse" onclick="openDonateModal()" style="min-width: 170px; padding: 0.8rem 1.8rem; font-size: 0.95rem; margin: 0; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; text-shadow: 0 1px 3px rgba(0,0,0,0.6);">
+                <span>💖</span>
+                <span style="font-family: 'Inter', sans-serif;">ỦNG HỘ & LIÊN HỆ</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- RIGHT PANEL: XẾP HẠNG BẢNG VÀNG CĂN CỨ THEO CHĂM HỌC & ONLINE -->
+          <div class="cyber-hud-panel" style="background: rgba(17, 24, 39, 0.75); backdrop-filter: blur(12px); border: 1.5px solid rgba(251, 191, 36, 0.4); border-radius: 20px; padding: 1.2rem; box-shadow: 0 0 25px rgba(251, 191, 36, 0.15);">
+            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1.5px dashed rgba(251, 191, 36, 0.3); padding-bottom: 0.8rem; margin-bottom: 1rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.2rem;">👑</span>
+                <span style="font-weight: 900; font-size: 0.92rem; color: #facc15; letter-spacing: 0.5px;">BẢNG VÀNG VINH DANH</span>
+              </div>
+              <span style="font-size: 0.7rem; color: #10b981; font-weight: 800;" id="leaderboard-live-badge">🟢 Realtime</span>
+            </div>
+
+            <!-- DYNAMIC LEADERBOARD CONTAINER -->
+            <div id="dynamic-leaderboard-container">
+              <!-- TOP 3 PODIUM -->
+              <div style="display: flex; justify-content: center; align-items: flex-end; gap: 0.8rem; margin-bottom: 1.2rem; padding: 0.5rem 0;">
+                <!-- TOP 2 -->
+                <div style="text-align: center;" id="top2-podium">
+                  <img id="top2-img" src="https://api.dicebear.com/7.x/avataaars/svg?seed=MinhAnh" style="width: 38px; height: 38px; border-radius: 50%; border: 2px solid #94a3b8; box-shadow: 0 0 10px rgba(148, 163, 184, 0.5); object-fit: cover;">
+                  <div style="font-size: 0.7rem; font-weight: 800; color: #cbd5e1; margin-top: 0.2rem;" id="top2-name">Minh Anh</div>
+                  <div style="font-size: 0.65rem; color: #38bdf8; font-weight: 700;" id="top2-score">92 Bài</div>
+                  <div style="background: #475569; color: white; border-radius: 6px; font-weight: 900; font-size: 0.75rem; padding: 0.1rem 0.4rem; margin-top: 0.2rem;">🥈 TOP 2</div>
+                </div>
+                <!-- TOP 1 -->
+                <div style="text-align: center;" id="top1-podium">
+                  <div style="font-size: 1rem; margin-bottom: -4px;">👑</div>
+                  <img id="top1-img" src="logo.jpg" style="width: 48px; height: 48px; border-radius: 50%; border: 2.5px solid #facc15; box-shadow: 0 0 15px rgba(250, 204, 21, 0.8); object-fit: cover;">
+                  <div style="font-size: 0.75rem; font-weight: 900; color: #facc15; margin-top: 0.2rem;" id="top1-name">Mater Admin</div>
+                  <div style="font-size: 0.7rem; color: #facc15; font-weight: 800;" id="top1-score">148 Bài</div>
+                  <div style="background: linear-gradient(135deg, #facc15, #f59e0b); color: #000; border-radius: 6px; font-weight: 900; font-size: 0.8rem; padding: 0.15rem 0.5rem; margin-top: 0.2rem;">🥇 TOP 1</div>
+                </div>
+                <!-- TOP 3 -->
+                <div style="text-align: center;" id="top3-podium">
+                  <img id="top3-img" src="https://api.dicebear.com/7.x/avataaars/svg?seed=DucHoang" style="width: 38px; height: 38px; border-radius: 50%; border: 2px solid #b45309; box-shadow: 0 0 10px rgba(180, 83, 9, 0.5); object-fit: cover;">
+                  <div style="font-size: 0.7rem; font-weight: 800; color: #cbd5e1; margin-top: 0.2rem;" id="top3-name">Đức Hoàng</div>
+                  <div style="font-size: 0.65rem; color: #38bdf8; font-weight: 700;" id="top3-score">85 Bài</div>
+                  <div style="background: #b45309; color: white; border-radius: 6px; font-weight: 900; font-size: 0.75rem; padding: 0.1rem 0.4rem; margin-top: 0.2rem;">🥉 TOP 3</div>
+                </div>
+              </div>
+
+              <!-- EXTRA RANKS LIST -->
+              <div style="display: flex; flex-direction: column; gap: 0.6rem;" id="leaderboard-extra-list">
+                <!-- Renders dynamically -->
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- NETWORK STATUS BAR BELOW -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; background: rgba(17, 24, 39, 0.85); padding: 0.7rem 1.8rem; border-radius: 14px; border: 1.5px solid rgba(197, 160, 89, 0.4); box-shadow: 0 0 15px rgba(0,0,0,0.5);">
+          <div style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.82rem; font-weight: 800; color: #cbd5e1;">
+            <span style="color: #a78bfa;">Network Status:</span>
+            <span style="display: flex; gap: 4px;">
+              <span style="width: 7px; height: 14px; background: #10b981; border-radius: 2px; box-shadow: 0 0 6px #10b981;"></span>
+              <span style="width: 7px; height: 14px; background: #10b981; border-radius: 2px; box-shadow: 0 0 6px #10b981;"></span>
+              <span style="width: 7px; height: 14px; background: #10b981; border-radius: 2px; box-shadow: 0 0 6px #10b981;"></span>
+              <span style="width: 7px; height: 14px; background: #10b981; border-radius: 2px; box-shadow: 0 0 6px #10b981;"></span>
+            </span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.82rem; font-weight: 800; color: #cbd5e1;">
+            <span style="color: #facc15;">Active Learners:</span>
+            <span style="display: flex; gap: 4px;">
+              <span style="width: 7px; height: 14px; background: #ef4444; border-radius: 2px; box-shadow: 0 0 6px #ef4444;"></span>
+              <span style="width: 7px; height: 14px; background: #ef4444; border-radius: 2px; box-shadow: 0 0 6px #ef4444;"></span>
+              <span style="width: 7px; height: 14px; background: #ef4444; border-radius: 2px; box-shadow: 0 0 6px #ef4444;"></span>
+              <span style="width: 7px; height: 14px; background: #ef4444; border-radius: 2px; box-shadow: 0 0 6px #ef4444;"></span>
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Khung Lưu ý quan trọng - TO NỔI BẬT NỔI BẬT KHÔNG THỂ BỎ QUA -->
       <div class="donation-alert-wrapper" style="max-width: 950px; margin: 3.5rem auto 0 auto; padding: 0 1rem;">
-        <div class="donation-alert" onmouseover="this.style.transform='translateY(-3px)';" onmouseout="this.style.transform='none';">
+        <div class="donation-alert" style="background: linear-gradient(135deg, rgba(30, 27, 75, 0.95), rgba(15, 23, 42, 0.95)); border: 2.5px solid #facc15; border-radius: 24px; padding: 2.2rem; box-shadow: 0 0 35px rgba(250, 204, 21, 0.3), inset 0 0 20px rgba(250, 204, 21, 0.15);">
           
-          <!-- Thanh phản quang góc trên cùng bên phải -->
-          <div class="alert-glow-bg" style="position: absolute; right: -50px; top: -50px; width: 120px; height: 120px; border-radius: 50%;"></div>
-          
-          <div class="alert-title-box" style="font-weight: 900; margin-bottom: 1.2rem; font-size: 1.3rem; display: flex; align-items: center; gap: 0.8rem; letter-spacing: 0.8px; text-transform: uppercase; flex-wrap: wrap;">
-            <span>⚠️</span> Lưu ý quan trọng
+          <div class="alert-title-box" style="font-weight: 900; margin-bottom: 1.2rem; font-size: 1.4rem; display: flex; align-items: center; gap: 0.8rem; letter-spacing: 0.8px; text-transform: uppercase; color: #facc15; text-shadow: 0 0 12px rgba(250, 204, 21, 0.6);">
+            <span style="font-size: 1.6rem;">⚠️</span> LƯU Ý QUAN TRỌNG
           </div>
           
-          <p class="alert-main-text" style="font-size: 1.05rem; line-height: 1.6; font-weight: 600; margin: 0 0 1.5rem 0; text-align: left;">
-            Đây là website chia sẻ đề thi tham khảo. <span class="alert-highlight-text">Mater xin chiêu đãi bạn một bữa ăn hoàn toàn miễn phí!</span> 
+          <p class="alert-main-text" style="font-size: 1.1rem; line-height: 1.7; font-weight: 600; margin: 0 0 1.5rem 0; text-align: left; color: #f8fafc;">
+            Đây là website chia sẻ đề thi tham khảo. <span class="alert-highlight-text" style="color: #00f2fe; font-weight: 900; text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);">Mater xin chiêu đãi bạn một bữa ăn hoàn toàn miễn phí!</span> 
             Trong quá trình làm bài nếu phát hiện đáp án sai sót, xin liên hệ Admin để sửa đổi.
           </p>
           
-          <div class="alert-footer-box" style="border-top: 2px dashed rgba(255, 193, 7, 0.25); padding-top: 1.2rem; display: flex; flex-direction: column; align-items: stretch; justify-content: space-between; gap: 1.2rem;">
-            <p class="donation-alert-text" style="font-size: 1rem; line-height: 1.6; font-weight: 500; margin: 0; min-width: 0;">
-              ☕ Để duy trì website hoạt động ổn định (hosting, server), Admin kêu gọi quý bạn đọc hảo tâm ủng hộ từ <b>5k, 10k</b> ạ. Sự đóng góp của bạn là động lực to lớn với Admin!
+          <div class="alert-footer-box" style="border-top: 2px dashed rgba(250, 204, 21, 0.4); padding-top: 1.4rem; display: flex; flex-direction: column; align-items: stretch; justify-content: space-between; gap: 1.4rem;">
+            <p class="donation-alert-text" style="font-size: 1.05rem; line-height: 1.7; font-weight: 600; margin: 0; min-width: 0; color: #cbd5e1;">
+              ☕ Để duy trì website hoạt động ổn định (hosting, server), Admin kêu gọi quý bạn đọc hảo tâm ủng hộ từ <b style="color: #facc15; font-size: 1.15rem;">5k, 10k</b> ạ. Sự đóng góp của bạn là động lực to lớn với Admin!
             </p>
-            <button class="btn-donate-pulse" onclick="openDonateModal()" style="margin: 0 auto; font-size: 0.95rem; padding: 0.8rem 1.8rem; border-radius: 30px; font-weight: 900; letter-spacing: 1px; width: 100%; max-width: 250px;">
+            <button class="btn-donate-pulse" onclick="openDonateModal()" style="margin: 0 auto; font-size: 1.05rem; padding: 0.9rem 2.2rem; border-radius: 30px; font-weight: 900; letter-spacing: 1px; width: 100%; max-width: 280px; box-shadow: 0 0 25px rgba(255, 0, 122, 0.8);">
               <span>💖</span> ỦNG HỘ ADMIN
             </button>
           </div>

@@ -2474,11 +2474,148 @@ body.warm-theme .maternopro-audio-player {
     border-color: #00f2fe !important;
     transform: scale(1.05) rotate(2deg) !important;
   }
-  100% {
-    box-shadow: 0 0 22px rgba(236, 72, 153, 0.85), 0 0 45px rgba(59, 130, 246, 0.65) !important;
-    border-color: #ec4899 !important;
-    transform: scale(1) rotate(-2deg) !important;
-  }
+/* Custom High-Contrast Theme-Adaptive Donation Alert Card */
+.donation-alert {
+  background: var(--bg-card, rgba(18, 18, 43, 0.85));
+  border: 2px solid var(--accent-amber, #f59e0b);
+  border-radius: 24px;
+  padding: 2rem 2.2rem;
+  box-shadow: 0 10px 40px rgba(245, 158, 11, 0.25), inset 0 0 15px rgba(245, 158, 11, 0.1);
+  backdrop-filter: blur(16px);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.donation-alert:hover {
+  box-shadow: 0 15px 50px rgba(245, 158, 11, 0.4), inset 0 0 25px rgba(245, 158, 11, 0.18);
+  border-color: #fbbf24;
+}
+
+.alert-title-box {
+  color: var(--accent-amber, #facc15);
+  text-shadow: 0 0 12px rgba(250, 204, 21, 0.4);
+}
+
+.alert-main-text {
+  color: var(--text-main, #f8fafc);
+}
+
+.alert-highlight-text {
+  color: #38bdf8;
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: rgba(56, 189, 248, 0.5);
+}
+
+.donation-alert-text {
+  color: var(--text-main, #e2e8f0);
+}
+
+/* Light Theme Overrides */
+body.light-theme .donation-alert {
+  background: #ffffff !important;
+  border: 2px solid #d97706 !important;
+  box-shadow: 0 10px 30px rgba(217, 119, 6, 0.15) !important;
+}
+
+body.light-theme .alert-title-box {
+  color: #b45309 !important;
+  text-shadow: none !important;
+}
+
+body.light-theme .alert-main-text {
+  color: #0f172a !important;
+}
+
+body.light-theme .alert-highlight-text {
+  color: #2563eb !important;
+}
+
+body.light-theme .donation-alert-text {
+  color: #1e293b !important;
+}
+
+/* Ultra High-Readability Theme Adaptive Styles for Light & Warm Themes */
+body.light-theme .cyber-hud-panel {
+  background: #ffffff !important;
+  border: 2px solid #6366f1 !important;
+  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.15) !important;
+  color: #0f172a !important;
+}
+
+body.light-theme .cyber-hud-panel div,
+body.light-theme .cyber-hud-panel span,
+body.light-theme .cyber-hud-panel b {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+
+body.light-theme .hero-section h1 {
+  background: linear-gradient(135deg, #0284c7 0%, #7c3aed 50%, #db2777 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  filter: none !important;
+}
+
+body.light-theme .hero-subtitle {
+  color: #1e293b !important;
+  font-weight: 800 !important;
+  font-style: italic !important;
+}
+
+/* Warm Theme Overrides */
+body.warm-theme .cyber-hud-panel {
+  background: #fffbeb !important;
+  border: 2px solid #d97706 !important;
+  box-shadow: 0 10px 30px rgba(217, 119, 6, 0.2) !important;
+  color: #451a03 !important;
+}
+
+body.warm-theme .cyber-hud-panel div,
+body.warm-theme .cyber-hud-panel span,
+body.warm-theme .cyber-hud-panel b {
+  color: #451a03 !important;
+  font-weight: 800 !important;
+}
+
+body.warm-theme .hero-section h1 {
+  background: linear-gradient(135deg, #b45309 0%, #d97706 50%, #92400e 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  filter: none !important;
+}
+
+body.warm-theme .hero-subtitle {
+  color: #78350f !important;
+  font-weight: 800 !important;
+  font-style: italic !important;
+}
+
+body.light-theme .donation-alert {
+  background: #ffffff !important;
+  border: 2.5px solid #0284c7 !important;
+  box-shadow: 0 12px 35px rgba(2, 132, 199, 0.2) !important;
+}
+
+body.light-theme .donation-alert div,
+body.light-theme .donation-alert p,
+body.light-theme .donation-alert span {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+
+body.warm-theme .donation-alert {
+  background: #fffbeb !important;
+  border: 2.5px solid #d97706 !important;
+  box-shadow: 0 12px 35px rgba(217, 119, 6, 0.25) !important;
+}
+
+body.warm-theme .donation-alert div,
+body.warm-theme .donation-alert p,
+body.warm-theme .donation-alert span {
+  color: #451a03 !important;
+  font-weight: 800 !important;
 }
 
 

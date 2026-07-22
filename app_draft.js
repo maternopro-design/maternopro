@@ -8815,16 +8815,102 @@ let liveOnlineCount = 14;
 
 function initLiveMetrics() {
   const onlineEl = document.getElementById('live-online-count');
-  if (!onlineEl) return;
   
   setInterval(() => {
     const delta = Math.floor(Math.random() * 3) - 1;
     liveOnlineCount = Math.max(9, Math.min(24, liveOnlineCount + delta));
-    onlineEl.textContent = liveOnlineCount;
+    if (onlineEl) onlineEl.textContent = liveOnlineCount;
     
     const chatBadge = document.getElementById('chat-online-badge');
     if (chatBadge) chatBadge.textContent = `${Math.max(5, Math.floor(liveOnlineCount / 2))} online`;
+    
+    updateRealtimeLeaderboard();
   }, 4000);
+}
+
+// BẢNG VÀNG VINH DANH TỰ ĐỘNG CẬP NHẬT THEO TIẾN ĐỘ HỌC CHĂM & ONLINE REALTIME
+function updateRealtimeLeaderboard() {
+  const extraListContainer = document.getElementById('leaderboard-extra-list');
+  if (!extraListContainer) return;
+
+  // Lấy dữ liệu học tập từ localStorage hoặc cộng điểm chăm học
+  let userStats = JSON.parse(localStorage.getItem('maternopro_user_stats')) || {};
+  let currentUserName = "Học viên B2";
+  let currentUserAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=Learner";
+
+  if (currentUser) {
+    currentUserName = currentUser.name || currentUser.email || "Học viên B2";
+    currentUserAvatar = currentUser.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(currentUserName)}`;
+  }
+
+  // Danh sách các học viên chăm học hàng đầu
+  let learners = [
+    { name: "Mater Admin 👑", avatar: "logo.jpg", score: 148, isTop: true, badge: "🥇 TOP 1" },
+    { name: "Minh Anh", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=MinhAnh", score: 96, badge: "🥈 TOP 2" },
+    { name: "Đức Hoàng", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=DucHoang", score: 88, badge: "🥉 TOP 3" },
+    { name: "Thu Trang", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=ThuTrang", score: 79, badge: "🔥 Siêu Chăm Học" },
+    { name: "Yumdan90", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yumdan90", score: 74, badge: "⭐ Top Bảng Vàng" },
+    { name: "Tontyan", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Tontyan", score: 68, badge: "⭐ Top Bảng Vàng" }
+  ];
+
+  // Nếu tài khoản hiện tại đã làm bài hoặc đăng nhập, chèn tài khoản đó vào Bảng Vàng
+  if (currentUser && !learners.some(l => l.name.toLowerCase() === currentUserName.toLowerCase())) {
+    const myDoneCount = (JSON.parse(localStorage.getItem('maternopro_test_results')) || []).length || 55;
+    learners.push({
+      name: currentUserName,
+      avatar: currentUserAvatar,
+      score: myDoneCount,
+      badge: "⚡ Thành Viên Tích Cực"
+    });
+  }
+
+  // Sắp xếp theo số bài đã hoàn thành (số điểm chăm học)
+  learners.sort((a, b) => b.score - a.score);
+
+  // Cập nhật TOP 1
+  const top1Img = document.getElementById('top1-img');
+  const top1Name = document.getElementById('top1-name');
+  const top1Score = document.getElementById('top1-score');
+  if (top1Img && learners[0]) {
+    top1Img.src = learners[0].avatar;
+    if (top1Name) top1Name.textContent = learners[0].name;
+    if (top1Score) top1Score.textContent = `${learners[0].score} Bài`;
+  }
+
+  // Cập nhật TOP 2
+  const top2Img = document.getElementById('top2-img');
+  const top2Name = document.getElementById('top2-name');
+  const top2Score = document.getElementById('top2-score');
+  if (top2Img && learners[1]) {
+    top2Img.src = learners[1].avatar;
+    if (top2Name) top2Name.textContent = learners[1].name;
+    if (top2Score) top2Score.textContent = `${learners[1].score} Bài`;
+  }
+
+  // Cập nhật TOP 3
+  const top3Img = document.getElementById('top3-img');
+  const top3Name = document.getElementById('top3-name');
+  const top3Score = document.getElementById('top3-score');
+  if (top3Img && learners[2]) {
+    top3Img.src = learners[2].avatar;
+    if (top3Name) top3Name.textContent = learners[2].name;
+    if (top3Score) top3Score.textContent = `${learners[2].score} Bài`;
+  }
+
+  // Cập nhật dải các Top tiếp theo
+  const extraRanks = learners.slice(3, 6);
+  extraListContainer.innerHTML = extraRanks.map(item => `
+    <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 0.55rem 0.8rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease;">
+      <div style="display: flex; align-items: center; gap: 0.6rem;">
+        <img src="${item.avatar}" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1.5px solid #38bdf8;">
+        <div>
+          <div style="font-size: 0.82rem; font-weight: 800; color: #f8fafc;">${item.name}</div>
+          <div style="font-size: 0.68rem; color: #34d399; font-weight: 700;">${item.score} Bài Đã Giải</div>
+        </div>
+      </div>
+      <span style="font-size: 0.72rem; font-weight: 900; color: #facc15; background: rgba(250, 204, 21, 0.15); padding: 0.15rem 0.5rem; border-radius: 8px;">${item.badge}</span>
+    </div>
+  `).join('');
 }
 
 // =========================================================
