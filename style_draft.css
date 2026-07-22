@@ -2536,86 +2536,42 @@ body.light-theme .donation-alert-text {
   color: #1e293b !important;
 }
 
-/* Ultra High-Readability Theme Adaptive Styles for Light & Warm Themes */
-body.light-theme .cyber-hud-panel {
-  background: #ffffff !important;
-  border: 2px solid #6366f1 !important;
-  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.15) !important;
-  color: #0f172a !important;
+/* Keep Cyber HUD Panels Dark & High Contrast in Light / Warm Themes */
+body.light-theme .cyber-hud-panel,
+body.warm-theme .cyber-hud-panel {
+  background: rgba(17, 24, 39, 0.92) !important;
+  border: 2px solid #8b5cf6 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+  color: #f8fafc !important;
 }
 
 body.light-theme .cyber-hud-panel div,
 body.light-theme .cyber-hud-panel span,
-body.light-theme .cyber-hud-panel b {
-  color: #0f172a !important;
-  font-weight: 800 !important;
-}
-
-body.light-theme .hero-section h1 {
-  background: linear-gradient(135deg, #0284c7 0%, #7c3aed 50%, #db2777 100%) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  filter: none !important;
-}
-
-body.light-theme .hero-subtitle {
-  color: #1e293b !important;
-  font-weight: 800 !important;
-  font-style: italic !important;
-}
-
-/* Warm Theme Overrides */
-body.warm-theme .cyber-hud-panel {
-  background: #fffbeb !important;
-  border: 2px solid #d97706 !important;
-  box-shadow: 0 10px 30px rgba(217, 119, 6, 0.2) !important;
-  color: #451a03 !important;
-}
-
+body.light-theme .cyber-hud-panel b,
 body.warm-theme .cyber-hud-panel div,
 body.warm-theme .cyber-hud-panel span,
 body.warm-theme .cyber-hud-panel b {
-  color: #451a03 !important;
-  font-weight: 800 !important;
+  color: inherit !important;
 }
 
+body.light-theme .hero-section h1,
 body.warm-theme .hero-section h1 {
-  background: linear-gradient(135deg, #b45309 0%, #d97706 50%, #92400e 100%) !important;
+  background: linear-gradient(135deg, #00f2fe 0%, #a78bfa 50%, #ff007a 100%) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
-  filter: none !important;
+  filter: drop-shadow(0 0 18px rgba(0, 242, 254, 0.5)) !important;
 }
 
+body.light-theme .hero-subtitle,
 body.warm-theme .hero-subtitle {
-  color: #78350f !important;
-  font-weight: 800 !important;
-  font-style: italic !important;
-}
-
-body.light-theme .donation-alert {
-  background: #ffffff !important;
-  border: 2.5px solid #0284c7 !important;
-  box-shadow: 0 12px 35px rgba(2, 132, 199, 0.2) !important;
-}
-
-body.light-theme .donation-alert div,
-body.light-theme .donation-alert p,
-body.light-theme .donation-alert span {
   color: #0f172a !important;
   font-weight: 800 !important;
 }
 
-body.warm-theme .donation-alert {
-  background: #fffbeb !important;
-  border: 2.5px solid #d97706 !important;
-  box-shadow: 0 12px 35px rgba(217, 119, 6, 0.25) !important;
-}
-
-body.warm-theme .donation-alert div,
-body.warm-theme .donation-alert p,
-body.warm-theme .donation-alert span {
-  color: #451a03 !important;
-  font-weight: 800 !important;
+/* Ensure SVG Overlay Circuit Lines stay visible across themes */
+body.light-theme #dashboard svg,
+body.warm-theme #dashboard svg {
+  opacity: 0.6 !important;
 }
 
 
