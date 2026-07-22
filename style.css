@@ -2577,31 +2577,55 @@ body.warm-theme #dashboard svg {
 /* Mobile Responsive Optimization for Cyber Gamer HUD Dashboard */
 @media (max-width: 992px) {
   .cyber-hud-grid {
-    grid-template-columns: 1fr !important;
-    gap: 1rem !important;
-  }
-
-  .cyber-hud-grid .hero-section {
-    order: -1 !important; /* Logo + Title always displayed AT THE VERY TOP on Mobile */
+    display: flex !important;
+    flex-direction: column !important;
     width: 100% !important;
+    gap: 1.5rem !important;
+    padding: 0 0.5rem !important;
+    box-sizing: border-box !important;
   }
 
-  /* Ẩn panel Lộ Trình B2 + Bảng Vàng trên mobile để hero hiện full */
+  /* Order 1: HERO SECTION ON TOP */
+  .cyber-hud-grid .hero-section {
+    order: 1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 1rem 0.5rem !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Order 2 & 3: SIDE PANELS STACKED BELOW HERO */
   .cyber-hud-grid > .cyber-hud-panel {
-    display: none !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
+  }
+
+  .cyber-hud-grid > .cyber-hud-panel:nth-of-type(1) {
+    order: 2 !important; /* Lộ trình B2 */
+  }
+
+  .cyber-hud-grid > .cyber-hud-panel:nth-of-type(2) {
+    order: 3 !important; /* Bảng vàng vinh danh */
   }
 
   .hero-logo-img {
-    width: 160px !important;
-    height: 160px !important;
+    width: 150px !important;
+    height: 150px !important;
+  }
+
+  .hero-logo {
+    padding: 15px !important;
   }
 
   .hero-title {
-    font-size: 2.4rem !important;
+    font-size: 2.2rem !important;
   }
 
   .hero-subtitle {
-    font-size: 0.95rem !important;
+    font-size: 0.9rem !important;
     padding: 0 0.5rem !important;
   }
 }
