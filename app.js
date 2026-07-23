@@ -1307,6 +1307,9 @@ function selectReadingModeName(mode) {
 
 function setReadingState(state) {
   readingFlowState = state;
+  if (state !== 'test' && state !== 'results') {
+    document.body.style.overflow = '';
+  }
   renderReading();
 }
 
@@ -1924,64 +1927,116 @@ function renderReading() {
       { num: 5, name: "Sprachbausteine Teil 2 (15 Pkt.)" }
     ];
 
+    document.body.style.overflow = 'hidden';
+
+    let instructionText = "";
+    if (currentReadingSubTab === 1) {
+      instructionText = "Lesen Sie die Überschriften a-j und die Texte 1-5 und entscheiden Sie, welche Überschrift am besten zu welchem Text passt.";
+    } else if (currentReadingSubTab === 2) {
+      instructionText = "Lesen Sie den Text und die Aufgaben 6-10. Welche Antwort (A, B oder C) passt am besten?";
+    } else if (currentReadingSubTab === 3) {
+      instructionText = "Lesen Sie die zehn Situationen (11-20) und die zwölf Texte (a-l). Welcher Text passt zu welcher Situation? Sie können jeden Text nur einmal verwenden. Manchmal passt kein Text. Wählen Sie dann x.";
+    } else if (currentReadingSubTab === 4) {
+      instructionText = "Lesen Sie den Text und entscheiden Sie, welches Wort (A, B oder C) in die jeweilige Lücke passt.";
+    } else if (currentReadingSubTab === 5) {
+      instructionText = "Lesen Sie den Text und entscheiden Sie, welches Wort aus dem Kasten (A-O) in die jeweilige Lücke passt. Sie können jedes Wort nur einmal verwenden. Nicht alle Wörter passen in den Text.";
+    }
+
     container.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
-        <button class="btn btn-secondary" onclick="setReadingState('overview')">← Zurück</button>
-        <div style="font-weight: bold; color: var(--accent-cyan); font-size: 1.1rem;">
-          ${selectedReadingTest} - ${selectedReadingMode}
-        </div>
-      </div>
+      <div id="reading-fullscreen-overlay" style="
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        z-index: 9999;
+        background: #0b0f19;
+        display: flex; flex-direction: column;
+        overflow: hidden;
+        font-family: 'Plus Jakarta Sans', Arial, sans-serif;
+      ">
 
-      <div class="test-subnavigation">
-        ${subNavItems.map(item => `
-          <button class="test-subnav-btn ${currentReadingSubTab === item.num ? 'active' : ''}" onclick="setReadingSubTab(${item.num})">
-            ${item.name}
-          </button>
-        `).join('')}
-      </div>
-
-      <h3 style="margin-bottom: 1rem;">
-        ${currentReadingSubTab <= 3 ? `Leseverstehen Teil ${currentReadingSubTab}` : `Sprachbausteine Teil ${currentReadingSubTab - 3}`}
-      </h3>
-      
-      <p style="color: var(--text-dim); line-height: 1.5; margin-bottom: 1.5rem;">
-        ${currentReadingSubTab === 3 
-          ? "Lesen Sie die zehn Situationen (11-20) und die zwölf Texte (a-l). Welcher Text passt zu welcher Situation? Sie können jeden Text nur einmal verwenden. Manchmal passt kein Text. Wählen Sie dann x."
-          : currentReadingSubTab === 4
-          ? "Lesen Sie den Text und entscheiden Sie, welches Wort in die jeweilige Lücke passt."
-          : currentReadingSubTab === 5
-          ? "Lesen Sie den Text und entscheiden Sie, welches Wort in welche Lücke passt. Sie können jedes Wort nur einmal verwenden. Nicht alle Wörter passen in den Text."
-          : "Lesen Sie die Aufgabenstellung und bearbeiten Sie die Fragen. Bạn hãy chọn câu trả lời đúng bên cột phải."
-        }
-      </p>
-
-      <div style="background: rgba(0, 242, 254, 0.05); border: 1px solid var(--accent-cyan); padding: 0.8rem 1.2rem; border-radius: 8px; font-size: 0.9rem; margin-bottom: 1.5rem; line-height: 1.5;">
-        💡 <b>Cách làm bài:</b> Click chọn một đáp án ở <b>cột phải</b> (nó sẽ phát sáng viền xanh), sau đó click vào <b>ô trống (hoặc vị trí cần điền)</b> tương ứng bên cột trái hoặc cột phải để gán nhanh đáp án. (Có hỗ trợ Kéo - Thả trên máy tính).
-      </div>
-
-      <div class="test-split-container">
-        <div class="test-left-pane">
-          ${renderReadingLeftPane()}
-        </div>
-
-        <div class="test-right-pane">
-          ${renderReadingRightPane()}
-        </div>
-      </div>
-
-      <div class="test-bottom-bar">
-        <div class="progress-container">
-          <span style="font-weight: 700; font-size: 0.95rem; color: var(--text-dim);">beantwortet:</span>
-          <div class="progress-track">
-            <div class="progress-fill" style="width: ${calculateProgress()}%"></div>
+        <!-- ===== TOP SUBNAV BAR (FULL WIDTH EDGE-TO-EDGE) ===== -->
+        <div style="
+          background: #111827;
+          color: #ffffff;
+          padding: 0.5rem 1.2rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 2px solid rgba(255,255,255,0.08);
+          flex-shrink: 0;
+          box-sizing: border-box;
+        ">
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+            ${subNavItems.map(item => `
+              <button class="test-subnav-btn ${currentReadingSubTab === item.num ? 'active' : ''}" onclick="setReadingSubTab(${item.num})"
+                style="padding: 0.45rem 1rem; font-size: 0.85rem; font-weight: 700; border-radius: 6px; cursor: pointer; transition: all 0.2s;">
+                ${item.name}
+              </button>
+            `).join('')}
           </div>
-          <span style="font-weight: 700; font-size: 0.95rem; color: var(--accent-cyan);" id="test-progress-text">${countAnswered()} / 40</span>
+
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <span style="color: #38bdf8; font-weight: 800; font-size: 0.88rem; font-family: monospace;">
+              ${selectedReadingTest} - ${selectedReadingMode}
+            </span>
+            <button onclick="setReadingState('overview')" style="background: #2563eb; color: #ffffff; border: none; padding: 0.35rem 0.9rem; border-radius: 4px; font-weight: 800; font-size: 0.78rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;">
+              SPEICHERN &amp; ZURÜCK
+            </button>
+          </div>
         </div>
-        <div style="display: flex; gap: 0.8rem;">
-          <button class="btn btn-secondary" onclick="alert('Đã lưu bài làm nháp!')">Speichern</button>
-          <button class="btn btn-secondary" onclick="resetAnswers()">Zurücksetzen</button>
-          <button class="btn btn-primary" onclick="submitTestAnswers()">Antworten abgeben</button>
+
+        <!-- ===== TITLE & INSTRUCTION BANNER ===== -->
+        <div style="
+          background: #1e3a8a;
+          color: #ffffff;
+          padding: 0.75rem 1.5rem;
+          border-bottom: 1px solid rgba(255,255,255,0.1);
+          flex-shrink: 0;
+        ">
+          <h3 style="font-weight: 900; font-size: 1.15rem; margin: 0 0 0.25rem 0; color: #ffffff; letter-spacing: 0.3px;">
+            ${currentReadingSubTab <= 3 ? `Leseverstehen Teil ${currentReadingSubTab}` : `Sprachbausteine Teil ${currentReadingSubTab - 3}`}
+          </h3>
+          <p style="font-size: 0.88rem; color: #cbd5e1; margin: 0; line-height: 1.45;">
+            ${instructionText}
+          </p>
         </div>
+
+        <!-- ===== SPLIT BODY 2 CỘT FULLSCREEN ===== -->
+        <div class="test-split-container" style="display: grid; grid-template-columns: 1fr 1fr; flex: 1; overflow: hidden; gap: 0;">
+          <div class="test-left-pane" style="overflow-y: auto; padding: 1.5rem; background: #0f172a; border-right: 1px solid rgba(255,255,255,0.1); height: 100%; box-sizing: border-box;">
+            ${renderReadingLeftPane()}
+          </div>
+
+          <div class="test-right-pane" style="overflow-y: auto; padding: 1.5rem; background: #0b0f19; height: 100%; box-sizing: border-box;">
+            ${renderReadingRightPane()}
+          </div>
+        </div>
+
+        <!-- ===== STICKY BOTTOM BAR ===== -->
+        <div class="test-bottom-bar" style="
+          background: #111827;
+          border-top: 1px solid rgba(255,255,255,0.1);
+          padding: 0.55rem 1.5rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-shrink: 0;
+          z-index: 100;
+          box-sizing: border-box;
+        ">
+          <div class="progress-container" style="display: flex; align-items: center; gap: 0.8rem;">
+            <span style="font-weight: 700; font-size: 0.88rem; color: #94a3b8;">beantwortet:</span>
+            <div class="progress-track" style="width: 140px; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+              <div class="progress-fill" style="width: ${calculateProgress()}%; height: 100%; background: #38bdf8; transition: width 0.3s;"></div>
+            </div>
+            <span style="font-weight: 800; font-size: 0.95rem; color: #38bdf8;" id="test-progress-text">${countAnswered()} / 40</span>
+          </div>
+
+          <div style="display: flex; gap: 0.6rem;">
+            <button class="btn btn-secondary" onclick="alert('Đã lưu bài làm nháp!')" style="padding: 0.4rem 0.9rem; font-size: 0.82rem; font-weight: 700;">💾 Speichern</button>
+            <button class="btn btn-secondary" onclick="resetAnswers()" style="padding: 0.4rem 0.9rem; font-size: 0.82rem; font-weight: 700;">🔄 Zurücksetzen</button>
+            <button class="btn btn-primary" onclick="submitTestAnswers()" style="padding: 0.4rem 1.2rem; font-size: 0.85rem; font-weight: 800; background: linear-gradient(90deg, #2563eb, #3b82f6);">🚀 Antworten abgeben</button>
+          </div>
+        </div>
+
       </div>
     `;
 
@@ -3200,149 +3255,203 @@ function renderPartFeedback(tabNum, correctAns) {
 // 3. LUYỆN VIẾT (SCHREIBEN) - TELC B2 INTERACTIVE PROMPTS & AI GRADER ENGINE
 // ==========================================
 
-// Đảm bảo dữ liệu các đề viết TELC B2 chuẩn khung Châu Âu luôn đầy đủ
+// Đảm bảo 30 Khung Đề Beschwerde CHỈ THÊM TÊN ĐỀ, nội dung đề bài để trống hoàn toàn để Admin tự điền
 function ensureWritingDatabase() {
-  if (!db.writing || !Array.isArray(db.writing) || db.writing.length === 0) {
-    db.writing = [
-      {
-        id: 1,
-        title: "Beschwerde über einen Deutschkurs",
-        category: "Beschwerde",
-        prompt: `Sie haben vor einem Monat einen vierwöchigen Intensivkurs Deutsch B2 bei der Sprachschule "Lingua Express" besucht. In der Anzeige wurde versprochen:
-- Höchstens 10 Teilnehmer pro Gruppe
-- Hochqualifizierte Muttersprachler als Lehrkräfte
-- Moderne Unterrichtsräume mit interaktiven Smartboards
-- Kostenloses Zusatzmaterial und Prüfungsvorbereitung
-
-Leider waren Sie mit dem Kurs überhaupt nicht zufrieden. Schreiben Sie eine Beschwerde-E-Mail an die Schulleitung.
-
-Bearbeiten Sie in Ihrer E-Mail folgende Punkte:
-- Grund Ihres Schreibens
-- Was in der Anzeige versprochen wurde und wie die Realität aussah
-- Welche Probleme dadurch entstanden sind
-- Was Sie von der Schulleitung erwarten (z.B. Teilrückerstattung der Kursgebühr)`,
-        tips: [
-          "📌 Leitpunkt 1: Nêu lý do viết thư phàn nàn về khóa học B2 (Grund des Schreibens).",
-          "📌 Leitpunkt 2: So sánh quảng cáo vs Thực tế (Anzeige vs. Realität - ví dụ: quá 20 người, giáo viên đổi liên tục).",
-          "📌 Leitpunkt 3: Những hậu quả/khó khăn gặp phải đối với kỳ thi TELC B2.",
-          "📌 Leitpunkt 4: Yêu cầu bồi thường 40% học phí + đặt thời hạn phản hồi (Fristsetzung)."
-        ],
-        sampleAnswer: `Sehr geehrte Damen und Herren,
-
-ich schreibe Ihnen, weil ich mich über den Intensivkurs Deutsch B2 beschweren möchte, den ich im vergangenen Monat bei Ihrer Sprachschule besucht habe. Leider entsprachen die Leistungen vor Ort überhaupt nicht den Versprechungen in Ihrer Werbeanzeige.
-
-In Ihrer Anzeige haben Sie garantiert, dass die Kursstärke maximal 10 Personen beträgt und der Unterricht von qualifizierten Muttersprachlern durchgeführt wird. In Wirklichkeit saßen jedoch mehr als 20 Teilnehmer im Raum, und die Lehrkraft wechselte nahezu jede Woche. Darüber hinaus funktionierten die interaktiven Smartboards mehrmals nicht, sodass wertvolle Unterrichtszeit verloren ging.
-
-Durch diese Mängel war eine gezielte Vorbereitung auf die TELC B2 Prüfung kaum möglich. Aus diesem Grund fordere ich eine Rückerstattung von 40 % der Kursgebühren. Bitte überweisen Sie den Betrag von 200 Euro bis zum 15. August auf mein Konto.
-
-Ich hoffe auf eine rasche und einvernehmliche Lösung.
-
-Mit freundlichen Grüßen,
-Nguyen Van A`
-      },
-      {
-        id: 2,
-        title: "Beschwerde über einen Hotelaufenthalt im Sommerurlaub",
-        category: "Beschwerde",
-        prompt: `Sie haben Ihren Sommerurlaub im 4-Sterne-Hotel "Seeblick" gebucht. Die Hotelwerbung versprach ein ruhiges Zimmer mit Meerblick, kostenloses WLAN, reichhaltiges Frühstücksbuffet und einen sauberen Swimmingpool.
-
-Vor Ort stellten Sie jedoch fest, dass das Hotel direkt neben einer Baustelle lag, das Zimmer keinen Meerblick hatte, das WLAN kostenpflichtig war und der Pool wegen Reparaturarbeiten geschlossen war.
-
-Schreiben Sie eine formelle Beschwerde an die Hotelleitung.
-
-Bearbeiten Sie dabei folgende Punkte:
-- Anlass der Beschwerde und Buchungsdaten
-- Beschreibung der Mängel (Baustellenlärm, fehlender Meerblick, geschlossener Pool)
-- Ihre Enttäuschung über den ruinierten Urlaub
-- Forderung nach einer angemessenen Preisentschädigung (mit Fristsetzung)`,
-        tips: [
-          "📌 Leitpunkt 1: Nêu thông tin đặt phòng (Buchungsnummer, thời gian) và lý do phàn nàn.",
-          "📌 Leitpunkt 2: Chi tiết các sự cố (tiếng ồn công trường 6h sáng, phòng không hướng biển, pool đóng cửa).",
-          "📌 Leitpunkt 3: Bày tỏ sự thất vọng vì kỳ nghỉ bị ảnh hưởng nghiêm trọng.",
-          "📌 Leitpunkt 4: Yêu cầu bồi thường 50% chi phí chuyến đi + hạn chót 14 ngày."
-        ],
-        sampleAnswer: `Sehr geehrte Damen und Herren,
-
-hiermit möchte ich mich förmlich über meinen Aufenthalt in Ihrem Hotel "Seeblick" vom 10. bis 17. Juli beschweren (Buchungsnummer: SB-9842). 
-
-Laut Ihrer Anzeige sollte das Zimmer eine ruhige Lage mit direktem Meerblick bieten. Leider lag mein Zimmer direkt gegenüber einer lauten Baustelle, deren Arbeiten bereits um 6:00 Uhr morgens begannen. Zudem war der Pool während des gesamten Aufenthalts gesperrt und für das WLAN wurden extra Gebühren verlangt, obwohl es als kostenfrei angepriesen wurde.
-
-Aufgrund dieser erheblichen Mängel war an Erholung nicht zu denken. Da die vereinbarten Leistungen nicht erbracht wurden, fordere ich eine Erstattung von 50 % des Reisepreises. Ich bitte Sie, den Betrag von 350 Euro bis zum 30. Juli auf mein Bankkonto zu überweisen.
-
-In Erwartung Ihrer baldigen Antwort.
-
-Mit freundlichen Grüßen,
-Nguyen Van A`
-      },
-      {
-        id: 3,
-        title: "Bitte um Informationen zu einem B2-Fortbildungskurs",
-        category: "Anfrage/Information",
-        prompt: `Sie interessieren sich für einen dreimonatigen Fortbildungskurs "Deutsch im Beruf & Pflege" beim Bildungszentrum "Zukunft". Sie möchten nähere Informationen vor der Anmeldung erhalten.
-
-Schreiben Sie eine formelle Anfrage-E-Mail an das Bildungszentrum.
-
-Bearbeiten Sie dabei folgende Punkte:
-- Grund Ihres Schreibens und Interesse am Kurs
-- Fragen zu den genauen Kurszeiten und Unterrichtsformen (Präsenz oder Online)
-- Nachfrage zu den Gesamtkosten, Lernmaterialien und Rabattmöglichkeiten für Studenten
-- Bitte um Zusendung von Informationsmaterial und Anmeldeformularen`,
-        tips: [
-          "📌 Leitpunkt 1: Lý do viết thư & mục tiêu muốn nâng cao trình độ tiếng Đức chuyên ngành.",
-          "📌 Leitpunkt 2: Hỏi lịch học cụ thể và hình thức học (online hay trực tiếp).",
-          "📌 Leitpunkt 3: Hỏi về tổng học phí, sách giáo khoa & ưu đãi giảm giá.",
-          "📌 Leitpunkt 4: Đề nghị gửi BROCHURE chi tiết + Đơn đăng ký qua Email."
-        ],
-        sampleAnswer: `Sehr geehrte Damen und Herren,
-
-mit großem Interesse habe ich Ihre Anzeige für den Fortbildungskurs "Deutsch im Beruf & Pflege" gelesen. Da ich meine Deutschkenntnisse gezielt für den beruflichen Alltag verbessern möchte, habe ich einige Fragen zu Ihrem Angebot.
-
-Zunächst würde mich interessieren, an welchen Wochentagen und zu welchen Uhrzeiten der Unterricht stattfindet. Gibt es zudem die Möglichkeit, hybrid oder online am Kurs teilzunehmen?
-
-Darüber hinaus möchte ich mich nach den genauen Gesamtkosten erkundigen. Sind die Lehrbücher bereits in der Kursgebühr enthalten, und bieten Sie Ermäßigungen für Studierende an?
-
-Ich wäre Ihnen sehr dankbar, wenn Sie mir detailliertes Informationsmaterial sowie ein Anmeldeformular per E-Mail zusenden könnten.
-
-Vielen Dank im Voraus für Ihre Mühe.
-
-Mit freundlichen Grüßen,
-Nguyen Van A`
-      },
-      {
-        id: 4,
-        title: "Bewerbung um einen Praktikumsplatz im Marketing",
-        category: "Bewerbung",
-        prompt: `Sie haben auf einem Karriereportal eine Anzeige der Firma "MediaTech GmbH" für ein dreimonatiges Praktikum im Bereich Online-Marketing gesehen. Sie studieren Betriebswirtschaftslehre und möchten sich um diesen Platz bewerben.
-
-Schreiben Sie ein formelles Bewerbungsschreiben an die Personalabteilung.
-
-Bearbeiten Sie dabei folgende Punkte:
-- Grund der Bewerbung und Bezug auf die Stellenanzeige
-- Ihre Ausbildung und bisherige Kenntnisse (z.B. Social Media, Deutsch B2)
-- Warum Sie genau bei diesem Unternehmen arbeiten möchten
-- Möglicher Eintrittstermin und zeitliche Verfügbarkeit`,
-        tips: [
-          "📌 Leitpunkt 1: Nêu rõ vị trí ứng tuyển & nguồn tin tuyển dụng.",
-          "📌 Leitpunkt 2: Trình bày ngành học, kỹ năng Marketing & bằng B2.",
-          "📌 Leitpunkt 3: Lý do lựa chọn công ty MediaTech GmbH.",
-          "📌 Leitpunkt 4: Thời gian có thể bắt đầu & mong muốn phỏng vấn."
-        ],
-        sampleAnswer: `Sehr geehrte Damen und Herren,
-
-mit großer Begeisterung habe ich Ihre Stellenanzeige auf dem Karriereportal gelesen und bewerbe mich hiermit um den Praktikumsplatz im Bereich Online-Marketing.
-
-Derzeit studiere ich Betriebswirtschaftslehre im fünften Semester. Während meines Studiums habe ich fundierte Kenntnisse im digitalen Marketing erworben. Zudem verfüge ich über sehr gute Deutschkenntnisse auf B2-Niveau sowie praktische Erfahrungen im Bereich Social Media Management.
-
-Ihr Unternehmen MediaTech GmbH genießt einen hervorragenden Ruf für innovative Marketingstrategien. Ich bin überzeugt, dass ich mein Wissen gewinnbringend in Ihr Team einbringen kann.
-
-Das Praktikum könnte ich ab dem 1. September antreten. Über eine Einladung zu einem persönlichen Vorstellungsgespräch freue ich mich sehr.
-
-Mit freundlichen Grüßen,
-Nguyen Van A`
-      }
-    ];
-    saveDB();
+  if (!db.writing || !Array.isArray(db.writing)) {
+    db.writing = [];
   }
+
+  const default30Topics = [
+    "Fahrradtour",
+    "Staubsaugerroboter",
+    "Wohnen und Zeit",
+    "Autovermietung",
+    "Freizeitverein",
+    "Engagement",
+    "Kursbeschreibung",
+    "Hotel",
+    "Schmelzkäse",
+    "Renovierungskurs",
+    "Naturmuseum",
+    "Appartement",
+    "Backstage Musical",
+    "Meine Kiste",
+    "Apps",
+    "Kultur",
+    "Reisebüro",
+    "Schlaflos",
+    "Kino sonnental",
+    "Fotobuch",
+    "Kosmetik-Shop",
+    "Informatik-Shop",
+    "TIKKI TAKKA",
+    "Partyservice",
+    "Spiele aus aller Welt",
+    "Schlafen kann man lernen",
+    "Rundum sorglos unterwegs",
+    "DIGIBIKE",
+    "FITWATCH",
+    "Unsere Nachbarschaft vernetzt sich"
+  ];
+
+  const fahrradtourSampleText = `Zeit: 30 Minuten | Mindestens 150 Wörter
+Mehr bewegen - aber wie?
+Es ist in aller Munde: Wir bewegen uns zu wenig. four Das schadet unserer Gesundheit! Was können wir also tun?
+
+Wir haben die Lösung! Jeden Abend und am Wochenende auch tagsüber, bieten wir "Radeln mit. Spall" an. Freundliche junge Trainer begleiten Sie bei den Radtouren und gehen dabei gern auf Ihre Fragen rund um Sport und Gesundheit ein.
+
+Ein großes Angebot an modernen Rädern steht bereit falls Sie kein eigenes Fahrrad haben.
+
+Wir treffen uns jeden Abend ab 18 Uhr, am Samstag und am Sonntag ab 10 Uhr, auf unserem Vereinsgelände auf der Heidewiese. Einstündige Touren mit Trainer kosten EURO 5,00 oder Sie werden gleich Mitglied für EURO 25,00 pro Monat. Dann entfallen weitere Kosten.
+
+Am Ende einer Tour werden Sie spüren, wie anstrengend es war. Aber gerade das ist gut für Ihre Gesundheit.
+
+Kontakt: Radel dich munter e. V., Heidewiese 1, 44777 Heimerstädt
+E-Mail: info@radeldichmunter.de
+
+Sie haben an einer Fahrradtour mit Trainer teilgenommen. Leider waren Sie nicht zufrieden. Schreiben Sie an den Verein "Radel dich munter e. V.". Beschweren Sie sich.
+
+Behandeln Sie entweder a) mindestens drei der folgenden Punkte oder b) mindestens zwei und einen weiteren Aspekt Ihrer Wahl:
+
+Warum Sie das Angebot sehr interessant hat.
+Beschreiben Sie detailliert die Probleme.
+Was Ihnen an der Fahrradtour gefallen hat.
+Beschreiben Sie genau die Reaktion des Trainers auf Ihre Fragen.
+Vergessen Sie nicht: Absender, Anschrift, Datum, Betreffzeile, Anrede und Schlussformel. Schreiben Sie mindestens 150 Wörter.`;
+
+  // Nạp 30 đề mặc định vào db.writing nếu chưa có, KHÔNG ĐÈ LÊN NỘI DUNG ADMIN ĐÃ SỬA
+  default30Topics.forEach((title, idx) => {
+    const existing = db.writing.find(w => w.title && w.title.trim().toLowerCase() === title.trim().toLowerCase());
+    if (!existing) {
+      db.writing.push({
+        id: 100 + idx + 1,
+        title: title,
+        category: "Beschwerde",
+        prompt: title === "Fahrradtour" ? fahrradtourSampleText : "",
+        text: title === "Fahrradtour" ? fahrradtourSampleText : "",
+        tips: []
+      });
+    }
+  });
+
+  saveDB();
+}
+
+// Hàm format và render đề thi viết Telc B2 dạng khung chuẩn bài thi
+function formatTelcPromptHTML(exercise) {
+  if (!exercise) return '';
+  const rawText = exercise.prompt || exercise.text || '';
+  if (!rawText.trim()) {
+    return `
+      <div style="background: #ffffff; border: 2px dashed #ef4444; border-radius: 12px; padding: 2.5rem 1.5rem; text-align: center; color: #1e293b;">
+        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📝</div>
+        <h3 style="font-size: 1.2rem; font-weight: 800; color: #ef4444; margin-bottom: 0.5rem;">Đề Bài: ${exercise.title}</h3>
+        <p style="font-size: 0.95rem; color: #64748b; margin-bottom: 1.2rem;">Nội dung chi tiết cho đề này chưa được cập nhật. Vui lòng vào trang Admin để nhập nội dung đề bài!</p>
+        <button onclick="switchView('admin')" style="background: #ef4444; color: white; border: none; padding: 0.6rem 1.4rem; border-radius: 20px; font-weight: 800; cursor: pointer;">⚙️ Mở Trang Admin Nhập Nội Dung</button>
+      </div>
+    `;
+  }
+
+  let timeLimit = "Zeit: 30 Minuten | Mindestens 150 Wörter";
+  let adTitle = "";
+  let adContent = [];
+  let contactInfo = [];
+  let taskContext = [];
+  let leitpunkte = [];
+  let footerNote = "Vergessen Sie nicht: Absender, Anschrift, Datum, Betreffzeile, Anrede und Schlussformel. Schreiben Sie mindestens 150 Wörter.";
+
+  const lines = rawText.split('\n').map(l => l.trim()).filter(Boolean);
+
+  let currentSection = 'header'; // 'header', 'ad_body', 'context', 'leitpunkte', 'footer'
+
+  lines.forEach(line => {
+    const lower = line.toLowerCase();
+
+    if (lower.startsWith('zeit:')) {
+      timeLimit = line;
+      return;
+    }
+
+    if (lower.startsWith('vergessen sie nicht')) {
+      footerNote = line;
+      currentSection = 'footer';
+      return;
+    }
+
+    if (lower.includes('behandeln sie entweder')) {
+      currentSection = 'leitpunkte';
+      return;
+    }
+
+    if (lower.startsWith('kontakt:') || lower.startsWith('e-mail:')) {
+      contactInfo.push(line);
+      return;
+    }
+
+    if (lower.startsWith('sie haben') || lower.startsWith('schreiben sie an')) {
+      currentSection = 'context';
+      taskContext.push(line);
+      return;
+    }
+
+    if (currentSection === 'header') {
+      adTitle = line;
+      currentSection = 'ad_body';
+    } else if (currentSection === 'ad_body') {
+      adContent.push(line);
+    } else if (currentSection === 'context') {
+      taskContext.push(line);
+    } else if (currentSection === 'leitpunkte') {
+      const cleaned = line.replace(/^[\•\-\*]\s*/, '');
+      if (cleaned) leitpunkte.push(cleaned);
+    }
+  });
+
+  return `
+    <div class="telc-b2-exam-card" style="background: #ffffff; color: #000000; padding: 1.8rem; border-radius: 8px; border: 2px solid #000000; font-family: 'Plus Jakarta Sans', Arial, sans-serif; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+      
+      <!-- YELLOW TIME LIMIT BADGE -->
+      <div style="background: #fef08a; border: 1.5px solid #eab308; color: #854d0e; padding: 0.65rem 0.8rem; font-weight: 800; font-size: 1.05rem; text-align: center; border-radius: 4px; margin-bottom: 1.4rem;">
+        ${timeLimit}
+      </div>
+
+      <!-- BLACK BORDER ADVERTISEMENT BOX -->
+      <div style="border: 2px solid #000000; padding: 1.4rem; margin-bottom: 1.4rem; background: #ffffff; border-radius: 4px;">
+        ${adTitle ? `<h3 style="font-weight: 900; font-size: 1.35rem; color: #000000; margin-bottom: 1rem; text-align: center; font-family: sans-serif; letter-spacing: -0.2px;">${adTitle}</h3>` : ''}
+        ${adContent.length > 0 ? `<div style="font-size: 1.08rem; line-height: 1.7; color: #0f172a; margin-bottom: 1.1rem; font-weight: 500;">${adContent.map(p => `<p style="margin-bottom: 0.9rem;">${p}</p>`).join('')}</div>` : ''}
+        ${contactInfo.length > 0 ? `
+          <div style="border-top: 1.5px solid #cbd5e1; padding-top: 0.8rem; font-size: 0.98rem; color: #1e293b; font-family: sans-serif; font-weight: 600; line-height: 1.6;">
+            ${contactInfo.join('<br>')}
+          </div>
+        ` : ''}
+      </div>
+
+      <!-- TASK CONTEXT -->
+      ${taskContext.length > 0 ? `
+        <div style="font-size: 1.1rem; line-height: 1.7; color: #0f172a; margin-bottom: 1.4rem; font-weight: 600;">
+          ${taskContext.join('<br>')}
+        </div>
+      ` : ''}
+
+      <!-- LEITPUNKTE HEADER -->
+      <p style="font-weight: 800; font-size: 1.1rem; line-height: 1.6; color: #000000; margin-bottom: 1rem;">
+        Behandeln Sie entweder a) mindestens drei der folgenden Punkte oder b) mindestens zwei und einen weiteren Aspekt Ihrer Wahl:
+      </p>
+
+      <!-- BULLET POINTS -->
+      ${leitpunkte.length > 0 ? `
+        <ul style="padding-left: 1.8rem; margin-bottom: 1.6rem; font-size: 1.08rem; line-height: 1.8; color: #0f172a; font-weight: 600;">
+          ${leitpunkte.map(pt => `<li style="margin-bottom: 0.4rem;">${pt}</li>`).join('')}
+        </ul>
+      ` : ''}
+
+      <!-- FOOTER NOTE -->
+      <div style="font-size: 0.92rem; color: #475569; font-style: italic; border-top: 1.5px solid #e2e8f0; padding-top: 0.9rem; font-weight: 500; line-height: 1.5;">
+        ${footerNote}
+      </div>
+
+    </div>
+  `;
 }
 
 function renderWriting() {
@@ -3388,9 +3497,9 @@ function renderWriting() {
 
   // 2. MÀN HÌNH DANH SÁCH ĐỀ BÀI (PROMPT CARD GRID)
   else if (writingFlowState === 'list') {
-    let filteredExercises = db.writing;
+    let filteredExercises = db.writing || [];
     if (selectedWritingCategory !== 'Alle') {
-      filteredExercises = db.writing.filter(item => item.category === selectedWritingCategory);
+      filteredExercises = (db.writing || []).filter(item => item.category === selectedWritingCategory);
     }
 
     container.innerHTML = `
@@ -3400,10 +3509,6 @@ function renderWriting() {
           <h2 style="font-size: 2.2rem; font-weight: 900; color: #fff; margin: 0;">${selectedWritingCategory === 'Alle' ? 'Tất Cả Đề Viết TELC B2' : selectedWritingCategory}</h2>
           <p style="color: var(--text-dim); font-size: 0.95rem; margin-top: 0.3rem;">Chọn một đề bài để bắt đầu luyện viết và được AI chấm điểm chi tiết</p>
         </div>
-
-        <button class="btn btn-primary" style="padding: 0.85rem 1.8rem; border-radius: 30px; font-weight: 900; background: linear-gradient(135deg, #ec4899, #8b5cf6); border: none; box-shadow: 0 0 25px rgba(236, 72, 153, 0.5); cursor: pointer;" onclick="openAddWritingPromptModal()">
-          ➕ Thêm Đề Viết Mới
-        </button>
       </div>
 
       <!-- Tab lọc danh mục -->
@@ -3411,147 +3516,118 @@ function renderWriting() {
         <button class="tab-btn ${selectedWritingCategory === 'Alle' ? 'active' : ''}" style="border-radius: 20px; padding: 0.6rem 1.4rem; font-size: 0.9rem; font-weight: 800;" onclick="filterWritingCategory('Alle')">Tất cả đề bài</button>
         <button class="tab-btn ${selectedWritingCategory === 'Beschwerde' ? 'active' : ''}" style="border-radius: 20px; padding: 0.6rem 1.4rem; font-size: 0.9rem; font-weight: 800;" onclick="filterWritingCategory('Beschwerde')">⚠️ Beschwerde</button>
         <button class="tab-btn ${selectedWritingCategory === 'Anfrage/Information' ? 'active' : ''}" style="border-radius: 20px; padding: 0.6rem 1.4rem; font-size: 0.9rem; font-weight: 800;" onclick="filterWritingCategory('Anfrage/Information')">✉️ Bitte um Informationen</button>
-        <button class="tab-btn ${selectedWritingCategory === 'Bewerbung' ? 'active' : ''}" style="border-radius: 20px; padding: 0.6rem 1.4rem; font-size: 0.9rem; font-weight: 800;" onclick="filterWritingCategory('Bewerbung')">💼 Bewerbung</button>
       </div>
 
-      <!-- Lưới các Khung Đề Bài (Prompt Cards Grid) -->
-      <div class="lesen-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.8rem;">
-        ${filteredExercises.map(item => `
-          <div class="lesen-card" style="padding: 1.8rem; display: flex; flex-direction: column; justify-content: space-between; min-height: 320px; background: rgba(22, 22, 54, 0.6); backdrop-filter: blur(12px); border: 1.5px solid rgba(0, 242, 254, 0.2); border-radius: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); transition: all 0.3s ease;">
-            
-            <div>
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
-                <div style="display: flex; align-items: center; gap: 0.5rem; background: rgba(0, 242, 254, 0.12); padding: 0.35rem 0.8rem; border-radius: 12px; font-size: 0.82rem; font-weight: 800; color: #00f2fe; border: 1px solid rgba(0, 242, 254, 0.3);">
-                  ${item.category === 'Beschwerde' ? '⚠️ Beschwerdebrief' : item.category === 'Bewerbung' ? '💼 Bewerbungsschreiben' : '✉️ Formelle Anfrage'}
+      <!-- LƯỚI KHUNG ĐỀ BÀI (CARD GRID CHUẨN NGUYÊN MẪU LESEN 100%) -->
+      ${filteredExercises.length === 0 ? `
+        <div style="text-align: center; padding: 4rem 2rem; background: rgba(22, 22, 54, 0.6); backdrop-filter: blur(12px); border-radius: 20px; border: 1.5px dashed rgba(255,255,255,0.15); color: var(--text-dim);">
+          <div style="font-size: 3rem; margin-bottom: 1rem;">📝</div>
+          <h3 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem;">Chưa Có Đề Viết Nào Trống</h3>
+          <p style="font-size: 0.95rem; max-width: 500px; margin: 0 auto 1.5rem auto;">Vui lòng chuyển qua trang <b>Admin</b> (maternopro@gmail.com) để tạo các đề bài luyện viết B2 mới!</p>
+          <button class="btn btn-secondary" onclick="switchView('admin')" style="border-radius: 20px; font-weight: 800; padding: 0.6rem 1.5rem;">⚙️ Mở Trang Admin</button>
+        </div>
+      ` : `
+        <div class="test-selection-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;">
+          ${filteredExercises.map((item, idx) => `
+            <div class="test-card" style="background: rgba(22, 22, 54, 0.7); backdrop-filter: blur(12px); border: 1.5px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 1.4rem; display: flex; flex-direction: column; justify-content: space-between; min-height: 220px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); transition: all 0.3s ease;">
+              
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                  <img src="logo.jpg" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 2px solid #a855f7; box-shadow: 0 0 10px rgba(168, 85, 247, 0.4);">
+                  <span style="font-size: 0.82rem; color: #cbd5e1; font-weight: 700; display: flex; align-items: center; gap: 0.3rem;">
+                    ⏱️ 30 Minuten
+                  </span>
                 </div>
-                <img src="logo.jpg" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid #00f2fe; box-shadow: 0 0 10px rgba(0, 242, 254, 0.4);">
+
+                <h3 style="font-size: 1.15rem; font-weight: 800; color: #ffffff; margin-bottom: 0.8rem; line-height: 1.4;">
+                  Đề ${idx + 1} – ${item.title}
+                </h3>
+
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                  <span style="background: ${item.category === 'Beschwerde' ? 'rgba(244, 63, 94, 0.15)' : 'rgba(59, 130, 246, 0.15)'}; border: 1px solid ${item.category === 'Beschwerde' ? 'rgba(244, 63, 94, 0.4)' : 'rgba(59, 130, 246, 0.4)'}; color: ${item.category === 'Beschwerde' ? '#f43f5e' : '#3b82f6'}; padding: 0.25rem 0.65rem; border-radius: 12px; font-size: 0.78rem; font-weight: 800;">
+                    ${item.category === 'Beschwerde' ? '3x Beschwerde' : '2x Anfrage'}
+                  </span>
+                  <span style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12); color: #cbd5e1; padding: 0.25rem 0.65rem; border-radius: 12px; font-size: 0.78rem; font-weight: 700;">
+                    Min 150 Wörter
+                  </span>
+                </div>
               </div>
 
-              <h3 class="lesen-card-title" style="font-size: 1.3rem; font-weight: 900; color: #fff; margin-bottom: 0.8rem; line-height: 1.4; letter-spacing: 0.5px;">${item.title}</h3>
-              
-              <p style="color: #cbd5e1; font-size: 0.9rem; line-height: 1.6; margin-top: 0.5rem; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; background: rgba(0,0,0,0.2); padding: 0.8rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
-                ${item.prompt || item.text || ''}
-              </p>
-            </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1rem;">
-              <span style="font-size: 0.82rem; color: #94a3b8; font-weight: 800;">⏱️ 30 phút • Min 150 từ</span>
-              <button class="btn btn-primary" style="padding: 0.7rem 1.5rem; border-radius: 30px; font-size: 0.85rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.8px; background: linear-gradient(135deg, #00f2fe, #7c3aed); box-shadow: 0 4px 20px rgba(0, 242, 254, 0.4); border: none; cursor: pointer;" onclick="startWritingExercise(${item.id})">
-                LÀM BÀI & AI CHẤM 🤖
+              <button class="btn btn-primary" style="width: 100%; padding: 0.75rem; border-radius: 25px; font-size: 0.88rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.8px; background: linear-gradient(135deg, #d946ef, #8b5cf6); box-shadow: 0 4px 20px rgba(217, 70, 239, 0.4); border: none; cursor: pointer;" onclick="startWritingExercise(${item.id})">
+                BẮT ĐẦU VIẾT
               </button>
-            </div>
 
-          </div>
-        `).join('')}
-      </div>
+            </div>
+          `).join('')}
+        </div>
+      `}
     `;
   }
 
-  // 3. MÀN HÌNH WORKSPACE LÀM BÀI & AI CHẤM
+  // 3. MÀN HÌNH WORKSPACE LÀM BÀI TRÀN VIỀN TOÀN MÀN HÌNH
   else if (writingFlowState === 'exercise') {
     let exercise = db.writing.find(item => item.id === selectedWritingExerciseId);
-    if (!exercise) {
-      exercise = db.writing[0];
-    }
+    if (!exercise) exercise = db.writing[0];
 
-    const tipsList = exercise.tips && exercise.tips.length > 0 ? exercise.tips : [
-      "📌 Leitpunkt 1: Nêu lý do viết thư & hoàn cảnh của bạn.",
-      "📌 Leitpunkt 2: Phân tích nguyên nhân và chi tiết vấn đề.",
-      "📌 Leitpunkt 3: Bày tỏ sự ảnh hưởng/thất vọng.",
-      "📌 Leitpunkt 4: Đề xuất phương án bồi thường và đặt hạn chót (Fristsetzung)."
-    ];
+    document.body.style.overflow = 'hidden';
 
     container.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
-        <button class="btn btn-secondary" onclick="setWritingState('list')" style="border-radius: 20px; padding: 0.5rem 1.4rem; font-size: 0.9rem; font-weight: 800; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); cursor: pointer;">
-          ← Danh sách đề
-        </button>
-        <div style="display: flex; align-items: center; gap: 0.8rem;">
-          <span style="background: #00f2fe; width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 12px #00f2fe;"></span>
-          <h2 style="font-size: 1.4rem; font-weight: 900; color: #fff; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">${exercise.title}</h2>
-        </div>
-      </div>
+      <div style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:#f1f5f9;display:flex;flex-direction:column;overflow:hidden;font-family:'Plus Jakarta Sans',Arial,sans-serif;">
 
-      <div class="test-split-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
-        
-        <!-- CỘT TRÁI: ĐỀ BÀI & 4 LEITPUNKTE -->
-        <div class="test-left-pane" style="background: rgba(22, 22, 54, 0.7); backdrop-filter: blur(15px); border: 1.5px solid rgba(0, 242, 254, 0.3); padding: 2rem; border-radius: 20px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);">
-          <div style="display: inline-flex; align-items: center; gap: 0.6rem; background: rgba(0, 242, 254, 0.12); border: 1px solid rgba(0, 242, 254, 0.3); padding: 0.4rem 0.9rem; border-radius: 20px; font-size: 0.82rem; font-weight: 900; color: #00f2fe; text-transform: uppercase; margin-bottom: 1.2rem;">
-            📬 ĐỀ THI VIẾT TELC DEUTSCH B2 (30 PHÚT - MIN 150 TỪ)
+        <!-- HEADER BAR -->
+        <div style="background:#0f0f1a;color:#fff;padding:0.55rem 1.5rem;display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #ef4444;flex-shrink:0;box-sizing:border-box;">
+          <span style="background:#fff;color:#000;padding:0.28rem 0.75rem;border-radius:3px;font-weight:900;font-size:0.82rem;letter-spacing:1.5px;">PRÜFUNG</span>
+          <div style="font-weight:800;font-size:1rem;color:#fff;">
+            Schreiben: ${exercise.category === 'Beschwerde' ? 'Beschwerdebrief' : 'Bitte um Informationen'}
           </div>
-          
-          <h3 style="font-size: 1.15rem; color: #00f2fe; margin-bottom: 1rem; font-weight: 900; letter-spacing: 0.5px; border-left: 4px solid #00f2fe; padding-left: 0.8rem;">NỘI DUNG ĐỀ BÀI (AUFGABE)</h3>
-          <div style="font-size: 1.05rem; line-height: 1.75; margin-bottom: 2rem; color: #f1f5f9; background: rgba(0,0,0,0.3); padding: 1.4rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); white-space: pre-wrap; text-align: justify; font-family: 'Plus Jakarta Sans', sans-serif;">${exercise.prompt || exercise.text || ''}</div>
-
-          <h3 style="font-size: 1.1rem; color: #facc15; margin-bottom: 1rem; font-weight: 900; letter-spacing: 0.5px; border-left: 4px solid #facc15; padding-left: 0.8rem;">💡 DÀN Ý LEITPUNKTE & GỢI Ý CẦN VIẾT</h3>
-          <div style="background: rgba(250, 204, 21, 0.04); border: 1.5px solid rgba(250, 204, 21, 0.25); padding: 1.4rem; border-radius: 14px;">
-            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.9rem;">
-              ${tipsList.map(tip => `
-                <li style="color: #cbd5e1; font-size: 0.98rem; line-height: 1.65; display: flex; gap: 0.7rem; align-items: start;">
-                  <span style="color: #facc15; font-weight: 900; font-size: 1.1rem;">✦</span>
-                  <span style="flex: 1;">${tip}</span>
-                </li>
-              `).join('')}
-            </ul>
+          <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.82rem;">
+            <span style="color:#facc15;font-weight:bold;font-family:monospace;">
+              Deutsch - B2 | Restzeit: <span id="telc-timer-display" style="color:#38bdf8;font-weight:900;">30:00</span> Min
+            </span>
+            <button id="telc-timer-btn-pause" onclick="toggleTelcWritingTimer()" style="background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,0.25);padding:0.2rem 0.55rem;border-radius:3px;font-weight:800;font-size:0.75rem;cursor:pointer;">⏸ Dừng</button>
+            <button onclick="resetTelcWritingTimer()" style="background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,0.25);padding:0.2rem 0.55rem;border-radius:3px;font-weight:800;font-size:0.75rem;cursor:pointer;">🔄 Tua lại</button>
+            <button onclick="exitWritingExercise()" style="background:#2563eb;color:#fff;border:none;padding:0.28rem 0.9rem;border-radius:3px;font-weight:800;font-size:0.75rem;cursor:pointer;text-transform:uppercase;letter-spacing:0.5px;">SPEICHERN &amp; ZURÜCK</button>
           </div>
         </div>
 
-        <!-- CỘT PHẢI: KHU VỰC VIẾT THƯ & NÚT AI CHẤM BÀI VŨ TRỤ -->
-        <div class="test-right-pane" style="background: rgba(22, 22, 54, 0.7); backdrop-filter: blur(15px); border: 1.5px solid rgba(236, 72, 153, 0.3); padding: 2rem; border-radius: 20px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);">
-          
-          <div style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1.2rem; margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem;">
-            <div style="display: flex; align-items: center; gap: 0.8rem; font-size: 0.88rem;">
-              <span style="color: #94a3b8; width: 80px; font-weight: 800;">Empfänger:</span>
-              <span style="color: #00f2fe; background: rgba(0, 242, 254, 0.08); padding: 0.3rem 0.8rem; border-radius: 8px; border: 1px solid rgba(0, 242, 254, 0.2); font-family: monospace; font-size: 0.92rem; font-weight: bold;">empfaenger@telc-b2-brief.de</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 0.8rem; font-size: 0.88rem;">
-              <span style="color: #94a3b8; width: 80px; font-weight: 800;">Betreff:</span>
-              <input type="text" id="writing-subject-input" placeholder="z.B. Beschwerde über den Deutschkurs..." style="flex: 1; padding: 0.5rem 0.8rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #fff; font-size: 0.95rem; font-weight: bold; outline: none;">
-            </div>
+        <!-- SPLIT BODY -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;flex:1;overflow:hidden;">
+
+          <!-- CỘT TRÁI: ĐỀ BÀI -->
+          <div style="overflow-y:auto;background:#f8fafc;padding:1.5rem 1.8rem;border-right:1px solid #e2e8f0;box-sizing:border-box;">
+            ${formatTelcPromptHTML(exercise)}
           </div>
 
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
-            <span style="font-weight: 900; font-size: 0.9rem; color: #00f2fe; text-transform: uppercase; letter-spacing: 0.5px;">BÀI VIẾT CỦA BẠN (SCHREIBTEXT):</span>
-            <div id="word-count-badge" style="font-size: 0.85rem; font-weight: 900; padding: 0.3rem 0.8rem; border-radius: 8px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; transition: all 0.3s;">
-              Wörter: 0 / 150-300 (Dưới 150 từ 🔴)
+          <!-- CỘT PHẢI: VIẾT BÀI -->
+          <div style="display:flex;flex-direction:column;overflow:hidden;background:#ffffff;">
+
+            <div style="background:#0f172a;color:#fff;padding:0.65rem 1.2rem;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+              <div style="font-weight:800;font-family:monospace;font-size:0.9rem;">
+                Wörter: <span id="word-count-num" style="color:#34d399;font-size:1rem;">0</span> / 150
+                &nbsp;&nbsp;
+                Zeichen: <span id="char-count-num" style="color:#cbd5e1;">0</span>
+              </div>
+              <button onclick="runTelcB2AiGrader(${exercise.id})" style="background:#10b981;color:#fff;border:none;padding:0.5rem 1.2rem;border-radius:20px;font-weight:900;font-size:0.85rem;cursor:pointer;display:flex;align-items:center;gap:0.4rem;box-shadow:0 4px 15px rgba(16,185,129,0.4);">
+                ● Text überprüfen
+              </button>
             </div>
+
+            <textarea
+              id="writing-textarea"
+              placeholder="Fangen Sie hier an zu schreiben..."
+              oninput="updateWritingWordCount()"
+              style="flex:1;width:100%;border:none;outline:none;resize:none;padding:1.6rem 2rem;font-family:'Plus Jakarta Sans',Arial,sans-serif;font-size:1.2rem;line-height:1.8;color:#0f172a;background:#ffffff;box-sizing:border-box;"
+            ></textarea>
+
+            <div id="ai-grading-results-container" style="flex-shrink:0;max-height:40vh;overflow-y:auto;"></div>
           </div>
-
-          <textarea id="writing-textarea" placeholder="Ort, Datum (z.B. Hanoi, den 24. Juli 2026)&#10;&#10;Sehr geehrte Damen und Herren,&#10;&#10;[Nhập nội dung bức thư tiếng Đức B2 của bạn vào đây...]&#10;&#10;Mit freundlichen Grüßen,&#10;[Tên của bạn]" 
-            style="width: 100%; height: 380px; background: rgba(0,0,0,0.4); border: 1.5px solid rgba(255,255,255,0.15); color: #fff; padding: 1.2rem; border-radius: 14px; font-family: 'Courier New', Courier, monospace; font-size: 1.08rem; line-height: 1.7; resize: vertical; outline: none; transition: all 0.3s; box-shadow: inset 0 2px 10px rgba(0,0,0,0.4);"
-            oninput="updateWritingWordCount()"></textarea>
-
-          <!-- THANH NÚT CHẤM AI VŨ TRỤ -->
-          <div style="display: flex; gap: 0.8rem; margin-top: 1.4rem; flex-wrap: wrap;">
-            <button class="btn btn-secondary" style="flex: 1; min-width: 120px; font-weight: 800; padding: 0.85rem; border-radius: 12px; cursor: pointer;" onclick="alert('Đã lưu bản nháp vào bộ nhớ trình duyệt!')">
-              💾 Lưu Nháp
-            </button>
-            <button class="btn btn-secondary" style="flex: 1; min-width: 150px; font-weight: 800; background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.35); color: #c084fc; padding: 0.85rem; border-radius: 12px; cursor: pointer;" onclick="showWritingSampleAnswer(${exercise.id})">
-              💡 Bài Viết Mẫu B2
-            </button>
-            <button class="btn btn-primary" style="flex: 1.8; min-width: 220px; font-weight: 900; padding: 0.85rem 1.2rem; border-radius: 12px; background: linear-gradient(135deg, #ec4899, #8b5cf6, #00f2fe); border: none; box-shadow: 0 0 25px rgba(236, 72, 153, 0.6); cursor: pointer; color: #fff; text-transform: uppercase; letter-spacing: 0.5px;" onclick="runTelcB2AiGrader(${exercise.id})">
-              🤖 AI CHẤM BÀI TELC B2 (45Đ)
-            </button>
-          </div>
-
-          <!-- Khung hiển thị Lời giải mẫu -->
-          <div class="card" id="writing-sample-box" style="display: none; background: rgba(16, 185, 129, 0.08); border: 1.5px solid rgba(16, 185, 129, 0.4); margin-top: 1.5rem; border-radius: 14px; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15); padding: 1.5rem;">
-            <h4 style="color: #10b981; margin-bottom: 0.8rem; font-weight: 900; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem;">
-              <span>🏆</span> Musterlösung (Bài viết mẫu B2 chuẩn 45 điểm):
-            </h4>
-            <div style="white-space: pre-line; line-height: 1.75; font-size: 1.05rem; font-family: 'Plus Jakarta Sans', sans-serif; color: #e2e8f0; background: rgba(0,0,0,0.35); padding: 1.4rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); text-align: justify;">
-              ${exercise.sampleAnswer || "Sehr geehrte Damen und Herren,\n\nich schreibe Ihnen, weil..."}
-            </div>
-          </div>
-
-          <!-- KHUNG KẾT QUẢ AI CHẤM BÀI SIÊU CẤP VŨ TRỤ -->
-          <div id="ai-grading-results-container" style="margin-top: 2rem;"></div>
-
         </div>
+
       </div>
     `;
   }
 }
+
 
 function selectWritingCategoryName(category) {
   selectedWritingCategory = category;
@@ -3568,36 +3644,86 @@ function startWritingExercise(id) {
   selectedWritingExerciseId = id;
   writingFlowState = 'exercise';
   renderWriting();
+  startTelcWritingTimer();
 }
 
 function setWritingState(state) {
   writingFlowState = state;
+  if (telcTimerInterval) clearInterval(telcTimerInterval);
+  document.body.style.overflow = '';
   renderWriting();
+}
+
+function exitWritingExercise() {
+  if (telcTimerInterval) clearInterval(telcTimerInterval);
+  document.body.style.overflow = '';
+  writingFlowState = 'list';
+  renderWriting();
+}
+
+// =========================================================
+// QUẢN LÝ ĐỒNG HỒ 30 PHÚT: DỪNG, CHẠY TIẾP, TUA LẠI
+// =========================================================
+let telcTimerInterval = null;
+let telcSecondsLeft = 1800; // 30 phút (1800s)
+let isTelcTimerPaused = false;
+
+function startTelcWritingTimer() {
+  if (telcTimerInterval) clearInterval(telcTimerInterval);
+  telcSecondsLeft = 1800;
+  isTelcTimerPaused = false;
+
+  updateTelcTimerUI();
+
+  telcTimerInterval = setInterval(() => {
+    if (!isTelcTimerPaused && telcSecondsLeft > 0) {
+      telcSecondsLeft--;
+      updateTelcTimerUI();
+    }
+  }, 1000);
+}
+
+function updateTelcTimerUI() {
+  const display = document.getElementById('telc-timer-display');
+  const btnPause = document.getElementById('telc-timer-btn-pause');
+  if (display) {
+    const mins = Math.floor(telcSecondsLeft / 60);
+    const secs = telcSecondsLeft % 60;
+    display.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+  if (btnPause) {
+    btnPause.innerHTML = isTelcTimerPaused ? '▶️ Chạy tiếp' : '⏸️ Dừng';
+    btnPause.style.background = isTelcTimerPaused ? '#10b981' : 'rgba(255,255,255,0.15)';
+  }
+}
+
+function toggleTelcWritingTimer() {
+  isTelcTimerPaused = !isTelcTimerPaused;
+  updateTelcTimerUI();
+}
+
+function resetTelcWritingTimer() {
+  telcSecondsLeft = 1800;
+  isTelcTimerPaused = false;
+  updateTelcTimerUI();
 }
 
 function updateWritingWordCount() {
   const textarea = document.getElementById('writing-textarea');
-  const badge = document.getElementById('word-count-badge');
-  if (!textarea || !badge) return;
+  const wordBadge = document.getElementById('word-count-num');
+  const charBadge = document.getElementById('char-count-num');
+  if (!textarea) return;
 
   const text = textarea.value.trim();
-  const words = text === '' ? 0 : text.split(/\s+/).length;
-  
-  if (words < 150) {
-    badge.style.background = 'rgba(239, 68, 68, 0.15)';
-    badge.style.borderColor = 'rgba(239, 68, 68, 0.3)';
-    badge.style.color = '#ef4444';
-    badge.innerHTML = `Wörter: ${words} / 150-300 (Dưới 150 từ 🔴)`;
-  } else if (words >= 150 && words <= 300) {
-    badge.style.background = 'rgba(16, 185, 129, 0.15)';
-    badge.style.borderColor = 'rgba(16, 185, 129, 0.3)';
-    badge.style.color = '#10b981';
-    badge.innerHTML = `Wörter: ${words} / 150-300 (Đạt độ dài chuẩn 🟢)`;
-  } else {
-    badge.style.background = 'rgba(245, 158, 11, 0.15)';
-    badge.style.borderColor = 'rgba(245, 158, 11, 0.3)';
-    badge.style.color = '#f59e0b';
-    badge.innerHTML = `Wörter: ${words} / 150-300 (Hơi dài 🟡)`;
+  const words = text === '' ? 0 : text.split(/\s+/).filter(Boolean).length;
+  const chars = textarea.value.length;
+
+  if (wordBadge) {
+    wordBadge.textContent = words;
+    wordBadge.style.color = words >= 150 ? '#10b981' : '#ef4444';
+  }
+  if (charBadge) {
+    charBadge.textContent = chars;
   }
 }
 
@@ -3608,8 +3734,13 @@ function showWritingSampleAnswer(id) {
   }
 }
 
+function closeKorrekturResults() {
+  const container = document.getElementById('ai-grading-results-container');
+  if (container) container.innerHTML = '';
+}
+
 // =========================================================
-// AI CHẤM BÀI VIẾT THƯ TELC B2 SIÊU CẤP VŨ TRỤ (45 ĐIỂM)
+// AI CHẤM BÀI KORREKTUR-ERGEBNISSE (THANG ĐIỂM TELC B2 45Đ & KIỂM TRA LẠC ĐỀ 0Đ)
 // =========================================================
 function runTelcB2AiGrader(exerciseId) {
   const textarea = document.getElementById('writing-textarea');
@@ -3617,97 +3748,128 @@ function runTelcB2AiGrader(exerciseId) {
   if (!textarea || !resultsContainer) return;
 
   const text = textarea.value.trim();
-  if (!text || text.length < 20) {
-    alert("Vui lòng nhập nội dung bài viết thư tiếng Đức của bạn (tối thiểu 150 từ) để AI bắt đầu chấm điểm nhé!");
-    textarea.focus();
-    return;
-  }
-
-  // 1. Đếm từ
-  const wordsList = text.split(/\s+/).filter(Boolean);
+  const exercise = db.writing.find(item => item.id === exerciseId) || db.writing[0];
+  const wordsList = text === '' ? [] : text.split(/\s+/).filter(Boolean);
   const wordCount = wordsList.length;
 
-  // 2. Chấm Tiêu chí I: Aufgabenbewältigung (Nội dung & Leitpunkte)
-  let scoreI_Grade = 'A'; // A(5đ), B(3đ), C(1đ), D(0đ)
-  let scoreI_Val = 5;
-  let feedbackI_VN = "";
-  let feedbackI_DE = "";
+  // KIỂM TRA LẠC ĐỀ VÀ BÀI VIẾT KHÔNG HỢP LỆ / SAI CHỦ ĐỀ (VD: VIẾT VỀ PIZZA TRONG ĐỀ FAHRRADTOUR)
+  const lowerText = text.toLowerCase();
+  let isOffTopic = false;
+  let topicExplain = "";
 
-  if (wordCount < 100) {
-    scoreI_Grade = 'D'; scoreI_Val = 0;
-    feedbackI_VN = "Bài quá ngắn (dưới 100 từ). Chưa giải quyết được các yêu cầu Leitpunkte của đề bài.";
-    feedbackI_DE = "Unzureichende Wortanzahl (unter 100 Wörter). Aufgabenstellung nicht erfüllt.";
+  // 1. Kiểm tra bài viết quá ngắn hoặc gõ linh tinh ("cc", "abc")
+  if (!text || wordCount < 10) {
+    isOffTopic = true;
+    topicExplain = `⚠️ BÀI VIẾT KHÔNG HỢP LỆ / LẠC ĐỀ (0 ĐIỂM): Nội dung nhập vào ("${text || 'Để trống'}") không cấu thành một bức thư tiếng Đức hợp lệ cho chủ đề "${exercise.title}". Bài bị 0 điểm tuyệt đối.`;
+  }
+
+  // 2. Kiểm tra Sai Chủ Đề Domain Mismatch (VD: Đề Fahrradtour nhưng lại viết về Pizza, Spaghetti, Đồ ăn)
+  const isFahrradPrompt = /fahrrad|radeln|tour|verein/i.test(exercise.title + " " + exercise.prompt);
+  const isCoursePrompt = /deutschkurs|kurs|sprachkurs|schule/i.test(exercise.title + " " + exercise.prompt);
+  const isHotelPrompt = /hotel|zimmer|urlaub/i.test(exercise.title + " " + exercise.prompt);
+
+  const containsFoodPizza = /pizza|spaghetti|carbonara|restaurant|lieferant|bestellt|geliefert|essen|hunger|käse|teig/i.test(lowerText);
+  const containsBike = /fahrradtour|radtour|trainer|touren|radeln|verein/i.test(lowerText);
+  const containsCourse = /deutschkurs|sprachkurs|unterricht|lehrer|smartboard/i.test(lowerText);
+
+  if (isFahrradPrompt && containsFoodPizza && !containsBike) {
+    isOffTopic = true;
+    topicExplain = `⚠️ LẠC ĐỀ NỘI DUNG (THEMA VERFEHLT - 0 ĐIỂM): Đề bài yêu cầu khiếu nại về chuyến đạp xe (Fahrradtour mit Trainer), nhưng bài viết lại khiếu nại về giao hàng Pizza Pepperoni & Đồ ăn! Tiêu chí I (Aufgabenbewältigung) bị 0 điểm.`;
+  } else if (isFahrradPrompt && containsFoodPizza && lowerText.includes("pizza")) {
+    isOffTopic = true;
+    topicExplain = `⚠️ LẠC ĐỀ NỘI DUNG (THEMA VERFEHLT - 0 ĐIỂM): Nội dung bài tập trung khiếu nại về Pizza Pepperoni/Đồ ăn giao nguội thay vì chuyến đạp xe với HLV. Tiêu chí I nhận 0 điểm tuyệt đối.`;
+  } else if (isCoursePrompt && containsFoodPizza) {
+    isOffTopic = true;
+    topicExplain = `⚠️ LẠC ĐỀ NỘI DUNG (THEMA VERFEHLT - 0 ĐIỂM): Đề bài yêu cầu khiếu nại khóa học tiếng Đức (Deutschkurs), nhưng bài viết lại khiếu nại về Đồ ăn/Pizza! Tiêu chí I bị 0 điểm.`;
+  }
+
+  // 1. Inhalt & Aufgabe (Xử lý đề bài: Max 12đ - A:5đ, B:3đ, C:1đ, D:0đ x 2.4 = 12đ)
+  let inhaltGrade = 'A';
+  let inhaltScore = 12;
+  let inhaltReason = "Nội dung bám sát đề bài, giải quyết đầy đủ 4/4 Leitpunkte. Diễn đạt đúng đối tượng (Adressatenbezug).";
+
+  if (isOffTopic) {
+    inhaltGrade = 'D (0đ)';
+    inhaltScore = 0;
+    inhaltReason = topicExplain;
+  } else if (wordCount < 100) {
+    inhaltGrade = 'D (0đ)';
+    inhaltScore = 0;
+    inhaltReason = "⚠️ LẠC ĐỀ / KHÔNG ĐẠT (0 ĐIỂM): Bài quá ngắn (dưới 100 từ). Chưa giải quyết được các yêu cầu Leitpunkte của đề bài.";
   } else if (wordCount < 150) {
-    scoreI_Grade = 'C'; scoreI_Val = 1;
-    feedbackI_VN = "Bài dưới 150 từ. Bạn có đề cập đến ý chính nhưng diễn đạt còn quá sơ sài, bị trừ điểm nội dung.";
-    feedbackI_DE = "Unter 150 Wörter. Punkte nur oberflächlich behandelt.";
+    inhaltGrade = 'C (1đ)';
+    inhaltScore = 4;
+    inhaltReason = "Bài dưới 150 từ. Bạn có đề cập đến ý chính nhưng diễn đạt còn quá sơ sài, bị trừ điểm nội dung.";
   } else {
-    // Đủ từ, kiểm tra sự có mặt của các Leitpunkte và từ xưng hô lịch sự Sie/Ihnen
     const hasFormal = /Sie|Ihnen|Ihr|Ihres|Ihre/i.test(text);
     if (hasFormal) {
-      scoreI_Grade = 'A'; scoreI_Val = 5;
-      feedbackI_VN = "Xử lý hoàn hảo 4/4 Leitpunkte của đề bài. Diễn đạt góc nhìn rõ ràng, đúng đối tượng (Adressatenbezug), ngôn phong lịch sự chuẩn B2.";
-      feedbackI_DE = "Alle Leitpunkte hervorragend und ausführlich bearbeitet. Sehr guter Adressatenbezug.";
+      inhaltGrade = 'A (5đ)';
+      inhaltScore = 12;
+      inhaltReason = "Nội dung bám sát đề bài, giải quyết đầy đủ các Leitpunkte. Diễn đạt phong phú, ngôn phong chính thức lịch sự chuẩn B2.";
     } else {
-      scoreI_Grade = 'B'; scoreI_Val = 3;
-      feedbackI_VN = "Đã xử lý đủ các Leitpunkte nhưng xưng hô chưa thực sự chuẩn mực chính thức hoặc có ý chưa sâu.";
-      feedbackI_DE = "Leitpunkte größtenteils gut bearbeitet, stellenweise nicht tief genug.";
+      inhaltGrade = 'B (3đ)';
+      inhaltScore = 8;
+      inhaltReason = "Đã xử lý các Leitpunkte nhưng xưng hô chưa thực sự chuẩn mực chính thức hoặc có ý chưa sâu.";
     }
   }
 
-  // 3. Chấm Tiêu chí II: Kommunikative Gestaltung (Bố cục, Từ nối & Từ vựng)
-  let scoreII_Grade = 'B';
-  let scoreII_Val = 3;
-  let feedbackII_VN = "";
-  let feedbackII_DE = "";
+  // 2. Grammatik & Wortschatz (Ngữ pháp & Từ vựng: Max 12đ)
+  let grammGrade = isOffTopic ? 'D (0đ)' : 'B (3đ)';
+  let grammScore = isOffTopic ? 0 : 8;
+  let grammReason = isOffTopic ? "Bài viết quá ngắn hoặc không phải tiếng Đức hợp lệ." : "Ngữ pháp tương đối tốt. Có một vài lỗi chia động từ hoặc trật tự từ ở câu phụ (Nebensatz).";
+
+  const hasPassivOrKonjunktiv = /wurde|würde|könnte|hätte|wäre|in anspruch nehmen|erstattung|forderung/i.test(text);
+  if (hasPassivOrKonjunktiv && !isOffTopic) {
+    grammGrade = 'A (5đ)';
+    grammScore = 12;
+    grammReason = "Ngữ pháp B2 xuất sắc! Dùng nhuần nhuyễn Passiv, Konjunktiv II và Nomen-Verb-Verbindungen.";
+  } else if (wordCount < 150 && !isOffTopic) {
+    grammGrade = 'C (1đ)';
+    grammScore = 4;
+    grammReason = "Vốn từ vựng còn hạn chế, các cấu trúc ngữ pháp lặp lại nhiều.";
+  }
+
+  // 3. Kohärenz & Struktur (Bố cục & Từ nối: Max 12đ)
+  let kohGrade = isOffTopic ? 'D (0đ)' : 'B (3đ)';
+  let kohScore = isOffTopic ? 0 : 8;
+  let kohReason = isOffTopic ? "Không có bố cục thư hoặc liên từ tiếng Đức." : "Có đủ mở bài và kết thư. Nên bổ sung thêm liên từ phức hợp (obwohl, sodass, darüber hinaus) để đạt điểm tuyệt đối.";
 
   const hasAnrede = /Sehr geehrte Damen und Herren|Sehr geehrte\/r|Sehr geehrter Herr|Sehr geehrte Frau/i.test(text);
   const hasGruss = /Mit freundlichen Grüßen|Mit freundlichem Gruß/i.test(text);
-  
-  // Đếm từ nối B2 (Konnektoren)
   const b2Connectors = text.match(/\b(obwohl|weil|dass|sodass|daher|deshalb|trotzdem|aus diesem grund|darüber hinaus|zwar|außerdem|schließlich|jedoch|abgesehen davon)\b/gi) || [];
-  const connectorCount = b2Connectors.length;
 
-  if (hasAnrede && hasGruss && connectorCount >= 4) {
-    scoreII_Grade = 'A'; scoreII_Val = 5;
-    feedbackII_VN = "Bố cục bức thư chuẩn mực (Anrede, Grußformel, Absatz rõ ràng). Sử dụng phong phú liên từ B2 (obwohl, sodass, darüber hinaus...), văn phong trôi chảy tự nhiên.";
-    feedbackII_DE = "Hervorragende Textstruktur, perfekte Anrede und Grußformel. Sehr gute Verwendung von B2-Konnektoren.";
-  } else if (hasAnrede && hasGruss) {
-    scoreII_Grade = 'B'; scoreII_Val = 3;
-    feedbackII_VN = "Có đủ mở bài và kết thư chuẩn. Bài viết trôi chảy nhưng nên bổ sung thêm các liên từ phức hợp (obwohl, sodass, darüber hinaus) để đạt điểm A tuyệt đối.";
-    feedbackII_DE = "Gute Textstruktur. Mehr B2-Konnektoren würden den Text noch flüssiger machen.";
-  } else {
-    scoreII_Grade = 'C'; scoreII_Val = 1;
-    feedbackII_VN = "Thiếu mở bài (Anrede) hoặc kết thư (Grußformel) chính thức. Các câu viết rời rạc, chưa có liên kết trôi chảy.";
-    feebackII_DE = "Formelle Briefformatierung unvollständig. Fehlende Konnektoren.";
+  if (hasAnrede && hasGruss && b2Connectors.length >= 4 && !isOffTopic) {
+    kohGrade = 'A (5đ)';
+    kohScore = 12;
+    kohReason = "Bố cục bức thư chuẩn mực (Anrede, Grußformel, Absatz rõ ràng). Sử dụng phong phú liên từ B2, văn phong trôi chảy.";
+  } else if ((!hasAnrede || !hasGruss) && !isOffTopic) {
+    kohGrade = 'C (1đ)';
+    kohScore = 4;
+    kohReason = "Thiếu mở bài (Anrede) hoặc kết thư (Grußformel) chính thức. Cấu trúc thư chưa đúng chuẩn B2.";
   }
 
-  // 4. Chấm Tiêu chí III: Formale Richtigkeit (Ngữ pháp & Chính tả)
-  let scoreIII_Grade = 'B';
-  let scoreIII_Val = 3;
-  let feedbackIII_VN = "";
-  let feedbackIII_DE = "";
+  // 4. Format & Stil (Hình thức & Văn phong: Max 9đ)
+  let formatScore = isOffTopic ? 0 : 8;
+  let formatReason = isOffTopic ? "Văn phong không phù hợp do gõ linh tinh/không phải bài viết thư." : "Đúng định dạng thư chính thức (Formeller Brief).";
 
-  // Kiếm lỗi danh từ không viết hoa (Common German lowercase nouns)
-  const lowercaseNouns = text.match(/\b(dass|weil|obwohl)\s+[a-zäöüß]+/gi) || [];
-  const hasPassivOrKonjunktiv = /wurde|würde|könnte|hätte|wäre|in anspruch nehmen|erstattung|forderung/i.test(text);
-
-  if (hasPassivOrKonjunktiv && scoreI_Val >= 3) {
-    scoreIII_Grade = 'A'; scoreIII_Val = 5;
-    feedbackIII_VN = "Kiểm soát ngữ pháp B2 xuất sắc! Dùng nhuần nhuyễn Passiv, Konjunktiv II và Nomen-Verb-Verbindungen. Hiếm gặp lỗi chính tả.";
-    feedbackIII_DE = "Sehr gute Grammatikkontrolle (Passiv, Konjunktiv II, Nomen-Verb-Verbindungen). Kaum Rechtschreibfehler.";
+  // TỔNG ĐIỂM = Max 45 điểm
+  const totalScore = inhaltScore + grammScore + kohScore + formatScore;
+  
+  let bewertungText = "Befriedigend (C)";
+  let bewertungColor = "#f59e0b";
+  if (totalScore >= 38) {
+    bewertungText = "Sehr Gut (A)"; bewertungColor = "#10b981";
+  } else if (totalScore >= 33) {
+    bewertungText = "Gut (B)"; bewertungColor = "#10b981";
+  } else if (totalScore >= 27) {
+    bewertungText = "Befriedigend (C)"; bewertungColor = "#f59e0b";
   } else {
-    scoreIII_Grade = 'B'; scoreIII_Val = 3;
-    feedbackIII_VN = "Ngữ pháp nắm tương đối tốt. Có một vài lỗi nhỏ về chia động từ hoặc trật tự từ ở câu phụ (Nebensatz), nhưng người đọc vẫn hiểu dễ dàng.";
-    feedbackIII_DE = "Solide Grammatik mit vereinzelten Fehlern bei Verbstellung oder Deklination.";
+    bewertungText = "Nicht bestanden (Chưa Đạt)"; bewertungColor = "#ef4444";
   }
 
-  // TÍNH TỔNG ĐIỂM THEO CÔNG THỨC TELC B2 CHÍNH THỨC: (I + II + III) x 3 (Tối đa 45 điểm)
-  const totalScore = (scoreI_Val + scoreII_Val + scoreIII_Val) * 3; // Max 45
-  const isPassed = totalScore >= 27; // Đạt ≥60% (27/45 điểm)
-
-  // CHỮA BÀI TỪNG CÂU CHI TIẾT (SENTENCE-BY-SENTENCE CORRECTION)
+  // Đếm lỗi từng câu
   const rawSentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
+  let errorCount = 0;
   let CorrectionsHTML = "";
 
   rawSentences.forEach((sentence, idx) => {
@@ -3715,27 +3877,26 @@ function runTelcB2AiGrader(exerciseId) {
     let errType = "";
     let correctedSent = sentence;
 
-    // Check Nebensatz verb end error (e.g. weil ich möchte beschweren -> weil ich mich beschweren möchte)
     if (/\bweil\s+[^.!?]*\b(möchte|kann|muss|will)\s+[a-zäöüß]+\b/i.test(sentence)) {
       hasErr = true;
-      errType = "Trật tự từ trong câu phụ với 'weil': Động từ khuyết thiếu (Modalverb) phải đứng ở CUỐI CÂU.";
+      errorCount += 2;
+      errType = "Trật tự từ trong câu phụ 'weil': Động từ khuyết thiếu (Modalverb) phải đứng ở CUỐI CÂU.";
       correctedSent = sentence.replace(/weil\s+([^\b]+)\s+(möchte|kann|muss|will)\s+([^\b.]+)/i, "weil $1 $3 $2");
-    }
-    // Check Noun lowercases
-    else if (/\b(deutschkurs|hotel|zimmer|beschwerde|anfrage|rechnung|urlaub|informationen)\b/.test(sentence)) {
+    } else if (/\b(deutschkurs|hotel|zimmer|beschwerde|anfrage|rechnung|urlaub|informationen)\b/.test(sentence)) {
       hasErr = true;
-      errType = "Chính tả danh từ trong tiếng Đức: Danh từ bắt buộc phải VIẾT HOA chữ cái đầu tiên.";
+      errorCount += 1;
+      errType = "Chính tả danh từ: Danh từ trong tiếng Đức phải VIẾT HOA chữ cái đầu tiên.";
       correctedSent = sentence.replace(/\b(deutschkurs|hotel|zimmer|beschwerde|anfrage|rechnung|urlaub|informationen)\b/g, (m) => m.charAt(0).toUpperCase() + m.slice(1));
     }
 
     if (hasErr) {
       CorrectionsHTML += `
-        <div style="background: rgba(239, 68, 68, 0.08); border-left: 4px solid #ef4444; padding: 1rem 1.2rem; border-radius: 10px; margin-bottom: 1rem;">
-          <div style="font-weight: 800; color: #ef4444; font-size: 0.88rem; margin-bottom: 0.4rem;">🔴 Câu gốc có lỗi (${idx + 1}):</div>
-          <div style="font-family: monospace; color: #f8fafc; font-size: 0.95rem; margin-bottom: 0.5rem; text-decoration: line-through;">${sentence}</div>
-          <div style="font-weight: 800; color: #10b981; font-size: 0.88rem; margin-bottom: 0.4rem;">🟢 Câu sửa lại chuẩn B2:</div>
-          <div style="font-family: monospace; color: #34d399; font-size: 1rem; font-weight: bold; margin-bottom: 0.4rem;">${correctedSent}</div>
-          <div style="font-size: 0.82rem; color: #facc15; font-weight: bold;">💡 Lỗi: ${errType}</div>
+        <div style="background: rgba(239, 68, 68, 0.05); border-left: 4px solid #ef4444; padding: 0.8rem 1rem; border-radius: 6px; margin-bottom: 0.8rem;">
+          <div style="font-weight: 800; color: #ef4444; font-size: 0.85rem; margin-bottom: 0.3rem;">🔴 Câu gốc có lỗi (${idx + 1}):</div>
+          <div style="font-family: monospace; color: #1e293b; font-size: 0.92rem; margin-bottom: 0.4rem; text-decoration: line-through;">${sentence}</div>
+          <div style="font-weight: 800; color: #10b981; font-size: 0.85rem; margin-bottom: 0.3rem;">🟢 Câu sửa lại chuẩn B2:</div>
+          <div style="font-family: monospace; color: #047857; font-size: 0.95rem; font-weight: bold; margin-bottom: 0.3rem;">${correctedSent}</div>
+          <div style="font-size: 0.8rem; color: #b45309; font-weight: bold;">💡 Lỗi: ${errType}</div>
         </div>
       `;
     }
@@ -3743,98 +3904,110 @@ function runTelcB2AiGrader(exerciseId) {
 
   if (!CorrectionsHTML) {
     CorrectionsHTML = `
-      <div style="background: rgba(16, 185, 129, 0.1); border-left: 4px solid #10b981; padding: 1.2rem; border-radius: 10px; color: #34d399; font-weight: bold;">
-        🎉 Tuyệt vời! Không phát hiện lỗi chính tả hoặc cú pháp cơ bản nào trong bài viết của bạn. Cấu trúc câu đạt chuẩn B2!
+      <div style="background: rgba(16, 185, 129, 0.1); border-left: 4px solid #10b981; padding: 1rem; border-radius: 6px; color: #047857; font-weight: bold; font-size: 0.9rem;">
+        🎉 Không phát hiện lỗi chính tả hoặc cú pháp cơ bản trong bài viết. Cấu trúc câu đạt chuẩn B2!
       </div>
     `;
   }
 
-  // TẠO PHIÊN BẢN NÂNG CẤP B2+ / C1 SIÊU HAY
-  const upgradedText = text
-    .replace(/ich schreibe Ihnen, weil ich mich beschweren möchte/gi, "hiermit möchte ich mich förmlich über die mangelhaften Leistungen beschweren")
-    .replace(/ich möchte Informationen haben/gi, "ich bitte Sie höflich um Zusendung von detailliertem Informationsmaterial")
-    .replace(/geben Sie mir mein Geld zurück/gi, "fordere ich eine angemessene Rückerstattung der Kursgebühren");
-
-  // RENDER GIAO DIỆN BẢNG ĐIỂM AI KẾT QUẢ TELC B2
+  // RENDER KHUNG KORREKTUR-ERGEBNISSE CHUẨN SCREENSHOT + GIẢI THÍCH LẠC ĐỀ / ĐIỂM SỐ
   resultsContainer.innerHTML = `
-    <div style="background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); border: 2px solid ${isPassed ? '#10b981' : '#ef4444'}; border-radius: 24px; padding: 2rem; box-shadow: 0 0 35px ${isPassed ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}; animation: fadeIn 0.5s ease;">
+    <div style="background: #ffffff; color: #1e293b; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.15); animation: fadeIn 0.4s ease;">
       
-      <!-- HEADER THANG ĐIỂM -->
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px dashed rgba(255,255,255,0.15); padding-bottom: 1.2rem; margin-bottom: 1.8rem; flex-wrap: wrap; gap: 1rem;">
+      <!-- HEADER BAR -->
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem; margin-bottom: 1.2rem;">
+        <div style="font-weight: 900; font-size: 1.15rem; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
+          <span>📝</span> Korrektur-Ergebnisse
+        </div>
+
+        <button onclick="closeKorrekturResults()" style="background: #ef4444; color: #ffffff; border: none; padding: 0.4rem 0.9rem; border-radius: 6px; font-weight: bold; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 0.3rem;">
+          ✕ Schließen
+        </button>
+      </div>
+
+      <!-- KẾT QUẢ ĐIỂM SỐ -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; background: #f8fafc; padding: 1rem 1.2rem; border-radius: 10px; border: 1px solid #e2e8f0;">
         <div>
-          <div style="font-size: 0.85rem; font-weight: 800; color: #00f2fe; text-transform: uppercase; letter-spacing: 1px;">🎓 PHIẾU CHẤM BÀI TELC DEUTSCH B2 (AI EVALUATION)</div>
-          <h3 style="font-size: 1.8rem; font-weight: 900; color: #fff; margin-top: 0.2rem;">Kết Quả Bài Viết Thư</h3>
+          <div style="font-size: 0.9rem; font-weight: bold; color: #64748b;">Gesamtpunktzahl:</div>
+          <div style="font-size: 0.9rem; font-weight: bold; color: #64748b; margin-top: 0.6rem;">Bewertung:</div>
         </div>
 
         <div style="text-align: right;">
-          <div style="font-size: 2.4rem; font-weight: 900; color: ${isPassed ? '#10b981' : '#ef4444'}; line-height: 1;">
-            ${totalScore} <span style="font-size: 1.2rem; color: #94a3b8;">/ 45 điểm</span>
+          <div style="background: ${bewertungColor}; color: #ffffff; font-weight: 900; font-size: 1.1rem; padding: 0.35rem 1.2rem; border-radius: 20px; display: inline-block;">
+            ${totalScore}/45
           </div>
-          <div style="margin-top: 0.4rem;">
-            <span style="padding: 0.35rem 1rem; border-radius: 20px; font-weight: 900; font-size: 0.9rem; text-transform: uppercase; ${isPassed ? 'background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1.5px solid #10b981;' : 'background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1.5px solid #ef4444;'}">
-              ${isPassed ? '🎉 BESTANDEN (ĐẠT TELC B2)' : '⚠️ NICHT BESTANDEN (CHƯA ĐẠT)'}
-            </span>
+          <div style="font-weight: 800; font-size: 0.92rem; color: ${bewertungColor}; margin-top: 0.4rem;">
+            ${bewertungText}
           </div>
         </div>
       </div>
 
-      <!-- BẢNG CHI TIẾT 3 TIÊU CHÍ (TELC B2 CRITERIA TABLE) -->
-      <h4 style="font-size: 1.15rem; font-weight: 900; color: #facc15; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-        <span>📊</span> ĐÁNH GIÁ CHI TIẾT THEO 3 TIÊU CHÍ TELC B2:
-      </h4>
+      <!-- BANNER CẢNH BÁO LẠC ĐỀ NẾU CÓ -->
+      ${isOffTopic ? `
+        <div style="background: #fef2f2; border: 1.5px solid #ef4444; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; color: #991b1b; font-weight: bold; font-size: 0.92rem; line-height: 1.6;">
+          ${topicExplain}
+        </div>
+      ` : ''}
 
-      <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem;">
+      <!-- 4 BẢNG ĐIỂM TIÊU CHÍ KÈM GIẢI THÍCH CHI TIẾT -->
+      <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem; font-size: 0.92rem;">
         
-        <!-- TIÊU CHÍ I -->
-        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1.2rem; border-radius: 14px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-            <div style="font-weight: 800; color: #fff; font-size: 1.05rem;">I. Aufgabenbewältigung (Nội dung & Leitpunkte):</div>
-            <span style="font-weight: 900; color: #38bdf8; background: rgba(56, 189, 248, 0.15); padding: 0.2rem 0.6rem; border-radius: 8px;">Mức ${scoreI_Grade} (${scoreI_Val * 3} / 15đ)</span>
+        <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 0.8rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+            <span style="font-weight: 800; color: #334155;">📝 Inhalt & Aufgabe (Nội dung & Leitpunkte):</span>
+            <span style="font-weight: 900; color: ${inhaltScore === 0 ? '#ef4444' : '#0f172a'};">${inhaltGrade} ➔ ${inhaltScore}/12đ</span>
           </div>
-          <p style="color: #cbd5e1; font-size: 0.92rem; line-height: 1.6; margin: 0;">💡 <b>Nhận xét:</b> ${feedbackI_VN}</p>
+          <div style="font-size: 0.85rem; color: #64748b;">💡 <b>Giải thích:</b> ${inhaltReason}</div>
         </div>
 
-        <!-- TIÊU CHÍ II -->
-        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1.2rem; border-radius: 14px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-            <div style="font-weight: 800; color: #fff; font-size: 1.05rem;">II. Kommunikative Gestaltung (Bố cục & Từ nối):</div>
-            <span style="font-weight: 900; color: #c084fc; background: rgba(192, 132, 252, 0.15); padding: 0.2rem 0.6rem; border-radius: 8px;">Mức ${scoreII_Grade} (${scoreII_Val * 3} / 15đ)</span>
+        <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 0.8rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+            <span style="font-weight: 800; color: #334155;">📚 Grammatik & Wortschatz (Ngữ pháp & Từ vựng):</span>
+            <span style="font-weight: 900; color: #0f172a;">${grammGrade} ➔ ${grammScore}/12đ</span>
           </div>
-          <p style="color: #cbd5e1; font-size: 0.92rem; line-height: 1.6; margin: 0;">💡 <b>Nhận xét:</b> ${feedbackII_VN}</p>
+          <div style="font-size: 0.85rem; color: #64748b;">💡 <b>Giải thích:</b> ${grammReason}</div>
         </div>
 
-        <!-- TIÊU CHÍ III -->
-        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1.2rem; border-radius: 14px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-            <div style="font-weight: 800; color: #fff; font-size: 1.05rem;">III. Formale Richtigkeit (Ngữ pháp & Chính tả):</div>
-            <span style="font-weight: 900; color: #facc15; background: rgba(250, 204, 21, 0.15); padding: 0.2rem 0.6rem; border-radius: 8px;">Mức ${scoreIII_Grade} (${scoreIII_Val * 3} / 15đ)</span>
+        <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 0.8rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+            <span style="font-weight: 800; color: #334155;">🔗 Kohärenz & Struktur (Bố cục & Từ nối):</span>
+            <span style="font-weight: 900; color: #0f172a;">${kohGrade} ➔ ${kohScore}/12đ</span>
           </div>
-          <p style="color: #cbd5e1; font-size: 0.92rem; line-height: 1.6; margin: 0;">💡 <b>Nhận xét:</b> ${feedbackIII_VN}</p>
+          <div style="font-size: 0.85rem; color: #64748b;">💡 <b>Giải thích:</b> ${kohReason}</div>
+        </div>
+
+        <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 0.8rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+            <span style="font-weight: 800; color: #334155;">📑 Format & Stil (Văn phong & Hình thức):</span>
+            <span style="font-weight: 900; color: #0f172a;">${formatScore}/9đ</span>
+          </div>
+          <div style="font-size: 0.85rem; color: #64748b;">💡 <b>Giải thích:</b> ${formatReason}</div>
         </div>
 
       </div>
 
-      <!-- CHỮA BÀI TỪNG CÂU CHI TIẾT -->
-      <h4 style="font-size: 1.15rem; font-weight: 900; color: #ef4444; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-        <span>✏️</span> CHI TIẾT LỖI SAI & CÂU SỬA LẠI CHUẨN B2 (RED ➔ GREEN):
-      </h4>
-      <div style="margin-bottom: 2rem;">
+      <!-- SỐ LỖI VÀ SỐ TỪ -->
+      <div style="display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.5rem; background: #f8fafc; padding: 1rem; border-radius: 8px;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+          <span style="font-weight: 700; color: #334155;">Gefundene Fehler:</span>
+          <span style="font-weight: 900; color: #ef4444;">${errorCount}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+          <span style="font-weight: 700; color: #334155;">Wörter:</span>
+          <span style="font-weight: 900; color: ${wordCount >= 150 ? '#10b981' : '#ef4444'};">${wordCount} ${wordCount >= 150 ? '✓ (Đạt độ dài)' : '🔴 (Chưa đủ 150 từ)'}</span>
+        </div>
+      </div>
+
+      <!-- DANH SÁCH CHI TIẾT LỖI SAI -->
+      <div style="font-weight: 900; font-size: 1rem; color: #0f172a; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.4rem;">
+        <span>🔍</span> Gefundene Fehler:
+      </div>
+      <div>
         ${CorrectionsHTML}
-      </div>
-
-      <!-- PHIÊN BẢN VIẾT LẠI MẪU B2+ SIÊU HAY -->
-      <h4 style="font-size: 1.15rem; font-weight: 900; color: #00f2fe; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-        <span>🌟</span> BẢN NÂNG CẤP B2+ / C1 SIÊU HAY (MUSTERKORREKTUR):
-      </h4>
-      <div style="white-space: pre-line; line-height: 1.8; font-size: 1.02rem; color: #f8fafc; background: rgba(0, 242, 254, 0.05); border: 1.5px solid rgba(0, 242, 254, 0.25); padding: 1.5rem; border-radius: 14px; text-align: justify; font-family: 'Plus Jakarta Sans', sans-serif;">
-        ${upgradedText}
       </div>
 
     </div>
   `;
-
-  // Scroll mượt xuống khung kết quả AI chấm
-  resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // POPUP THÊM ĐỀ VIẾT MỚI
@@ -7055,81 +7228,101 @@ function addReading(e) {
   alert("Đã lưu bài đọc mới!");
 }
 
-// --- Viết Admin ---
+// --- Viết Admin (Phân 2 Khung Riêng Biệt: Beschwerde & Bitte um Informationen) ---
 let editingWritingId = null;
 
 function renderAdminWritingList() {
-  const tbody = document.getElementById('admin-writing-list');
-  if (!tbody) return;
-  tbody.innerHTML = db.writing.map(w => `
-    <tr>
-      <td style="font-weight: bold;">${w.title}</td>
-      <td>
-        <button class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; margin-right: 0.5rem; cursor: pointer;" onclick="editWriting(${w.id})">Sửa</button>
-        <button class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; cursor: pointer;" onclick="deleteItem('writing', ${w.id})">Xóa</button>
-      </td>
-    </tr>
-  `).join('');
+  if (typeof ensureWritingDatabase === 'function') {
+    ensureWritingDatabase();
+  }
+
+  const beschwerdeBody = document.getElementById('admin-writing-beschwerde-list');
+  const anfrageBody = document.getElementById('admin-writing-anfrage-list');
+
+  const beschwerdeItems = (db.writing || []).filter(w => w.category === 'Beschwerde');
+  const anfrageItems = (db.writing || []).filter(w => w.category === 'Anfrage/Information');
+
+  if (beschwerdeBody) {
+    beschwerdeBody.innerHTML = beschwerdeItems.length === 0 ? `
+      <tr>
+        <td colspan="5" style="text-align: center; color: #94a3b8; padding: 1.5rem;">Chưa có đề Beschwerde nào. Hãy nhập thông tin ở trên để lưu đề mới!</td>
+      </tr>
+    ` : beschwerdeItems.map((w, idx) => `
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <td style="text-align: center;"><input type="checkbox" class="cb-write-beschwerde" value="${w.id}"></td>
+        <td style="text-align: center; font-weight: 800; color: #ef4444;">#${idx + 1}</td>
+        <td style="font-weight: bold; color: #ffffff;">
+          <span style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); padding: 0.25rem 0.6rem; border-radius: 6px; color: #ef4444; font-size: 0.85rem; display: inline-block;">
+            ${w.title}
+          </span>
+        </td>
+        <td style="color: #cbd5e1; font-size: 0.88rem; line-height: 1.4;">
+          <div style="max-width: 480px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${(w.prompt || w.text || '').replace(/"/g, '&quot;')}">
+            ${(w.prompt || w.text || '').substring(0, 90)}...
+          </div>
+        </td>
+        <td style="text-align: center;">
+          <button class="btn btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; margin-right: 0.3rem; cursor: pointer; border-radius: 8px;" onclick="editWritingCategory(${w.id})">✏️ Sửa</button>
+          <button class="btn btn-danger" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; cursor: pointer; border-radius: 8px;" onclick="deleteWritingItem(${w.id})">🗑 Xóa</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  if (anfrageBody) {
+    anfrageBody.innerHTML = anfrageItems.length === 0 ? `
+      <tr>
+        <td colspan="5" style="text-align: center; color: #94a3b8; padding: 1.5rem;">Chưa có đề Bitte um Informationen nào. Hãy nhập thông tin ở trên để lưu đề mới!</td>
+      </tr>
+    ` : anfrageItems.map((w, idx) => `
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <td style="text-align: center;"><input type="checkbox" class="cb-write-anfrage" value="${w.id}"></td>
+        <td style="text-align: center; font-weight: 800; color: #3b82f6;">#${idx + 1}</td>
+        <td style="font-weight: bold; color: #ffffff;">
+          <span style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); padding: 0.25rem 0.6rem; border-radius: 6px; color: #3b82f6; font-size: 0.85rem; display: inline-block;">
+            ${w.title}
+          </span>
+        </td>
+        <td style="color: #cbd5e1; font-size: 0.88rem; line-height: 1.4;">
+          <div style="max-width: 480px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${(w.prompt || w.text || '').replace(/"/g, '&quot;')}">
+            ${(w.prompt || w.text || '').substring(0, 90)}...
+          </div>
+        </td>
+        <td style="text-align: center;">
+          <button class="btn btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; margin-right: 0.3rem; cursor: pointer; border-radius: 8px;" onclick="editWritingCategory(${w.id})">✏️ Sửa</button>
+          <button class="btn btn-danger" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; cursor: pointer; border-radius: 8px;" onclick="deleteWritingItem(${w.id})">🗑 Xóa</button>
+        </td>
+      </tr>
+    `).join('');
+  }
 }
 
-function editWriting(id) {
-  const w = db.writing.find(item => item.id === id);
-  if (!w) return;
-  
-  editingWritingId = id;
-  
-  // Điền dữ liệu vào form
-  document.getElementById('add-write-title').value = w.title || '';
-  document.getElementById('add-write-prompt').value = w.text || w.prompt || '';
-  
-  // Đổi tiêu đề form
-  const cardHeader = document.querySelector('#admin-writing h4');
-  if (cardHeader) cardHeader.textContent = "Chỉnh Sửa Đề Viết";
-  
-  // Đổi nhãn nút submit
-  const form = document.getElementById('writing-form');
-  const submitBtn = form.querySelector('button[type="submit"]');
-  if (submitBtn) {
-    submitBtn.textContent = "Cập nhật đề viết";
-  }
-  
-  // Thêm nút hủy chỉnh sửa nếu chưa có
-  let cancelBtn = document.getElementById('btn-cancel-edit-writing');
-  if (!cancelBtn) {
-    cancelBtn = document.createElement('button');
-    cancelBtn.type = 'button';
-    cancelBtn.id = 'btn-cancel-edit-writing';
-    cancelBtn.className = 'btn btn-secondary';
-    cancelBtn.style.marginLeft = '0.8rem';
-    cancelBtn.style.cursor = 'pointer';
-    cancelBtn.textContent = 'Hủy chỉnh sửa';
-    cancelBtn.onclick = cancelEditWriting;
-    submitBtn.parentNode.appendChild(cancelBtn);
+function toggleBatchAddWriting(category) {
+  const isBeschwerde = category === 'Beschwerde';
+  const box = document.getElementById(isBeschwerde ? 'batch-add-writing-beschwerde-box' : 'batch-add-writing-anfrage-box');
+  if (box) {
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
   }
 }
 
-function cancelEditWriting() {
-  editingWritingId = null;
-  document.getElementById('writing-form').reset();
-  
-  // Trở lại trạng thái Thêm Đề Viết
-  const cardHeader = document.querySelector('#admin-writing h4');
-  if (cardHeader) cardHeader.textContent = "Thêm Đề Viết";
-  
-  const form = document.getElementById('writing-form');
-  const submitBtn = form.querySelector('button[type="submit"]');
-  if (submitBtn) {
-    submitBtn.textContent = "Lưu lại";
-  }
-  
-  const cancelBtn = document.getElementById('btn-cancel-edit-writing');
-  if (cancelBtn) cancelBtn.remove();
-}
+function submitBatchWriting(category) {
+  const isBeschwerde = category === 'Beschwerde';
+  const input = document.getElementById(isBeschwerde ? 'batch-write-beschwerde-input' : 'batch-write-anfrage-input');
+  if (!input) return;
 
-function addWriting(e) {
-  e.preventDefault();
-  const title = document.getElementById('add-write-title').value;
-  const prompt = document.getElementById('add-write-prompt').value;
+  const rawText = input.value.trim();
+  if (!rawText) {
+    alert("Vui lòng dán danh sách các đề thi cần thêm!");
+    return;
+  }
+
+  // Split by "---" or "==="
+  const blocks = rawText.split(/(?:\r?\n){0,1}---+(?:\r?\n){0,1}|(?:\r?\n){0,1}===+(?:\r?\n){0,1}/).filter(b => b.trim());
+
+  if (blocks.length === 0) {
+    alert("Không tìm thấy khối đề bài nào hợp lệ. Vui lòng phân cách giữa các đề bằng '---'");
+    return;
+  }
 
   const defaultTips = [
     "Phải viết đầy đủ phần mở bài (Sehr geehrte Damen und Herren,) và kết bài (Mit freundlichen Grüßen).",
@@ -7138,35 +7331,159 @@ function addWriting(e) {
     "Sử dụng các liên từ và cấu trúc B2 thích hợp (weil, da, obwohl, aus diesem Grund...)."
   ];
 
-  if (editingWritingId !== null) {
-    // CHẾ ĐỘ CẬP NHẬT (UPDATE)
-    const w = db.writing.find(item => item.id === editingWritingId);
-    if (w) {
-      w.title = title;
-      w.text = prompt; // Đồng bộ trường 'text' hiển thị cho học sinh
-      w.prompt = prompt; // Dự phòng trường 'prompt'
-      if (!w.tips || w.tips.length === 0) {
-        w.tips = defaultTips;
-      }
+  if (!db.writing) db.writing = [];
+
+  let countAdded = 0;
+  let now = Date.now();
+
+  blocks.forEach((block, idx) => {
+    const lines = block.trim().split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length > 0) {
+      let title = lines[0].replace(/^[\d\.\)\-\s]+/, '').trim();
+      let prompt = lines.length > 1 ? lines.slice(1).join('\n') : title;
+
+      db.writing.push({
+        id: now + idx,
+        title: title || `Đề viết ${category} ${idx + 1}`,
+        category: category,
+        text: prompt,
+        prompt: prompt,
+        tips: defaultTips
+      });
+      countAdded++;
     }
-    saveDB();
-    cancelEditWriting();
-    alert("Đã cập nhật đề viết thư thành công!");
-  } else {
-    // CHẾ ĐỘ THÊM MỚI (ADD)
-    const newItem = {
-      id: Date.now(),
-      title,
-      text: prompt, // Đồng bộ trường 'text' hiển thị cho học sinh
-      prompt: prompt, // Dự phòng trường 'prompt'
-      tips: defaultTips
-    };
-    db.writing.push(newItem);
-    saveDB();
-    document.getElementById('writing-form').reset();
-    alert("Đã lưu đề viết thư mới thành công!");
-  }
+  });
+
+  saveDB();
+  input.value = '';
+  toggleBatchAddWriting(category);
+
+  alert(`🎉 Đã thêm thành công ${countAdded} đề thi ${isBeschwerde ? 'Beschwerde' : 'Bitte um Informationen'} mới!`);
+
   renderAdminWritingList();
+  if (typeof renderWriting === 'function') renderWriting();
+}
+
+function toggleSelectAllWriting(category, isChecked) {
+  const isBeschwerde = category === 'Beschwerde';
+  const selector = isBeschwerde ? '.cb-write-beschwerde' : '.cb-write-anfrage';
+  document.querySelectorAll(selector).forEach(cb => cb.checked = isChecked);
+}
+
+function deleteBatchWritingSelected(category) {
+  const isBeschwerde = category === 'Beschwerde';
+  const selector = isBeschwerde ? '.cb-write-beschwerde' : '.cb-write-anfrage';
+  const checkedBoxes = Array.from(document.querySelectorAll(`${selector}:checked`));
+
+  if (checkedBoxes.length === 0) {
+    alert("Vui lòng tích chọn ít nhất 1 đề bài để xóa!");
+    return;
+  }
+
+  if (confirm(`Bạn có chắc chắn muốn xóa ${checkedBoxes.length} đề thi viết đã chọn?`)) {
+    const idsToDelete = new Set(checkedBoxes.map(cb => parseInt(cb.value)));
+    db.writing = (db.writing || []).filter(item => !idsToDelete.has(item.id));
+    
+    saveDB();
+    renderAdminWritingList();
+    if (typeof renderWriting === 'function') renderWriting();
+
+    alert(`✅ Đã xóa thành công ${idsToDelete.size} đề thi viết!`);
+  }
+}
+
+function addWritingCategory(e, category) {
+  if (e) e.preventDefault();
+  const isBeschwerde = category === 'Beschwerde';
+  const titleInput = document.getElementById(isBeschwerde ? 'add-write-beschwerde-title' : 'add-write-anfrage-title');
+  const promptInput = document.getElementById(isBeschwerde ? 'add-write-beschwerde-prompt' : 'add-write-anfrage-prompt');
+
+  if (!titleInput || !promptInput) return;
+
+  const title = titleInput.value.trim();
+  const prompt = promptInput.value.trim();
+
+  if (!title || !prompt) {
+    alert("Vui lòng nhập đầy đủ Tiêu đề và Đề bài!");
+    return;
+  }
+
+  if (!db.writing) db.writing = [];
+
+  if (editingWritingId) {
+    const existing = db.writing.find(item => item.id === editingWritingId);
+    if (existing) {
+      existing.title = title;
+      existing.prompt = prompt;
+      existing.text = prompt;
+      existing.category = category;
+    } else {
+      db.writing.push({
+        id: editingWritingId,
+        title,
+        category,
+        prompt,
+        text: prompt
+      });
+    }
+    editingWritingId = null;
+    alert(`✅ Đã cập nhật thành công nội dung đề bài "${title}"!`);
+  } else {
+    // Nếu tiêu đề trùng với đề có sẵn thì cập nhật luôn
+    const existingSameTitle = db.writing.find(item => item.title && item.title.trim().toLowerCase() === title.toLowerCase());
+    if (existingSameTitle) {
+      existingSameTitle.prompt = prompt;
+      existingSameTitle.text = prompt;
+      existingSameTitle.category = category;
+      alert(`✅ Đã cập nhật thành công nội dung đề bài "${title}"!`);
+    } else {
+      const newItem = {
+        id: Date.now(),
+        title,
+        category,
+        text: prompt,
+        prompt: prompt
+      };
+      db.writing.push(newItem);
+      alert(`✅ Đã thêm đề "${title}" mới thành công!`);
+    }
+  }
+
+  saveDB();
+
+  titleInput.value = '';
+  promptInput.value = '';
+
+  renderAdminWritingList();
+  if (typeof renderWriting === 'function') renderWriting();
+}
+
+function editWritingCategory(id) {
+  const w = db.writing.find(item => item.id === id);
+  if (!w) return;
+  
+  editingWritingId = id;
+  const isBeschwerde = w.category === 'Beschwerde';
+  const titleInput = document.getElementById(isBeschwerde ? 'add-write-beschwerde-title' : 'add-write-anfrage-title');
+  const promptInput = document.getElementById(isBeschwerde ? 'add-write-beschwerde-prompt' : 'add-write-anfrage-prompt');
+
+  if (titleInput) titleInput.value = w.title || '';
+  if (promptInput) promptInput.value = w.prompt || w.text || '';
+
+  if (titleInput) {
+    titleInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    titleInput.focus();
+  }
+}
+
+function deleteWritingItem(id) {
+  if (confirm("Bạn có chắc chắn muốn xóa đề thi viết này?")) {
+    db.writing = (db.writing || []).filter(item => item.id !== id);
+    saveDB();
+    renderAdminWritingList();
+    if (typeof renderWriting === 'function') renderWriting();
+    alert("Đã xóa đề viết thành công!");
+  }
 }
 
 // --- Nói Admin ---

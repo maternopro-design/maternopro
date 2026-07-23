@@ -1090,33 +1090,141 @@
 
         <!-- Writing -->
         <div id="admin-writing" class="admin-tab-content" style="display: none;">
-          <div class="card">
-            <h4>Thêm Đề Viết</h4>
-            <form id="writing-form" onsubmit="addWriting(event)" style="margin-top: 1rem;">
-              <div class="form-group">
-                <label>Tiêu đề đề viết</label>
-                <input type="text" id="add-write-title" required>
+          
+          <!-- KHUNG 1: TẠO & QUẢN LÝ ĐỀ THƯ PHÀN NÀN (BESCHWERDE) -->
+          <div class="card" style="margin-bottom: 2rem; border: 1.5px solid rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.03);">
+            <h4 style="color: #ef4444; font-weight: 900; font-size: 1.3rem; display: flex; align-items: center; gap: 0.6rem;">
+              <span>⚠️</span> Quản Lý Đề Thư Phàn Nàn (Beschwerde)
+            </h4>
+            
+            <form id="writing-beschwerde-form" onsubmit="addWritingCategory(event, 'Beschwerde')" style="margin-top: 1.2rem;">
+              <div class="form-group" style="margin-bottom: 1rem;">
+                <label style="font-weight: bold; color: #ffffff;">Tiêu đề đề viết Beschwerde</label>
+                <input type="text" id="add-write-beschwerde-title" placeholder="Ví dụ: Beschwerde über einen Deutschkurs im Sommer" style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border-light); border-radius: 8px; color: #fff; font-size: 0.95rem;">
               </div>
-              <div class="form-group">
-                <label>Đề bài</label>
-                <textarea id="add-write-prompt" rows="3" required></textarea>
+              <div class="form-group" style="margin-bottom: 1.2rem;">
+                <label style="font-weight: bold; color: #ffffff;">Đề bài & 4 gợi ý Leitpunkte</label>
+                <textarea id="add-write-beschwerde-prompt" rows="4" placeholder="Nhập ngữ cảnh phàn nàn, thông tin quảng cáo và 4 ý Leitpunkte..." style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border-light); border-radius: 8px; color: #fff; font-size: 0.95rem; line-height: 1.6;"></textarea>
               </div>
 
-              <button class="btn btn-primary" type="submit" data-translate="admin-btn-save">Lưu lại</button>
+              <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+                <button class="btn btn-primary" type="submit" style="background: linear-gradient(135deg, #ef4444, #dc2626); border: none; border-radius: 20px; font-weight: 900; padding: 0.75rem 1.8rem; cursor: pointer;">
+                  💾 Lưu 1 Đề Beschwerde
+                </button>
+
+                <button type="button" class="btn btn-secondary" onclick="toggleBatchAddWriting('Beschwerde')" style="background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #ffffff; border-radius: 20px; font-weight: 800; padding: 0.75rem 1.4rem; cursor: pointer;">
+                  ⚡ Thêm Nhiều Đề Cùng Lúc (Batch Add)
+                </button>
+              </div>
             </form>
+
+            <!-- KHUNG DÁN NHIỀU ĐỀ BESCHWERDE CÙNG LÚC -->
+            <div id="batch-add-writing-beschwerde-box" style="display: none; background: rgba(0,0,0,0.4); border: 1.5px dashed #ef4444; padding: 1.2rem; border-radius: 12px; margin-top: 1.2rem;">
+              <label style="font-weight: bold; color: #ef4444; display: block; margin-bottom: 0.5rem; font-size: 1rem;">⚡ Dán danh sách nhiều đề Beschwerde cùng lúc (Dùng "---" để phân cách giữa các đề):</label>
+              <p style="font-size: 0.82rem; color: #cbd5e1; margin-bottom: 0.8rem; line-height: 1.5;">
+                💡 <b>Mẫu dán nhiều đề:</b><br>
+                Tiêu đề đề 1<br>
+                Nội dung đề 1 và các Leitpunkte...<br>
+                ---<br>
+                Tiêu đề đề 2<br>
+                Nội dung đề 2 và các Leitpunkte...
+              </p>
+              <textarea id="batch-write-beschwerde-input" rows="7" placeholder="Dán danh sách nhiều đề Beschwerde vào đây..." style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.9rem; line-height: 1.6;"></textarea>
+              <button type="button" onclick="submitBatchWriting('Beschwerde')" style="margin-top: 0.8rem; background: #ef4444; color: white; border: none; padding: 0.65rem 1.6rem; border-radius: 12px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">
+                🚀 Lưu Hàng Loạt Đề Beschwerde
+              </button>
+            </div>
+
+            <div style="margin-top: 2rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.8rem;">
+                <h5 style="color: #ffffff; font-weight: bold; margin: 0;">📋 Danh sách đề Beschwerde hiện tại:</h5>
+                <button type="button" class="btn btn-danger" onclick="deleteBatchWritingSelected('Beschwerde')" style="padding: 0.45rem 1.2rem; border-radius: 8px; font-weight: 800; font-size: 0.85rem; background: #ef4444; cursor: pointer;">
+                  🗑 Xóa Các Đề Đã Chọn
+                </button>
+              </div>
+
+              <table class="admin-table" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                  <tr style="background: rgba(239, 68, 68, 0.15);">
+                    <th style="width: 45px; text-align: center;"><input type="checkbox" onchange="toggleSelectAllWriting('Beschwerde', this.checked)" title="Chọn tất cả"></th>
+                    <th style="width: 50px; text-align: center;">STT</th>
+                    <th style="width: 200px;">Tiêu Đề Đề Viết</th>
+                    <th>Trích Đoạn Nội Dung Đề Bài</th>
+                    <th style="width: 140px; text-align: center;">Hành Động</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-writing-beschwerde-list"></tbody>
+              </table>
+            </div>
           </div>
-          <div class="card">
-            <h4>Danh sách hiện tại</h4>
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>Tiêu Đề</th>
-                  <th>Hành Động</th>
-                </tr>
-              </thead>
-              <tbody id="admin-writing-list"></tbody>
-            </table>
+
+          <!-- KHUNG 2: TẠO & QUẢN LÝ ĐỀ THƯ HỎI THÔNG TIN (BITTE UM INFORMATIONEN) -->
+          <div class="card" style="border: 1.5px solid rgba(59, 130, 246, 0.4); background: rgba(59, 130, 246, 0.03);">
+            <h4 style="color: #3b82f6; font-weight: 900; font-size: 1.3rem; display: flex; align-items: center; gap: 0.6rem;">
+              <span>✉️</span> Quản Lý Đề Thư Hỏi Thông Tin (Bitte um Informationen)
+            </h4>
+            
+            <form id="writing-anfrage-form" onsubmit="addWritingCategory(event, 'Anfrage/Information')" style="margin-top: 1.2rem;">
+              <div class="form-group" style="margin-bottom: 1rem;">
+                <label style="font-weight: bold; color: #ffffff;">Tiêu đề đề viết Bitte um Informationen</label>
+                <input type="text" id="add-write-anfrage-title" placeholder="Ví dụ: Bitte um Informationen zu einem Sprachkurs B2" style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border-light); border-radius: 8px; color: #fff; font-size: 0.95rem;">
+              </div>
+              <div class="form-group" style="margin-bottom: 1.2rem;">
+                <label style="font-weight: bold; color: #ffffff;">Đề bài & 4 gợi ý Leitpunkte</label>
+                <textarea id="add-write-anfrage-prompt" rows="4" placeholder="Nhập ngữ cảnh cần hỏi thông tin và các ý Leitpunkte..." style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border-light); border-radius: 8px; color: #fff; font-size: 0.95rem; line-height: 1.6;"></textarea>
+              </div>
+
+              <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+                <button class="btn btn-primary" type="submit" style="background: linear-gradient(135deg, #3b82f6, #2563eb); border: none; border-radius: 20px; font-weight: 900; padding: 0.75rem 1.8rem; cursor: pointer;">
+                  💾 Lưu 1 Đề Bitte um Informationen
+                </button>
+
+                <button type="button" class="btn btn-secondary" onclick="toggleBatchAddWriting('Anfrage/Information')" style="background: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; color: #ffffff; border-radius: 20px; font-weight: 800; padding: 0.75rem 1.4rem; cursor: pointer;">
+                  ⚡ Thêm Nhiều Đề Cùng Lúc (Batch Add)
+                </button>
+              </div>
+            </form>
+
+            <!-- KHUNG DÁN NHIỀU ĐỀ ANFRAGE CÙNG LÚC -->
+            <div id="batch-add-writing-anfrage-box" style="display: none; background: rgba(0,0,0,0.4); border: 1.5px dashed #3b82f6; padding: 1.2rem; border-radius: 12px; margin-top: 1.2rem;">
+              <label style="font-weight: bold; color: #3b82f6; display: block; margin-bottom: 0.5rem; font-size: 1rem;">⚡ Dán danh sách nhiều đề Bitte um Informationen cùng lúc (Dùng "---" để phân cách giữa các đề):</label>
+              <p style="font-size: 0.82rem; color: #cbd5e1; margin-bottom: 0.8rem; line-height: 1.5;">
+                💡 <b>Mẫu dán nhiều đề:</b><br>
+                Tiêu đề đề 1<br>
+                Nội dung đề 1 và các Leitpunkte...<br>
+                ---<br>
+                Tiêu đề đề 2<br>
+                Nội dung đề 2 và các Leitpunkte...
+              </p>
+              <textarea id="batch-write-anfrage-input" rows="7" placeholder="Dán danh sách nhiều đề Bitte um Informationen vào đây..." style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.9rem; line-height: 1.6;"></textarea>
+              <button type="button" onclick="submitBatchWriting('Anfrage/Information')" style="margin-top: 0.8rem; background: #3b82f6; color: white; border: none; padding: 0.65rem 1.6rem; border-radius: 12px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);">
+                🚀 Lưu Hàng Loạt Đề Bitte um Informationen
+              </button>
+            </div>
+
+            <div style="margin-top: 2rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.8rem;">
+                <h5 style="color: #ffffff; font-weight: bold; margin: 0;">📋 Danh sách đề Bitte um Informationen hiện tại:</h5>
+                <button type="button" class="btn btn-danger" onclick="deleteBatchWritingSelected('Anfrage/Information')" style="padding: 0.45rem 1.2rem; border-radius: 8px; font-weight: 800; font-size: 0.85rem; background: #ef4444; cursor: pointer;">
+                  🗑 Xóa Các Đề Đã Chọn
+                </button>
+              </div>
+
+              <table class="admin-table" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                  <tr style="background: rgba(59, 130, 246, 0.15);">
+                    <th style="width: 45px; text-align: center;"><input type="checkbox" onchange="toggleSelectAllWriting('Anfrage/Information', this.checked)" title="Chọn tất cả"></th>
+                    <th style="width: 50px; text-align: center;">STT</th>
+                    <th style="width: 200px;">Tiêu Đề Đề Viết</th>
+                    <th>Trích Đoạn Nội Dung Đề Bài</th>
+                    <th style="width: 140px; text-align: center;">Hành Động</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-writing-anfrage-list"></tbody>
+              </table>
+            </div>
           </div>
+
         </div>
 
         <!-- Speaking -->
