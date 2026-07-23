@@ -3351,7 +3351,7 @@ function renderWriting() {
 
   ensureWritingDatabase();
 
-  // 1. MÀN HÌNH CHỌN DANH MỤC (KATEGORIE WÄHLEN)
+  // 1. MÀN HÌNH CHỌN DANH MỤC (KATEGORIE WÄHLEN) - CHỈ ĐỂ LẠI 2 MỤC ĐÚNG YÊU CẦU
   if (writingFlowState === 'category') {
     container.innerHTML = `
       <div style="text-align: center; margin-bottom: 3rem;">
@@ -3360,46 +3360,26 @@ function renderWriting() {
         <p style="color: var(--text-dim); font-size: 1rem;">Wählen Sie die Art der Schreibaufgabe (Luyện viết thư TELC B2)</p>
       </div>
 
-      <div class="mode-selection-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.8rem; max-width: 1100px; margin: 0 auto;">
+      <div class="mode-selection-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; max-width: 900px; margin: 0 auto;">
         
         <!-- CARD 1: BESCHWERDE -->
-        <div class="mode-card" style="border: 1.5px solid rgba(239, 68, 68, 0.35); text-align: center; padding: 2.5rem 2rem; background: rgba(22, 22, 54, 0.6); backdrop-filter: blur(12px); border-radius: 24px; cursor: pointer; transition: all 0.3s ease;" onclick="selectWritingCategoryName('Beschwerde')" onmouseover="this.style.transform='translateY(-6px)'; this.style.borderColor='#ef4444';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(239, 68, 68, 0.35)';">
-          <div style="background: rgba(239, 68, 68, 0.15); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto; color: #ef4444; font-size: 1.8rem; box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);">
+        <div class="mode-card" style="border: 1.5px solid rgba(239, 68, 68, 0.35); text-align: center; padding: 2.8rem 2rem; background: rgba(22, 22, 54, 0.6); backdrop-filter: blur(12px); border-radius: 24px; cursor: pointer; transition: all 0.3s ease;" onclick="selectWritingCategoryName('Beschwerde')" onmouseover="this.style.transform='translateY(-6px)'; this.style.borderColor='#ef4444';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(239, 68, 68, 0.35)';">
+          <div style="background: rgba(239, 68, 68, 0.15); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto; color: #ef4444; font-size: 1.8rem; box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);">
             ⚠️
           </div>
-          <h3 style="font-size: 1.6rem; font-weight: 900; margin-bottom: 0.8rem; color: #fff;">Beschwerde</h3>
-          <p style="color: var(--text-dim); line-height: 1.6; font-size: 0.95rem; margin-bottom: 2rem;">Thư phàn nàn / Khiếu nại dịch vụ, sản phẩm, khóa học, khách sạn...</p>
-          <button class="btn btn-primary" style="width: 100%; border-radius: 30px; padding: 0.85rem; font-weight: 800; background: linear-gradient(135deg, #ef4444, #dc2626); border: none; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">Aufgaben anzeigen ➔</button>
+          <h3 style="font-size: 1.7rem; font-weight: 900; margin-bottom: 0.8rem; color: #fff;">Beschwerde</h3>
+          <p style="color: var(--text-dim); line-height: 1.6; font-size: 0.98rem; margin-bottom: 2rem;">Thư phàn nàn / Khiếu nại dịch vụ, sản phẩm, khóa học, khách sạn...</p>
+          <button class="btn btn-primary" style="width: 100%; border-radius: 30px; padding: 0.9rem; font-weight: 800; font-size: 1rem; background: linear-gradient(135deg, #ef4444, #dc2626); border: none; box-shadow: 0 4px 18px rgba(239, 68, 68, 0.45);">Aufgaben anzeigen ➔</button>
         </div>
 
         <!-- CARD 2: BITTE UM INFORMATIONEN -->
-        <div class="mode-card" style="border: 1.5px solid rgba(59, 130, 246, 0.35); text-align: center; padding: 2.5rem 2rem; background: rgba(22, 22, 54, 0.6); backdrop-filter: blur(12px); border-radius: 24px; cursor: pointer; transition: all 0.3s ease;" onclick="selectWritingCategoryName('Anfrage/Information')" onmouseover="this.style.transform='translateY(-6px)'; this.style.borderColor='#3b82f6';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(59, 130, 246, 0.35)';">
-          <div style="background: rgba(59, 130, 246, 0.15); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto; color: #3b82f6; font-size: 1.8rem; box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);">
+        <div class="mode-card" style="border: 1.5px solid rgba(59, 130, 246, 0.35); text-align: center; padding: 2.8rem 2rem; background: rgba(22, 22, 54, 0.6); backdrop-filter: blur(12px); border-radius: 24px; cursor: pointer; transition: all 0.3s ease;" onclick="selectWritingCategoryName('Anfrage/Information')" onmouseover="this.style.transform='translateY(-6px)'; this.style.borderColor='#3b82f6';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(59, 130, 246, 0.35)';">
+          <div style="background: rgba(59, 130, 246, 0.15); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto; color: #3b82f6; font-size: 1.8rem; box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);">
             ✉️
           </div>
-          <h3 style="font-size: 1.6rem; font-weight: 900; margin-bottom: 0.8rem; color: #fff;">Bitte um Informationen</h3>
-          <p style="color: var(--text-dim); line-height: 1.6; font-size: 0.95rem; margin-bottom: 2rem;">Thư hỏi thông tin khóa học, đăng ký dịch vụ, hỗ trợ tư vấn...</p>
-          <button class="btn btn-primary" style="width: 100%; border-radius: 30px; padding: 0.85rem; font-weight: 800; background: linear-gradient(135deg, #3b82f6, #2563eb); border: none; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);">Aufgaben anzeigen ➔</button>
-        </div>
-
-        <!-- CARD 3: BEWERBUNG -->
-        <div class="mode-card" style="border: 1.5px solid rgba(16, 185, 129, 0.35); text-align: center; padding: 2.5rem 2rem; background: rgba(22, 22, 54, 0.6); backdrop-filter: blur(12px); border-radius: 24px; cursor: pointer; transition: all 0.3s ease;" onclick="selectWritingCategoryName('Bewerbung')" onmouseover="this.style.transform='translateY(-6px)'; this.style.borderColor='#10b981';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(16, 185, 129, 0.35)';">
-          <div style="background: rgba(16, 185, 129, 0.15); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto; color: #10b981; font-size: 1.8rem; box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);">
-            💼
-          </div>
-          <h3 style="font-size: 1.6rem; font-weight: 900; margin-bottom: 0.8rem; color: #fff;">Bewerbung</h3>
-          <p style="color: var(--text-dim); line-height: 1.6; font-size: 0.95rem; margin-bottom: 2rem;">Thư ứng tuyển xin việc làm, thực tập sinh, dự án...</p>
-          <button class="btn btn-primary" style="width: 100%; border-radius: 30px; padding: 0.85rem; font-weight: 800; background: linear-gradient(135deg, #10b981, #059669); border: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">Aufgaben anzeigen ➔</button>
-        </div>
-
-        <!-- CARD 4: CUSTOM PROMPT / ALLE THEMEN -->
-        <div class="mode-card" style="border: 1.5px solid rgba(245, 158, 11, 0.35); text-align: center; padding: 2.5rem 2rem; background: rgba(22, 22, 54, 0.6); backdrop-filter: blur(12px); border-radius: 24px; cursor: pointer; transition: all 0.3s ease;" onclick="selectWritingCategoryName('Alle')" onmouseover="this.style.transform='translateY(-6px)'; this.style.borderColor='#f59e0b';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(245, 158, 11, 0.35)';">
-          <div style="background: rgba(245, 158, 11, 0.15); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto; color: #f59e0b; font-size: 1.8rem; box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);">
-            ⭐
-          </div>
-          <h3 style="font-size: 1.6rem; font-weight: 900; margin-bottom: 0.8rem; color: #fff;">Alle & Tự Nhập Đề</h3>
-          <p style="color: var(--text-dim); line-height: 1.6; font-size: 0.95rem; margin-bottom: 2rem;">Xem toàn bộ danh sách đề & Tự thêm đề viết mới vào hệ thống</p>
-          <button class="btn btn-primary" style="width: 100%; border-radius: 30px; padding: 0.85rem; font-weight: 800; background: linear-gradient(135deg, #f59e0b, #d97706); border: none; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">Tất cả đề bài ➔</button>
+          <h3 style="font-size: 1.7rem; font-weight: 900; margin-bottom: 0.8rem; color: #fff;">Bitte um Informationen</h3>
+          <p style="color: var(--text-dim); line-height: 1.6; font-size: 0.98rem; margin-bottom: 2rem;">Thư hỏi thông tin khóa học, đăng ký dịch vụ, hỗ trợ tư vấn...</p>
+          <button class="btn btn-primary" style="width: 100%; border-radius: 30px; padding: 0.9rem; font-weight: 800; font-size: 1rem; background: linear-gradient(135deg, #3b82f6, #2563eb); border: none; box-shadow: 0 4px 18px rgba(59, 130, 246, 0.45);">Aufgaben anzeigen ➔</button>
         </div>
 
       </div>
