@@ -326,34 +326,34 @@ function toggleWarmLight() {
 }
 
 function applyTheme() {
-  const btn = document.getElementById('theme-toggle-btn');
-  const warmBtn = document.getElementById('warm-toggle-btn');
+  const btns = document.querySelectorAll('#theme-toggle-btn, .overlay-theme-btn');
+  const warmBtns = document.querySelectorAll('#warm-toggle-btn, .overlay-warm-btn');
   
   document.body.classList.remove('light-theme', 'warm-theme');
   
   if (currentTheme === 'light') {
     document.body.classList.add('light-theme');
-    if (btn) btn.textContent = '☀️';
-    if (warmBtn) {
-      warmBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+    btns.forEach(btn => btn.textContent = '☀️');
+    warmBtns.forEach(warmBtn => {
+      warmBtn.style.background = 'rgba(0, 0, 0, 0.08)';
       warmBtn.style.color = '#334155';
       warmBtn.style.borderColor = '#cbd5e1';
-    }
+    });
   } else if (currentTheme === 'warm') {
     document.body.classList.add('light-theme', 'warm-theme');
-    if (btn) btn.textContent = '💡';
-    if (warmBtn) {
+    btns.forEach(btn => btn.textContent = '💡');
+    warmBtns.forEach(warmBtn => {
       warmBtn.style.background = '#d97706';
       warmBtn.style.color = '#ffffff';
       warmBtn.style.borderColor = '#d97706';
-    }
+    });
   } else {
-    if (btn) btn.textContent = '🌙';
-    if (warmBtn) {
-      warmBtn.style.background = 'rgba(255, 255, 255, 0.05)';
+    btns.forEach(btn => btn.textContent = '🌙');
+    warmBtns.forEach(warmBtn => {
+      warmBtn.style.background = 'rgba(255, 255, 255, 0.1)';
       warmBtn.style.color = '#e2e8f0';
-      warmBtn.style.borderColor = 'rgba(255, 255, 255, 0.15)';
-    }
+      warmBtn.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+    });
   }
 }
 
@@ -1973,7 +1973,9 @@ function renderReading() {
             `).join('')}
           </div>
 
-          <div style="display: flex; align-items: center; gap: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <button class="icon-btn overlay-warm-btn" onclick="toggleWarmLight()" title="Bật/Tắt Đèn Vàng Dịu Mắt" style="background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,0.25);padding:0.35rem 0.75rem;border-radius:20px;font-weight:800;font-size:0.8rem;cursor:pointer;">💡 Đèn Vàng</button>
+            <button class="icon-btn overlay-theme-btn" onclick="toggleTheme()" title="Đổi màu nền (Tối/Sáng/Vàng)" style="background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,0.25);padding:0.35rem 0.8rem;border-radius:20px;font-weight:800;font-size:0.85rem;cursor:pointer;">🌙</button>
             <span style="color: #38bdf8; font-weight: 800; font-size: 0.88rem; font-family: monospace;">
               ${selectedReadingTest} - ${selectedReadingMode}
             </span>
@@ -3580,7 +3582,9 @@ function renderWriting() {
           <div style="font-weight:800;font-size:1rem;color:#fff;">
             Schreiben: ${exercise.category === 'Beschwerde' ? 'Beschwerdebrief' : 'Bitte um Informationen'}
           </div>
-          <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.82rem;">
+          <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;">
+            <button class="icon-btn overlay-warm-btn" onclick="toggleWarmLight()" title="Bật/Tắt Đèn Vàng Dịu Mắt" style="background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,0.25);padding:0.2rem 0.55rem;border-radius:20px;font-weight:800;font-size:0.75rem;cursor:pointer;">💡 Đèn Vàng</button>
+            <button class="icon-btn overlay-theme-btn" onclick="toggleTheme()" title="Đổi màu nền (Tối/Sáng/Vàng)" style="background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,0.25);padding:0.2rem 0.55rem;border-radius:20px;font-weight:800;font-size:0.75rem;cursor:pointer;">🌙</button>
             <span style="color:#facc15;font-weight:bold;font-family:monospace;">
               Deutsch - B2 | Restzeit: <span id="telc-timer-display" style="color:#38bdf8;font-weight:900;">30:00</span> Min
             </span>
