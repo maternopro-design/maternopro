@@ -4595,29 +4595,15 @@ function renderSpeaking() {
 
         <div class="mode-card" style="border: 1px solid rgba(255,255,255,0.05); text-align: center; padding: 2.5rem 2rem; display: flex; flex-direction: column; justify-content: space-between; min-height: 380px; position: relative;">
           <div>
-            <div style="background: rgba(255, 0, 122, 0.15); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto; color: #ff007a; font-size: 1.5rem; font-weight: bold;">
-              2️⃣
+            <div style="background: linear-gradient(135deg, rgba(255, 0, 122, 0.2), rgba(139, 92, 246, 0.2)); width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto; color: #ff007a; font-size: 1.5rem; font-weight: bold; border: 1.5px solid rgba(255, 0, 122, 0.3);">
+              2️⃣+3️⃣
             </div>
-            <h3 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.8rem;">Teil 2: Diskussion</h3>
-            <p style="color: var(--text-dim); line-height: 1.6; font-size: 0.95rem; margin-bottom: 2rem;">Diskussion - Thảo luận đề tài xã hội cùng đối tác.</p>
+            <h3 style="font-size: 1.45rem; font-weight: bold; margin-bottom: 0.8rem;">Teil 2 & 3: Diskussion & Planen</h3>
+            <p style="color: var(--text-dim); line-height: 1.6; font-size: 0.95rem; margin-bottom: 2rem;">Diskussion & Gemeinsam etwas planen - Thảo luận đề tài xã hội & Lập kế hoạch công việc cùng đối tác.</p>
           </div>
           <div style="display: flex; flex-direction: column; gap: 1rem; align-items: center; width: 100%;">
-            <a class="btn btn-secondary" style="width: 100%; border-radius: 6px; padding: 0.8rem; text-decoration: none;" href="https://docs.google.com/document/d/16cIMUluY3Q5gk-IsSdhsXijqkKUTNAg2GEtfsmhOZM8/edit?tab=t.0" target="_blank">Aufgaben anzeigen ↗</a>
-            <img src="logo.jpg" style="width: 80px; height: 35px; object-fit: contain; opacity: 0.8; margin-top: 0.5rem; filter: drop-shadow(0 0 5px rgba(0, 242, 254, 0.3));" />
-          </div>
-        </div>
-
-        <div class="mode-card" style="border: 1px solid rgba(255,255,255,0.05); text-align: center; padding: 2.5rem 2rem; display: flex; flex-direction: column; justify-content: space-between; min-height: 380px; position: relative;">
-          <div>
-            <div style="background: rgba(139, 92, 246, 0.15); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto; color: var(--accent-purple); font-size: 1.5rem; font-weight: bold;">
-              3️⃣
-            </div>
-            <h3 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.8rem;">Teil 3: Gemeinsam planen</h3>
-            <p style="color: var(--text-dim); line-height: 1.6; font-size: 0.95rem; margin-bottom: 2rem;">Gemeinsam etwas planen - Lập kế hoạch công việc cùng đối tác.</p>
-          </div>
-          <div style="display: flex; flex-direction: column; gap: 1rem; align-items: center; width: 100%;">
-            <a class="btn btn-secondary" style="width: 100%; border-radius: 6px; padding: 0.8rem; text-decoration: none;" href="https://docs.google.com/document/d/1fDzsypB27UxCPCZ0EpY2RTPcZOZeAUguBHu6jTvldss/edit?tab=t.0" target="_blank">Aufgaben anzeigen ↗</a>
-            <img src="logo.jpg" style="width: 80px; height: 35px; object-fit: contain; opacity: 0.8; margin-top: 0.5rem; filter: drop-shadow(0 0 5px rgba(139, 92, 246, 0.3));" />
+            <a class="btn btn-secondary" style="width: 100%; border-radius: 6px; padding: 0.8rem; text-decoration: none; background: linear-gradient(135deg, rgba(255, 0, 122, 0.15), rgba(139, 92, 246, 0.15)); border: 1px solid rgba(255, 0, 122, 0.4); color: #fff; font-weight: 800;" href="https://drive.google.com/drive/u/3/folders/1mgHfkz2VwajOBZCilZbNwC5QHXPl56Ip" target="_blank">Aufgaben anzeigen ↗</a>
+            <img src="logo.jpg" style="width: 80px; height: 35px; object-fit: contain; opacity: 0.8; margin-top: 0.5rem; filter: drop-shadow(0 0 5px rgba(255, 0, 122, 0.3));" />
           </div>
         </div>
       </div>
